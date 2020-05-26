@@ -73,8 +73,6 @@ def data_stats():
 # all code is written in torch to allow backprop
 # default force here is double well
 def derivative_ML(q, p, Func_dqdt, Func_dpdt) -> tuple: # return tuple of next time step
-    '''here there is periodic boundary condition since we are using double well
-    with potential barrier at x= 2 and x = -2, M and Temperature = 1 by default for simplicity '''
     #here p and q is 1 dimensional    
     Potential = Func_dpdt(p,q) # only kinetic part of the hamiltonian is used here
     dpdt = -grad(Potential.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
