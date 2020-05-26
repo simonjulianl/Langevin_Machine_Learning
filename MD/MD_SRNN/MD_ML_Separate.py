@@ -31,9 +31,9 @@ from torch.autograd import grad
 parser = argparse.ArgumentParser('MD Hamiltonian')
 args = parser.add_argument('--log_interval', type= int, default = 1000, help="print message")
 args = parser.add_argument('--epochs', type = int , default = 100, help = "Number of epochs")
-args = parser.add_argument('--deltat', type = float, default = 0.01 ,help = "time step")
+args = parser.add_argument('--deltat', type = float, default = 0.001 ,help = "time step")
 args = parser.add_argument('--seed' , type = int, default =937162211 , help = 'reproducibiltiy')
-args = parser.add_argument('--Nsteps' , type = int, default = 50, help = "total number of steps")
+args = parser.add_argument('--Nsteps' , type = int, default = 500, help = "total number of steps")
 args = parser.add_argument('--batch_size' , type = int, default = 32, help = "batch size")
 args = parser.add_argument('--lr', type= float , default = 1e-3, help="learning rate")
 args = parser.add_argument('--scheduler' ,type = bool ,default = False, help ="reduce of plateau scheduler")
@@ -54,13 +54,20 @@ torch.cuda.manual_seed(args.seed) # apparently this is required
 torch.cuda.manual_seed_all(args.seed) # gpu vars
 large_time_step = Nsteps * time_step
 
+# =============================================================================
+# Helper Function
+def potential(q : list) -> float :
+    return (q**2.0-1)**2.0 + q;
 
+def kinetic(p : list) -> float:
+    return (p ** 2) / 2.0;
+
+# =============================================================================
 def data_stats():
     correlator_train = 0
     for (data,label) in train_loader:
         correlator_train += torch.sum(torch.abs(data-label))
     print('initial correlation : ', correlator_train / len(train_loader.dataset))
-
 
 # Func here meaning the deep learning approximation to find the hamiltonian
 # all code is written in torch to allow backprop
@@ -69,18 +76,12 @@ def derivative_ML(q, p, Func_dqdt, Func_dpdt) -> tuple: # return tuple of next t
     '''here there is periodic boundary condition since we are using double well
     with potential barrier at x= 2 and x = -2, M and Temperature = 1 by default for simplicity '''
     #here p and q is 1 dimensional    
-    # hamiltonian = Func_dpdt(q,p) # we need to sum because grad can only be done to scalar
-    # dpdt = -grad(hamiltonian.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
-    
-    KE = Func_dpdt(p,q) # only kinetic part of the hamiltonian is used here
-    dpdt = -grad(KE.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
+    Potential = Func_dpdt(p,q) # only kinetic part of the hamiltonian is used here
+    dpdt = -grad(Potential.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
     #if the create graph is false, the backprop will not update the it and hence we need to retain the graph
-
-    # hamiltonian = Func_dqdt(q,p)
-    # dqdt = grad(hamiltonian.sum(), p, create_graph = True)[0] #dqdt = dH/dp
     
-    Potential = Func_dqdt(p,q) # only potential part of the hamiltonian is used here 
-    dqdt = grad(Potential.sum(), p, create_graph = True)[0] # dpdt = -dH/dq
+    KE = Func_dqdt(p,q) # only potential part of the hamiltonian is used here 
+    dqdt = grad(KE.sum(), p, create_graph = True)[0] # dqdt = -dH/dp
 
     return (dqdt, dpdt) # all data is arrange in q p manner
       
@@ -152,9 +153,34 @@ def validating(epoch) -> float :
         q_next = q + dqdt * large_time_step
         p_next = p + dpdt * large_time_step
         
+        
         q_true = q + dqdt_true * large_time_step
         p_true = p + dpdt_true * large_time_step
         
+# =============================================================================
+#   Some energy investigation for 0.5 timestep here
+        
+        if epoch == 99 : 
+            print('===========================')
+            print('q next : ', q_next)
+            print()
+            print('q true : ', q_true)
+            print()
+            print('potential next: ', potential(q_next))
+            print()
+            print('potential true : ', potential(q_true))
+            print('===========================')
+            print()
+            print('p next : ', p_next)
+            print()
+            print('p true : ', p_true)
+            print()
+            print('kinetic next: ', kinetic(p_next))
+            print()
+            print('kinetic true : ', kinetic(p_true))
+            print('===========================')
+# =============================================================================
+       
         correlator_q += torch.sum(torch.abs(q_next - q_true))
         correlator_p += torch.sum(torch.abs(p_next - p_true))
         
@@ -176,18 +202,19 @@ def validating(epoch) -> float :
     return validation_loss
 
 if __name__ == "__main__":
-    model_dqdt = MLP2H_General_Hamil(2, 10).to(device) # you need KE to get dqdt
-    model_dpdt = MLP2H_General_Hamil(2, 10).to(device) # you need potential to get dpdt
+    model_dqdt = MLP2H_General_Hamil(2, 20).to(device) # you need KE to get dqdt
+    model_dpdt = MLP2H_General_Hamil(2, 20).to(device) # you need potential to get dpdt
     optim_dqdt = torch.optim.Adam(model_dqdt.parameters(), lr = lr)
     optim_dpdt = torch.optim.Adam(model_dpdt.parameters(), lr = lr)
     scheduler_dpdt = torch.optim.lr_scheduler.ReduceLROnPlateau(optim_dpdt, 'min', verbose = False, factor = 0.99) # use default patience of 10, factor = 0.1
     scheduler_dqdt = torch.optim.lr_scheduler.ReduceLROnPlateau(optim_dqdt, 'min', verbose = False, factor = 0.99) 
-    
+
     simulator = simulator_numerical(time_step = time_step, Nsteps = Nsteps, DumpFreq = Nsteps) # we just need to first and last for accurate
     train, validation = simulator.integrate()
     
     train_data = (train[0][:,0], train[1][:,0]) # first index 0 is q and 1 is p
     train_label = ((train[0][:,-1]-train[0][:,0])/large_time_step, (train[1][:,-1]-train[1][:,0])/large_time_step) # train label is delta q , p / delta t instead of next q,p
+    # np.save( 'train_label_05-0001.npy' , np.array(train_label))
     
     training_data = (train_data,train_label)
     train_dataset = MD_Hamiltonian(training_data)
@@ -199,9 +226,11 @@ if __name__ == "__main__":
     validation_label = ((validation[0][:,-1] - validation[0][:,0])/large_time_step, (validation[1][:,-1] -  validation[1][:,0])/ large_time_step)
     validating_data = (validation_data, validation_label)
     validation_dataset = MD_Hamiltonian(validating_data)
-    
+    # np.save('validation_label_05-0001.npy' , np.array(validation_label))
+
     validation_loader = DataLoader(validation_dataset, batch_size = batch_size, ** kwargs)
     data_stats()
+
     # testing
 #################################################################################
     data,label = next(iter(train_loader))
@@ -224,11 +253,15 @@ if __name__ == "__main__":
         train_loss.append(training(i))
         validation_loss.append(validating(i))
         
+    # np.save('ML_Hamiltonian05_0001_2models_seed937162211_20_2H_loss.npy', np.array((train_loss, validation_loss)))
+    # data is arranged in train loss / validation loss
+    
     plt.plot(train_loss)
     plt.plot(validation_loss)
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("training curve")
     plt.legend(['train loss', 'validation loss'])
-    torch.save({'model_dqdt' : model_dqdt.state_dict(),
-                'model_dpdt' : model_dpdt.state_dict()}, 'ML_Hamiltonian05_2models_seed937162211.pth')
+    # torch.save({'model_dqdt' : model_dqdt.state_dict(),
+    #             'model_dpdt' : model_dpdt.state_dict()}, 'ML_Hamiltonian05_0001_2models_seed937162211_20_2H.pth') 
+    # 20 Unit/ Hidden Layer , 2 Hidden Layer
