@@ -7,14 +7,14 @@ Literature Review for the latest code can be found in MD ML 7.pdf file that expl
 _______________________________________________________________________________________________________________________________
 
 # Documentation : 
-  
-  1 ) MD Lennard Jones contains all the code to visualize particles, initialization using periodic boundary condition (PBC),    with the main code at MD_final.py
- 
- 2 ) MD ML contains all the code in the past involving various model such as LSTM, RNN based, Convolutional Neural Network and correlation
-  
-  3 ) MD_SRNN contains the code for latest Hamiltonian Neural Network explained in the slides MD ML 7
+1) MD_SRNN contains the code for latest Hamiltonian Neural Network explained in the slides MD ML 7
   
   to use : 
   - Train the Model at MD_ML_Separate.py for 2 Separate Model as explained in the slides or General Hamiltonian for MD_ML.py
   - Get the distribution sampling from simulator_langevin.py
   - To get another temperature, generate using MSMC.py and then add the new temperature at simulator.py
+
+To do : 1 ) MD Lennard Jones contains all the code to visualize particles, initialization using periodic boundary condition (PBC),    with the main code at MD_final.py # Removed 
+ 
+ 2 ) MD ML contains all the code in the past involving various model such as LSTM, RNN based, Convolutional Neural Network and correlation
+  
