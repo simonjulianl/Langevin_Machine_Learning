@@ -485,7 +485,7 @@ if __name__ == "__main__":
     H_x2 = function(p, x2)
     dpdt = (H_x2 - H_x1) / (x2-x1)
         
-    real_H = (p ** 2.0 / 2) + ((x1 ** 2.0 - 1 ** 2.0) + x1)
+    real_H = (p ** 2.0 / 2) + ((x1 ** 2.0 - 1) ** 2.0 + x1)
     dpdt_real = grad(real_H, x1, create_graph = False)[0]
     dpdt_derivative = grad(H_x2, x2, create_graph = False)[0]
     print(dpdt, dpdt_derivative)
