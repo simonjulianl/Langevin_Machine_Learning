@@ -137,7 +137,6 @@ class simulation_langevin:
         using BP method, there are 2 random vectors'''
         random_1 = np.random.normal(loc = 0.0, scale = 1.0, size = self.N * total_step)
         random_2 = np.random.normal(loc = 0.0, scale = 1.0, size = self.N * total_step)
-        #max step size is 10000 in this case
         self.random_1 = random_1.reshape(-1,self.N)
         self.random_2 = random_2.reshape(-1,self.N)
             
@@ -175,7 +174,7 @@ class simulation_langevin:
                 q_list_temp = np.zeros((self.Nsteps, total_particle))
                 p_list_temp = np.zeros((self.Nsteps, total_particle)) # since there is only 1 particle
                 for i in trange(self.Nsteps):
-                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_1[idx][num]
+                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( -self.gamma * self.time_step))) * self.random_1[idx][num]
                     
                     for j in range(int(self.time_step/ ground_truth_step)): # repeat with respect to ground truth
                         acc = get_force_helper(q)
@@ -187,7 +186,7 @@ class simulation_langevin:
                         acc = get_force_helper(q)
                         p = p + ground_truth_step / 2 * acc
                     
-                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_2[idx][num]
+                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( -self.gamma * self.time_step))) * self.random_2[idx][num]
                  
                     q_list_temp[i] = q
                     p_list_temp[i] = p
@@ -230,7 +229,7 @@ class simulation_langevin:
         self.load(); # set the p and q
         '''mass counted as 1 hence omitted
         the Lpq in velocity verlect is replaced using Hamiltonian Machine Learning'''
-        idx = 0 # counter for random, reset every 1000 steps if used
+        idx = 0 
                 
         q_list = np.zeros((self.Nsteps+1,self.N))
         p_list = np.zeros((self.Nsteps+1,self.N))
@@ -239,11 +238,11 @@ class simulation_langevin:
         p_list[0] = self.p
         
         for i in trange(1,self.Nsteps+1):
-            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_1[idx]
+            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( -self.gamma * self.time_step))) * self.random_1[idx]
             
             self.q, self.p = self.velocity_verlet_ML(self.q, self.p) # Lpq is replaced by ML
             
-            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_2[idx]
+            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( -self.gamma * self.time_step))) * self.random_2[idx]
             
             q_list[i] = self.q
             p_list[i] = self.p
@@ -496,7 +495,9 @@ if __name__ == "__main__":
 # =============================================================================
     hidden_units = int(input('please input number of units/hidden layer : '))
     separate_model = torch.load('../ML_Hamiltonian{}_{}_2models_seed937162211_{}_2H.pth'
-                                .format(str(time_step).replace('.',''), str(ground_truth_step).replace('.',''), hidden_units))
+                                .format(str(time_step).replace('.',''),
+                                        str(ground_truth_step).replace('.',''),
+                                        hidden_units))
     
     model_dqdt_state = separate_model['model_dqdt']
     model_dpdt_state = separate_model['model_dpdt']
