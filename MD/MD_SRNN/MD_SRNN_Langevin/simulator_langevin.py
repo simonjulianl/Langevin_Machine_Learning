@@ -32,15 +32,22 @@ sys.path.append(parent_path)
 from error.error import *;
 from tqdm import trange;
 from models import *;
+import multiprocessing
 
+seed = 937162211
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+torch.cuda.manual_seed(seed) # apparently this is required
+torch.cuda.manual_seed_all(seed) # gpu vars
 
-np.random.seed(2)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class simulation_langevin:
     __instance = None;
     kB = 1
-    def __init__(self, time_step : float, Nsteps : int, gamma : float, Temperature : float, Func = None, **kwargs):
+    def __init__(self, time_step : float, Nsteps : int, gamma : float, Temperature : float,  N : float, Func = None, **kwargs):
         try : 
             print('Initializing')
             self.time_step = time_step
@@ -48,6 +55,7 @@ class simulation_langevin:
             self.gamma = gamma 
             self.Temp = Temperature
             self.Func = Func
+            self.N = N
             self.load()
             self.randNormal()
             
@@ -65,8 +73,8 @@ class simulation_langevin:
     def load(self) -> None:
         ''' helper function to load the data, since we are going to get the p and q 
         distribution overtime, 100 independent trajectories should be enough'''
-        self.q = np.load(initialization + '/pos_sampled.npy')[:100].squeeze();
-        self.p = np.load(initialization + '/velocity_sampled.npy')[:100].squeeze();
+        self.q = np.load(initialization + '/pos_sampled.npy')[:self.N].squeeze();
+        self.p = np.load(initialization + '/velocity_sampled.npy')[:self.N].squeeze();
         
     def change(self, time_step : float, Nsteps : int, gamma : float, Temperature : float, Func = None) :
         try : 
@@ -82,47 +90,141 @@ class simulation_langevin:
             
         print('Setting changed')
     
+    def getCurrDistribution(self) -> None:
+        beta = 1 / (simulation_langevin.kB * temperature)
+        q = np.linspace(-2,2,1000)      
+        prob = np.exp(-beta * ((q ** 2.0 - 1) ** 2.0 + q))
+        
+        dq = np.array([(q2-q1) for q2,q1 in zip(q[1:],q[:-1])]) # trapezium approximation
+        ys = np.array([(y2+y1) / 2. for y2,y1 in zip(prob[1:],prob[:-1])])
+        Z = np.dot(ys.T, dq) # for pdf , total area
+        
+        #plot the distribution of q
+        n_q, bins_q = np.histogram(self.q, bins = np.linspace(-2,2,20), density = True)
+        #bins chosen from -2 to 2 because at x = 2 at x = -2, prob(x) ~ 0 , they act as potential barrier for T = 1
+        binq_centers = 0.5 * (bins_q[1:] + bins_q[:-1])
+        plt.plot(q,prob/Z,marker = None, color = "orange", linestyle = '-',label = 'exact') # with reference to exact
+        plt.plot(binq_centers, n_q, color = "black" , label = "q0 distribution")
+        plt.ylabel("pdf")
+        plt.xlabel("q / position ")
+        plt.legend(loc="best")
+        plt.show()
+        
+        q_hist = np.array([binq_centers, n_q])
+        #plot the distribution of p
+        
+        p = np.linspace(-4,4,1000)
+        prob_p = np.exp(-beta * (p ** 2.0) / 2)
+        
+        dp = np.array([(p2-p1) for p2,p1 in zip(p[1:],p[:-1])]) # trapezium approximation
+        yps = np.array([(y2+y1) / 2. for y2,y1 in zip(prob_p[1:],prob_p[:-1])])
+        Zp = np.dot(yps.T, dp)
+        
+        n_p, bins_p = np.histogram(self.p , bins = np.linspace(-4,4,20), density = True)
+        #bins chosen from -4 to 4 because at p = -4 or 4 , prob(p) ~ 0 
+        binp_centers = 0.5 * (bins_p[1:] + bins_p[:-1])
+        plt.plot(p,prob_p/Zp,marker = None, color = "orange", linestyle = '-',label = 'exact') # with reference to exact
+        plt.plot(binp_centers, n_p, color = "blue", label = "p0 distribution")
+        plt.ylabel("pdf")
+        plt.xlabel("p / momentum")
+        plt.legend(loc = "best")
+        plt.show()
+        
+        p_hist = np.array([binp_centers, n_p])
+ 
     def randNormal(self): 
         '''helper function to set the random for langevin
         using BP method, there are 2 random vectors'''
-        random_1 = np.random.normal(loc = 0.0, scale = 1.0, size = 100 * 10000)
-        random_2 = np.random.normal(loc = 0.0, scale = 1.0, size = 100 * 10000)
+        random_1 = np.random.normal(loc = 0.0, scale = 1.0, size = self.N * total_step)
+        random_2 = np.random.normal(loc = 0.0, scale = 1.0, size = self.N * total_step)
         #max step size is 10000 in this case
-        self.random_1 = random_1.reshape(-1,100)
-        self.random_2 = random_2.reshape(-1,100)
+        self.random_1 = random_1.reshape(-1,self.N)
+        self.random_2 = random_2.reshape(-1,self.N)
             
     def integrate(self) -> tuple: # of (q list ,  p list)
         self.load(); #set the p and q
         ''' mass counted as 1 hence omitted '''
-        idx = 0 # counter for random, reset every 1000 steps if used
+
                 
-        q_list = np.zeros((self.Nsteps + 1,100))
-        p_list = np.zeros((self.Nsteps + 1,100))
-        
-        q_list[0] = self.q
-        p_list[0] = self.p
-        
-        for i in trange(1, self.Nsteps+1):
-            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_1[idx]
+        try :
+            q_list = np.load('{}-{}_exactq_{}_seed{}.npy'
+                             .format(time_step, ground_truth_step, total_step, seed)) # the first one is the large time step
+            p_list = np.load('{}-{}_exactp_{}_seed{}.npy'
+                             .format(time_step, ground_truth_step, total_step, seed)) 
             
-            for j in range(int(self.time_step/ 0.01)): # repeat with respect to ground truth
-                acc = self.get_force()
-    
-                self.p = self.p + 0.01 / 2 * acc #dp/dt
+        except : 
+            
+            q_list = np.zeros((self.Nsteps + 1,self.N))
+            p_list = np.zeros((self.Nsteps + 1,self.N))
+            
+            q_list[0] = self.q
+            p_list[0] = self.p
+            
+          
+            def get_force_helper(q) :
+                phi = (q ** 2.0 - 1) ** 2.0 + q # potential
+                dphi = (4 * q) * (q ** 2.0 - 1) + 1.0 # force = dU / dq
+                acc = -dphi
+                return acc
+            
+            def integrate_helper(q, p, num, return_dict):
+                idx = 0 # counter for random, reset every 1000 steps if used
                 
-                self.q = self.q + 0.01 * self.p
+                total_particle = 1000 if N >= 1000 else N # total particle per process
                 
-                acc = self.get_force()
-                self.p = self.p + 0.01 / 2 * acc
-            
-            self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_2[idx]
-            
-            q_list[i] = self.q
-            p_list[i] = self.p
-            idx += 1
-            
+                q_list_temp = np.zeros((self.Nsteps, total_particle))
+                p_list_temp = np.zeros((self.Nsteps, total_particle)) # since there is only 1 particle
+                for i in trange(self.Nsteps):
+                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_1[idx][num]
+                    
+                    for j in range(int(self.time_step/ ground_truth_step)): # repeat with respect to ground truth
+                        acc = get_force_helper(q)
+                        
+                        p = p + ground_truth_step / 2 * acc #dp/dt
+                        
+                        q = q + ground_truth_step * p
+                        
+                        acc = get_force_helper(q)
+                        p = p + ground_truth_step / 2 * acc
+                    
+                    p = np.exp(-self.gamma * self.time_step / 2) * p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_2[idx][num]
+                 
+                    q_list_temp[i] = q
+                    p_list_temp[i] = p
         
-        return (q_list.T, p_list.T) # transpose to get particle x trajectory 
+                    idx += 1
+                    
+                return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
+               
+            assert len(self.p) == len(self.q)
+  
+            processes = [] # list of processes to be spread
+            manager = multiprocessing.Manager()
+            return_dict = manager.dict()
+           
+            for i in range(0,len(self.p),1000):
+                p  = multiprocessing.Process(target = integrate_helper, args = (self.q[i:i+1000], self.p[i:i+1000], i, return_dict))
+                processes.append(p)
+           
+            for p in processes :
+                p.start()
+                
+            for p in processes :
+                p.join() # block the main thread 
+                
+            #populate the original q list and p list
+            for i in return_dict.keys(): #skip every 1000
+                q_list[1:,i:i+1000] = return_dict[i][0] # q
+                p_list[1:,i:i+1000] = return_dict[i][1] # p 
+      
+            np.save('{}-{}_exactq_{}_seed{}.npy'
+                             .format(time_step, ground_truth_step, total_step, seed),q_list)
+            np.save('{}-{}_exactp_{}_seed{}.npy'
+                             .format(time_step, ground_truth_step, total_step, seed),p_list)
+            
+        finally : 
+
+            return (q_list.T, p_list.T) # transpose to get particle x trajectory 
     
     def integrate_ML(self) -> tuple : 
         self.load(); # set the p and q
@@ -130,8 +232,8 @@ class simulation_langevin:
         the Lpq in velocity verlect is replaced using Hamiltonian Machine Learning'''
         idx = 0 # counter for random, reset every 1000 steps if used
                 
-        q_list = np.zeros((self.Nsteps+1,100))
-        p_list = np.zeros((self.Nsteps+1,100))
+        q_list = np.zeros((self.Nsteps+1,self.N))
+        p_list = np.zeros((self.Nsteps+1,self.N))
         
         q_list[0] = self.q
         p_list[0] = self.p
@@ -161,17 +263,17 @@ class simulation_langevin:
         p.requires_grad = True
 
         hamiltonian = self.Func(p,q) # we need to sum because grad can only be done to scalar
-        dpdt = -grad(hamiltonian.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
+        dpdt = -grad(hamiltonian.sum(), q, create_graph = False)[0] # dpdt = -dH/dq
 
         #if the create graph is false, the backprop will not update the it and hence we need to retain the graph
         p_half = p +  dpdt * self.time_step / 2 
         
         hamiltonian = self.Func(p_half, q)
-        dqdt = grad(hamiltonian.sum(), p, create_graph = True)[0] #dqdt = dH/dp
+        dqdt = grad(hamiltonian.sum(), p, create_graph = False)[0] #dqdt = dH/dp
         q_next = q + dqdt * self.time_step
         
         hamiltonian = self.Func(p_half, q_next)
-        dpdt = -grad(hamiltonian.sum(), q, create_graph = True)[0] # dpdt = -dH/dq
+        dpdt = -grad(hamiltonian.sum(), q, create_graph = False)[0] # dpdt = -dH/dq
     
         p_next = p_half + dpdt * self.time_step  / 2
         
@@ -184,8 +286,8 @@ class simulation_langevin:
         ''' double well potential and force manually computed 
         just simple code for 1 Dimension without generalization'''
 
-        acc = np.zeros([100])
-        for i in range(100):
+        acc = np.zeros([self.N])
+        for i in range(self.N):
             q = self.q[i]
             phi = (q ** 2.0 - 1) ** 2.0 + q # potential
             dphi = (4 * q) * (q ** 2.0 - 1) + 1.0 # force = dU / dq
@@ -200,8 +302,8 @@ class simulation_langevin:
         the Lpq in velocity verlect is replaced using Hamiltonian Machine Learning'''
         idx = 0 # counter for random, reset every 1000 steps if used
                 
-        q_list = np.zeros((self.Nsteps+1,100))
-        p_list = np.zeros((self.Nsteps+1,100))
+        q_list = np.zeros((self.Nsteps+1,self.N))
+        p_list = np.zeros((self.Nsteps+1,self.N))
         
         q_list[0] = self.q
         p_list[0] = self.p
@@ -216,8 +318,11 @@ class simulation_langevin:
             p.requires_grad = True
             
             hamiltonian = model_dpdt(p,q)
-            dpdt = -grad(hamiltonian.sum(), q, create_graph = True)[0]
+            dpdt = -grad(hamiltonian.sum(), q, create_graph = False)[0]
             self.p = self.p + self.time_step / 2 * dpdt.cpu().detach().numpy().squeeze()
+            
+            torch.cuda.empty_cache()
+            del p,q,hamiltonian, dpdt
             
             q = torch.tensor(self.q, dtype = torch.float32).to(device).unsqueeze(1).to(device)
             p = torch.tensor(self.p,dtype = torch.float32).to(device).unsqueeze(1).to(device)
@@ -225,8 +330,11 @@ class simulation_langevin:
             p.requires_grad = True
             
             hamiltonian = model_dqdt(p,q)
-            dqdt = grad(hamiltonian.sum(), p, create_graph = True)[0]
+            dqdt = grad(hamiltonian.sum(), p, create_graph = False)[0]
             self.q = self.q + self.time_step * dqdt.cpu().detach().numpy().squeeze()
+            
+            torch.cuda.empty_cache()
+            del p,q, hamiltonian, dqdt
             
             q = torch.tensor(self.q, dtype = torch.float32).to(device).unsqueeze(1).to(device)
             p = torch.tensor(self.p,dtype = torch.float32).to(device).unsqueeze(1).to(device)
@@ -234,31 +342,29 @@ class simulation_langevin:
             p.requires_grad = True
             
             hamiltonian = model_dpdt(p,q) # be careful , this is special case when i only use 1 input
-            dpdt = -grad(hamiltonian.sum(), q, create_graph = True)[0]
+            dpdt = -grad(hamiltonian.sum(), q, create_graph = False)[0]
             self.p = self.p + self.time_step / 2 * dpdt.cpu().detach().numpy().squeeze()
             
             self.p = np.exp(-self.gamma * self.time_step / 2) * self.p + np.sqrt(self.kB * self.Temp * ( 1 - np.exp( - self.gamma * self.time_step))) * self.random_2[idx]
             
+            torch.cuda.empty_cache()
+            del p,q, hamiltonian, dpdt
+            
             q_list[i] = self.q
             p_list[i] = self.p
             idx += 1
-            
+                  
         return (q_list.T, p_list.T)
     
     @staticmethod
-    def plot_distribution(trajectory : list, temperature : float) -> None:
+    def plot_distribution_q(trajectory : list, temperature : float) -> None:
         ''' accept a list of trajectory and then plot it
         since there is potential barrier ar x ~ -2 and x ~U = function(torch.tensor([X[i][j]], dtype = torch.float32).to(device), torch.tensor([Y[i][j]], dtype = torch.float32).to(device)) 2 
         I can set the range for dictionary '''
         
         beta = 1 / (simulation_langevin.kB * temperature) # kB is assumed to be unit value 
-        
-        # p = np.linspace(10,10,100)
-        # prob_p = np.exp(-beta * p ** 2.0 / 2)
-        # plt.plot(p, prob_p, label = "exact  p integration")
-        # plt.show()
-        
-        q = np.linspace(-2,2,100)      
+            
+        q = np.linspace(-4,4,1000)      
         prob = np.exp(-beta * ((q ** 2.0 - 1) ** 2.0 + q))
         
         dq = np.array([(q2-q1) for q2,q1 in zip(q[1:],q[:-1])]) # trapezium approximation
@@ -268,7 +374,7 @@ class simulation_langevin:
         hist = None
         bins = None
         for traj in trajectory : 
-            n, x = np.histogram(traj, bins = np.linspace(-2,2,100), density = True)
+            n, x = np.histogram(traj, bins = q, density = True)
             if hist is None:
                 hist = n
             else : 
@@ -280,23 +386,91 @@ class simulation_langevin:
 
         hist /= len(trajectory) # average
         bin_centers = 0.5 * (bins[1:] + bins[:-1])
-        plt.plot(bin_centers, hist, color = "black", label ="Integration") # use centre instead of edges
-        
+        plt.plot(bin_centers, hist, color = "black", label ="Integration ML") # use centre instead of edges
         plt.plot(q,prob/Z,marker = None, color = "orange", linestyle = '-',label = 'exact')
         plt.legend(loc = "best")
         plt.xlabel("q / position")
         plt.ylabel("pdf")
         plt.show()
-            
-            
+        np.save('distribution_q_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N, 
+                       hidden_units), np.array((bin_centers, hist)))
+        
+    @staticmethod
+    def plot_distribution_p(trajectory : list, temperature : float ) -> None:
+        beta = 1 / (simulation_langevin.kB * temperature)
+        
+        p = np.linspace(-10,10,100)
+        prob_p = np.exp(-beta * p ** 2.0 / 2)
+        
+        dp = np.array([(p2-p1) for p2,p1 in zip(p[1:],p[:-1])])
+        ys = np.array([(y2+y1) / 2. for y2,y1 in zip(prob_p[1:],prob_p[:-1])])
+        Z = np.dot(ys.T , dp)
+        
+        hist = None;
+        bins = None;
+        
+        for traj in trajectory :
+            n, x = np.histogram(traj, bins = p, density = True)
+            if hist is None:
+                hist = n
+            else : 
+                hist += n
+                
+            if bins is None:
+                bins = x;
+        
+        hist /= len(trajectory)
+        bin_centers = 0.5 * (bins[1:] + bins[:-1])
+        plt.plot(bin_centers, hist, color = "black", label = "Integration ML");
+        plt.plot(p, prob_p / Z, color = "orange" , label = "exact")
+        plt.legend(loc = "best")
+        plt.xlabel("p / position")
+        plt.ylabel("pdf")
+        plt.show()
+        np.save('distribution_p_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units), np.array((bin_centers, hist)))
+    
+    @staticmethod 
+    def plot_energy(q_list : list, p_list : list) -> None:
+        q_list,p_list = np.array(q_list), np.array(p_list)
+        potential = (q_list ** 2.0 - 1) ** 2.0  + q_list
+        kinetic = (p_list) ** 2.0 / 2
+        energy = np.mean((potential + kinetic) , axis = 0)
+        plt.plot(energy, label = 'ave energy', color = 'orange');
+        plt.xlabel('sampling step')
+        plt.ylabel('energy')
+        plt.legend(loc = 'best')
+        plt.show()
+        np.save('energy_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units), np.array(energy))
+        
 if __name__ == "__main__":
     function = MLP2H_Separable_Hamil(1,10).to(device)
     # function.load_state_dict(torch.load('../MLP2H_Separable_Hamiltonian_05_seed1.pth'))
     temperature = 1
-    time_step = 0.5 # the ML Model is at temperature 1
+    time_step = float(input('please input large time step : ')) # the ML Model is at temperature 1
+    ground_truth_step = float(input('please input ground truth step : '))
     gamma = 1
-    test = simulation_langevin(time_step,10000,gamma,temperature,function);
+    N = int(input('please input num of trajectories : ')) # total number of initial trajectories
+    #there is an error with particle 2640, apparently its out of st.  < -2 
+    #max combination is around 10000 x 10000
+    total_step = int(input('please input number of total step : '))
+    test = simulation_langevin(time_step,total_step,gamma,temperature, N, function);
+    test.getCurrDistribution()
     
+ 
 # =============================================================================
 #     check gradient
 # =============================================================================
@@ -314,49 +488,45 @@ if __name__ == "__main__":
     dpdt = (H_x2 - H_x1) / (x2-x1)
         
     real_H = (p ** 2.0 / 2) + ((x1 ** 2.0 - 1 ** 2.0) + x1)
-    dpdt_real = grad(real_H, x1, create_graph = True)[0]
-    dpdt_derivative = grad(H_x2, x2, create_graph = True)[0]
+    dpdt_real = grad(real_H, x1, create_graph = False)[0]
+    dpdt_derivative = grad(H_x2, x2, create_graph = False)[0]
     print(dpdt, dpdt_derivative)
     print(dpdt_real)
    
-    # plt.plot(x, pot, label = "hamiltonian kinetic")
-    # plt.plot(x , exact_kinetic , label="exact potential") 
-    # plt.legend(loc = "best")
-    # plt.ylabel("kinetic")
-    # plt.xlabel("p/ momentum")
-
-    # correlation = np.mean(np.abs(result_ML[0] - result[0]),axis =0)
-    # print(np.abs(result_ML[0] - result[0]).shape)
- 
-    # plt.plot(correlation)
-    
-    # np.save('05_correlation.npy', correlation)
-    
-    # print(result[0][0])
-    # print(result_ML[0][0])
-    
-    # print(result_ML[0][1] - result[0][1])
 # =============================================================================
 #   plot KE and U for separate model
 # =============================================================================
-    separate_model = torch.load('../ML_Hamiltonian05_2models_seed937162211.pth')
+    hidden_units = int(input('please input number of units/hidden layer : '))
+    separate_model = torch.load('../ML_Hamiltonian{}_{}_2models_seed937162211_{}_2H.pth'
+                                .format(str(time_step).replace('.',''), str(ground_truth_step).replace('.',''), hidden_units))
+    
     model_dqdt_state = separate_model['model_dqdt']
     model_dpdt_state = separate_model['model_dpdt']
     
-    model_dqdt = MLP2H_General_Hamil(2, 10).to(device)
-    model_dpdt = MLP2H_General_Hamil(2, 10).to(device)
+    model_dqdt = MLP2H_General_Hamil(2, hidden_units).to(device)
+    model_dpdt = MLP2H_General_Hamil(2, hidden_units).to(device)
     
     model_dqdt.load_state_dict(model_dqdt_state)
     model_dpdt.load_state_dict(model_dpdt_state)
     
     result_ML2 = test.integrate_derivative_ML(model_dqdt, model_dpdt)
-    q_track  = result_ML2[0]
-    simulation_langevin.plot_distribution(q_track, temperature)
+    q_track, p_track  = result_ML2
+    simulation_langevin.plot_distribution_q(q_track, temperature)
+    simulation_langevin.plot_distribution_p(p_track, temperature)
+    print(q_track, p_track)
+    simulation_langevin.plot_energy(q_track, p_track)
     
     result_exact = test.integrate()
     q_track_exact = result_exact[0]
     
     mean_absolute_error = np.mean(np.abs(q_track_exact - q_track) ,axis = 0 )
+    np.save('MAE_q_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units), np.array(mean_absolute_error))
+    
     plt.plot(mean_absolute_error)
     plt.xlabel("sampling step")
     plt.ylabel("MAE of q")
@@ -372,23 +542,39 @@ if __name__ == "__main__":
     
     pot = []
     kinetic = []
+    
+    dUdq = [] # dU/dq
+    dKEdp = [] # dKE/dp
     for pos in qlist:
         pos = torch.tensor([pos], dtype = torch.float32).to(device)
-        potential = model_dpdt(p.unsqueeze(0), pos.unsqueeze(0) )
-        
+        pos.requires_grad_(True)
+        potential = model_dpdt(p.unsqueeze(0), pos.unsqueeze(0))
+        dUdq_temp = grad(potential, pos, create_graph = False)[0]
+        dUdq.append(dUdq_temp.squeeze().cpu().detach().numpy())
         pot.append(potential.squeeze().cpu().detach().numpy())
         
     for momentum in plist :
         momentum = torch.tensor([momentum], dtype = torch.float32).to(device)
+        momentum.requires_grad_(True)
         kin = model_dqdt(momentum.unsqueeze(0) , q.unsqueeze(0))
+        dKEdp_temp = grad(kin, momentum, create_graph = False)[0]
+        dKEdp.append(dKEdp_temp.squeeze().cpu().detach().numpy())
         kinetic.append(kin.squeeze().cpu().detach().numpy())
         
+
     plt.plot(qlist, pot ,label = "MD Potential Generator")
     plt.plot(qlist, (qlist ** 2.0 - 1) ** 2.0 + qlist, label = "MD Potential Exact")
     plt.legend(loc = "best")
     plt.ylabel("energy")
     plt.xlabel("q")
     plt.show()
+    
+    np.save('hamiltonian_q_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units), np.array((qlist, pot )))
     
     plt.plot(plist, kinetic , label = "MD Kinetic Part")
     plt.plot(plist , (plist ** 2.0 / 2), label = "MD Kinetic Exact")
@@ -397,29 +583,42 @@ if __name__ == "__main__":
     plt.ylabel("energy")
     plt.show()
     
+    np.save('hamiltonian_p_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units) , np.array((plist, kinetic )))
     
-    # particle = 9 # choose from 0- 99 there are 100 particles
-    # qtrack_05 = np.load( curr_path + '/MD_SRNN_Langevin/ML05q.npy')[particle]
-    # qtrack_001 = np.load( curr_path + '/MD_SRNN_Langevin/MLq.npy')[particle]
-    # qtrack_001_exact = np.load( curr_path + '/MD_SRNN_Langevin/exactq.npy')[particle][:len(q_track[particle])]
+# =============================================================================
+#     Get gradient Plot
+# =============================================================================
     
-    # # plt.plot(qtrack_05, color = 'black', label = '0.5 track')
-    # plt.plot(qtrack_001, color = 'red', label = '0.01 track')
-    # plt.plot(q_track[particle], color = "orange" , label = '0.01 2 Models')
-    # plt.plot(qtrack_001_exact, color = 'blue', label = '0.01 exact')
-    # plt.legend(loc = 'best')
-    # plt.show()
+    plt.plot(qlist, dUdq, label = "dUdq Predicted ( ML )")
+    plt.plot(qlist, (4 * qlist * (qlist ** 2.0 - 1) + 1), label = "dUdq Exact")
+    plt.legend(loc = "best")
+    plt.ylabel("gradient / dHdq")
+    plt.xlabel("q")
+    plt.show()
     
-    # correlation_001_2_model = np.mean(np.abs(result_ML2[0] - result[0]),axis = 0)
-    # plt.plot(correlation_001_2_model, color = 'black')
-    # plt.show()
-    # for i in range(100):
-    #     print(result_ML[0][i][-1],result[0][i][-1])
+    np.save('hamiltonian-grad_q_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units) , np.array((qlist, dUdq)))
     
+    plt.plot(plist, dKEdp, label ="dKEdp predicted (ML)")
+    plt.plot(plist, plist, label = "dKEdp Exact")
+    plt.legend(loc = 'best')
+    plt.ylabel("gradient / dHdp")
+    plt.xlabel("p")
+    plt.show()
     
-    # correlation_05 = np.load('05_correlation.npy')
-    # correlation_001 = np.load('001_correlation.npy')
-    # plt.plot(correlation_05 , color  = 'black' , label = '0.5 correlation /0.01')
-    # plt.plot(correlation_001 , color = 'red', label = '0.01 correlation / 0.01')
-    # plt.legend(loc = 'best')
-    # plt.show()
+    np.save('hamiltonian-grad_p_{}using{}_{}_N{}_{}.npy'.
+                format(str(time_step).replace('.',''),
+                       str(ground_truth_step).replace('.',''),
+                       total_step, 
+                       N,
+                       hidden_units), np.array((plist, dKEdp)))
+    
