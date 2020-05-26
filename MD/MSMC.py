@@ -106,7 +106,7 @@ class MSMC:
         
         plist = np.linspace(-scale,scale,1000)
         sum_prob = np.sum(np.exp(-beta * plist ** 2.0 / (2 * mass)))
-        prob = np.exp(-beta * p ** 2.0 / (2 * mass) / sum_prob)
+        prob = np.exp(-beta * p ** 2.0 / (2 * mass)) / sum_prob
         
         # testing the plot
         # x = np.linspace(-5,5,100)
