@@ -254,8 +254,6 @@ class simulation_langevin:
         
     
     def velocity_verlet_ML(self,q, p) -> tuple: # return tuple of next time step
-        '''here there is periodic boundary condition since we are using double well
-        with potential barrier at x= 2 and x = -2, M and Temperature = 1 by default for simplicity '''
         #here p and q is 1 dimensional 
         q = torch.tensor(q, dtype = torch.float32).to(device).unsqueeze(1).to(device)
         p = torch.tensor(p,dtype = torch.float32).to(device).unsqueeze(1).to(device)
