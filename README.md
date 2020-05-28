@@ -5,7 +5,7 @@
   </head>
   
   <body>
-    <div class = "header" > 
+    <div class = "content" > 
       <h1> Langevin Machine Learning </h1>
       <p> Currently refactoring </p>
     </div>
