@@ -73,7 +73,7 @@ class sample_momentum(Integration):
             DIM : int
                 Dimension of the configuration state 
                 
-            mass : float
+            m : float
                 mass of the particles 
 
         Returns
@@ -104,8 +104,13 @@ class sample_momentum(Integration):
         while idx != total_sample:            
             p_sampled = np.random.uniform(-scale, scale, (DIM)) # range of drawing samples [-scale,scale]
             prob_p = 1 # assumming px, py and pz are independent
-            for i in range(DIM):
-                prob_p *= np.exp(-beta * p_sampled[i] ** 2.0 / (2 * m)) / Z * _dp 
+            
+            if DIM == 1 : #we use velocity distribution in 1D / Boltzmann
+                prob_p = ((m * beta)/ (2 * np.pi))**0.5 * np.exp(-beta * p_sampled[0] ** 2.0 / (2 * m))  * _dp
+            else :
+                #we use Maxwell-Boltzmann Distribution ( Distribution of speed )
+                speed = np.linalg.norm(p_sampled)
+                prob_p = 4 * np.pi * (beta/(2 * np.pi)) ** 1.5 * speed ** 2.0 *  np.exp(-beta * p_sampled[0] ** 2.0 / (2 * m))  * _dp
                 
             alpha = np.random.uniform(0,1)
             if alpha <= (prob_p) : #accepted
