@@ -69,14 +69,14 @@ class Langevin(Integration):
                 raise ValueError('DumpFreq must be smaller than iterations')
 
         except : 
-            raise TypeError('Integration setting error ( iterations / DumpFreq / gamma / time_step / potential )')
+            raise TypeError('Integration setting error ( iterations / DumpFreq / gamma / time_step  )')
             
         #Seed Setting
         try :
             seed = kwargs['seed']
             np.random.seed(int(seed))
         except :
-            warnings.warn('Seed not seed, start using default numpy/random/torch seed')
+            warnings.warn('Seed not set, start using default numpy/random/torch seed')
         # temperature scaling 
             
         curr_temp = confStat.temp(**self._configuration) # get current temperature
@@ -118,8 +118,10 @@ class Langevin(Integration):
         total_samples = self._intSetting['iterations'] // self._intSetting['DumpFreq']
         gamma = self._intSetting['gamma']
         kB = self._configuration['kB']
+        m = self._configuration['m']
         Temp = self._configuration['Temperature']
         time_step = self._intSetting['time_step']
+        Hamiltonian = self._configuration['hamiltonian']
         
         #for langevin sampling, there 2 random terms
         #be careful of the memory size here
@@ -162,18 +164,17 @@ class Langevin(Integration):
                 
                 for j in range(self._intSetting['DumpFreq']):
                     state['pos'] = q
-                    state['vel'] = p # update state before passed to obtain m
+                    state['vel'] = p/m # update state before passed to obtain m
+                    p_list_dummy = np.zeros(state['pos'].shape) # to prevent KE from being integrated
                     
-                    acc = confStat.force(**state)/ self._configuration['m'] 
-                    p = p + time_step / 2 * acc #dp/dt
+                    p = p + time_step / 2 * ( -Hamiltonian.get_derivative_q(state['pos'], p_list_dummy) ) #dp/dt
                     
                     q = q + time_step * p #dq/dt
                     
                     state['pos'] = q
-                    state['vel'] = p # update state before passed to obtain m
+                    state['vel'] = p/m # update state before passed to obtain m
                     
-                    acc = confStat.force(**state) / self._configuration['m'] 
-                    p = p + time_step / 2 * acc #dp/dt
+                    p = p + time_step / 2 * ( -Hamiltonian.get_derivative_q(state['pos'], p_list_dummy) ) #dp/dt
             
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
              

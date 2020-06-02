@@ -9,66 +9,42 @@ Created on Thu May 28 18:39:30 2020
 from MCMC import MSMC
 from momentum_sampler import sample_momentum
 from utils.confStats import confStat
-from utils.data_util import data_util
+from utils.data_util import data_loader
 import matplotlib.pyplot as plt
 from Langevin import Langevin
+import numpy as np
+from hamiltonian.hamiltonian import Hamiltonian
+from hamiltonian.SHO_interactions import SHO_interactions
+from hamiltonian.SHO_potential import SHO_potential
+from hamiltonian.Lennard_Jones import Lennard_Jones
 
 if __name__ == "__main__":
-    import numpy as np
+
+    test = Hamiltonian()
+    test.append(SHO_potential(5))
+    test.append(SHO_interactions(5))
+    test.append(Lennard_Jones(1,1))
     
-    some_array = np.zeros((10000,1))
-    np.save('q_N10000_T1_MCMC.npy', some_array)
-    np.save('p_N10000_T1_MCMC.npy', some_array)
-    
+    test = 1
     configuration = {
         'kB' : 1.0, # put as a constant 
         'Temperature' : 1.0,
-        'N' : 1,
+        'N' : 10,
         'DIM' : 1,
         'm' : 1,
-        'potential' : '(q**2.0 - 1) ** 2.0 + q'  # this is asymmetrical double well
-        # 'potential' : '0.5* q **2.0', # simple harmonic motion
+        'hamiltonian' : test,
         }
     
     integration_setting = {
-        'iterations' : 1000,
+        'iterations' : 10000,
         'DumpFreq' : 1,
-        'dq' : 0.001,
+        'dq' : 0.1,
         'seed' : 9654645,
         }
     
     configuration.update(integration_setting)
+    MCMC = MSMC(**configuration)
     
-    test = MSMC(1,1, **configuration)
-    import os 
-    
-    init_dir = os.getcwd() + '/init/'
-    test.loadp_q(init_dir,100)
-    # print(test)
-    print(test.get_configuration())
-    q_list = test.integrate()
-    
-    print(test)
-    
-    integration_setting = {
-        'samples' : 1000
-        }
-    
-    configuration.update(integration_setting)
-    sample_p = sample_momentum(**configuration)
-    p_list = sample_p.integrate()
-    data_util.plot_stat(q_list, p_list, mode = 'p_dist', **configuration)
-    # print(confStat.force(**test._configuration))
-    
-    # integration_setting = {
-    #     'iterations' : 1,
-    #     'DumpFreq' : 1,
-    #     'time_step' : 0.5,
-    #     'gamma' : 1,
-    #     }
-    
-    # configuration.update(integration_setting)
-    
-    # test2 = Langevin(**configuration)
-    # print(test2.integrate()[0])
+    q_list = MCMC.integrate()
+    confStat.plot_stat(q_list, np.zeros(q_list.shape), 'q_dist', **configuration)
     

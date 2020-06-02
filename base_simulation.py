@@ -9,8 +9,8 @@ Created on Thu May 28 17:30:43 2020
 import numpy as np
 from abc import ABC, abstractmethod 
 import warnings 
-import sympy as sym 
-from utils.data_util import data_util
+from utils.data_util import data_loader
+from hamiltonian.hamiltonian import Hamiltonian
 
 class Integration(ABC) : 
 
@@ -32,12 +32,11 @@ class Integration(ABC) :
             - kB : float
                 boltzmann constant
                 default : 1 unit
-            - Temperatmport sympy as sym ure : float
+            - Temperature : float
                 Temperature at which the MC Steps are conducted
                 default : 1 unit
-            -potential : string
-                string representation of the potential U(q) where q is the position
-                for eg. (q**2 - 1) ** 2.0 + q 
+            -hamiltonian : Hamiltonian
+                Hamiltonian class consisting all the interactions
                 
             the potential is assumed to be symmetrical around x, y and z axis
                 
@@ -49,33 +48,20 @@ class Integration(ABC) :
         '''
         #Configuration settings 
         try : 
-            try : 
-                potential = kwargs['potential']
-                
-                def potential_wrapper(q) :
-                    ''' helper function to generate potential and force using sympy 
-                    parameter is input as q to set the local variable for U(q)
-                    '''
-                    return eval(potential)
-        
-                q = sym.symbols('q') # the symbol is changed to x to avoid clashing with local variable q
-                dUdq = sym.diff(potential_wrapper(q),q) # get the differentiation expression
-                
-            except :
-                raise ValueError('differentiation fails ')
-                
+            hamiltonian = kwargs['hamiltonian']
+            if not isinstance(hamiltonian, Hamiltonian):
+                raise Exception('not a Hamiltonian class ')
+           
             self._configuration = {
                 'N' : kwargs['N'],
                 'DIM' : kwargs['DIM'],
                 'm' : kwargs['m'],
-                'potential' : potential,
-                'force' : str(dUdq), # this is using sympy symbol
+                'hamiltonian' : hamiltonian,
             }
           
         except : 
-            raise ValueError('N / DIM / m / potential unset or error')
-        
-        
+            raise ValueError('N / DIM / m / hamiltonian unset or error')
+
         #Constants
         try : 
             constants = {
@@ -127,7 +113,7 @@ class Integration(ABC) :
 
         '''
         
-        q_list, p_list = data_util.loadp_q(path, 
+        q_list, p_list = data_loader.loadp_q(path, 
                                            [self._configuration['Temperature']],
                                            samples,
                                            self._configuration['DIM'])
@@ -153,5 +139,7 @@ class Integration(ABC) :
     def __repr__(self):
         state = 'current state : \n'
         for key, value in self._configuration.items():
+            if key == 'hamiltonian' :
+                state += key + ':\n' + value.__repr__()
             state += str(key) + ': ' +  str(value) + '\n' 
         return state

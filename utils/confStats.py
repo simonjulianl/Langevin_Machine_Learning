@@ -8,6 +8,7 @@ Created on Thu May 28 16:50:15 2020
 
 import numpy as np
 import warnings
+import matplotlib.pyplot as plt 
 
 class confStat:
     '''Helper Class to get the statistic of the configuration
@@ -66,151 +67,166 @@ class confStat:
         return temperature 
     
     @staticmethod
-    def potential_energy( **configuration):
-        '''
-        Helper Function to get the energy of the state depending on the external potential energy
-        
-        Parameters
-        ----------
-        potential : string
-            string representation of the potential U(q) where q is the position
-            for eg. (q**2 - 1) ** 2.0 + q 
-            
-            the potential is assumed to be symmetrical around x, y and z axis
-            
-        **configuration : configuration state consisting 
-            - N : int
-                total number of particles
-            - DIM : int
-                Dimension of the particles 
-            - BoxSize : float 
-                scaling of the box cell 
-            - potential : string
-                string expression of the potential energy in U(q) 
-                where Ux Uy and Uz are assumed to be symmetrical
-
-        Returns
-        -------
-        Average Potential Energy : float
-            Potential Energy must be induced due to external potential
-        '''
-        try : 
-            N = configuration['N']
-            DIM = configuration['DIM']
-            pos = configuration['pos']
-            potential = configuration['potential']
-        except : 
-            raise Exception('N / Dimension / Mass / Potential not supplied')
-            
-        try : 
-            BoxSize = configuration['BoxSize']
-        except :
-            BoxSize = 1 
-            warnings.warn('BoxSize not supplied, set to 1')
-            
-        ene_pot = 0.0 
-        for i in range(N):
-            real_pos = BoxSize * pos[i,:] # rescale each velocity according to the box size
-            for j in range(DIM):  # The potential is split into Ux , Uy, Uz
-                q = real_pos[j]
-                ene_pot += eval(potential) 
-    
-        ene_pot_aver = 1.0 * ene_pot / N
-        
-        return ene_pot_aver
-    
-    @staticmethod
     def kinetic_energy(**configuration):
         '''
         Helper Function to obtain the translational kinetic energy
         
         Parameters
         ----------
- 
+     
         **kwargs :  configuration state consisting 
-            - vel : N X DIM matrix 
-                Velocity matrix of the configuration of N X DIM shape
             - N : int
                 total number of particles
             - DIM : int
                 Dimension of the particles 
-            - m : float 
-                mass of the particle 
-            - BoxSize : float 
-                scaling of the box cell 
         Returns
         -------
-        Kinetic Energy : float
+        ene_kin_aver : float
             The average translational kinetic energy of the configuration
-
+    
         '''
         try : 
-            N = configuration['N']
-            m = configuration['m']
-            vel = configuration['vel']
+            DIM = configuration['DIM']
         except : 
-            raise Exception('N / Dimension / Mass not supplied')
+            raise Exception('N / DIM ot supplied')
             
-        try : 
-            BoxSize = configuration['BoxSize']
-        except :
-            BoxSize = 1 
-            warnings.warn('BoxSize not supplied, set to 1')
-            
-        ene_kin = 0.0 
+        ene_kin_aver = confStat.temp(**configuration) * DIM / 2 
         
-        for i in range(N):
-            real_vel = BoxSize * vel[i,:] # rescale each velocity according to the box size
-            ene_kin += 0.5 * m * np.dot(real_vel,real_vel) # 1/2 m v^2 for constant mass
+        return ene_kin_aver
     
-        ene_kin_aver = 1.0 * ene_kin / N
-        
-        return ene_kin_aver 
-    
-    @staticmethod 
-    def force(**configuration):
+    @staticmethod
+    def plot_stat(qlist : list , plist : list , mode : str, **configuration):
         '''
-        Static function to get the force given the current state and potential
-
+        Static function to help plot various statistic according to the supplied
+        trajectories of qlist and plist as well as p 
+        
         Parameters
         ----------
-        **configuration : configuration state consisting
-            - N : int
-                total number of particles
-            - DIM : int
-                Dimension of the particles 
-            - BoxSize : float 
-                scaling of the box cell 
-            - force : string
-                string expression of the force dUdq
-                where Ux Uy and Uz are assumed to be symmetrical
+        qlist : np.array 
+            qlist must be in shape of samples x N X DIM, if not please resize
+        plist : np.array
+            plist must be in shape of samples x N X DIM, if not please resize 
+        mode : str
+            various modes available : energy, p, potential, kinetic ,q , v_dist, q_dist, speed_dist
+        **configuration : configuration of the state
+            kB : float
+                boltzmann constant
+            Temperature : float
+                temperature of the state 
 
-        Returns
-        -------
-        force : np.array (N X DIM shape)
-            force matrix based on external potential of current state
+        Raises
+        ------
+        Exception
+            Error in Modes supplied or kB/ Temperature not supplied in configuration
 
         '''
-        try : 
-            N = configuration['N']
-            DIM = configuration['DIM']
-            pos = configuration['pos']
-            dUdq = configuration['force']
-        except : 
-            raise Exception('N / Dimension / Mass / Potential not supplied')
+        line_plot = ['energy', 'p', 'potential', 'kinetic','q']
+        hist_plot = ['v_dist', 'q_dist', 'speed_dist']
+ 
+        if mode not in line_plot and mode not in hist_plot:
+            raise Exception('Modes not available , check the mode')
             
-        try : 
-            BoxSize = configuration['BoxSize']
-        except :
-            BoxSize = 1 
-            warnings.warn('BoxSize not supplied, set to 1')
+        assert qlist.shape == plist.shape # q list and p list must have the same size
+        
+        color = {
+            'p' : 'blue',
+            'q' : 'blue',
+            'potential' : 'orange',
+            'kinetic' : 'orange',
+            'energy' : 'orange',
+            'q_dist' : 'black',
+            'v_dist' : 'black',
+            'speed_dist' : 'black'
+            }
+        
+        dim = {0 : 'x', 1 : 'y', 2 :'z'}
+        hamiltonian = configuration['hamiltonian']
+        if mode in line_plot :      
+            potential = []
+            energy = []
+            for i in range(qlist):
+                p_dummy_list = np.zeros(qlist[i].shape)
+                potential.append(hamiltonian.get_Hamiltonian(qlist[i], p_dummy_list))
+                energy.append(hamiltonian.get_Hamiltonian(qlist[i], plist[i]))
             
-
-        force = np.zeros((N,DIM)) # placeholder for force
-        for i in range(N):
-            real_pos = BoxSize * pos[i,:] # rescale each velocity according to the box size
-            for j in range(DIM):  # The potential is split into Ux , Uy, Uz
-                q = real_pos[j] # q is used to eval force expression
-                force[i][j] = -eval(dUdq) # since F = -dU/dq
-    
-        return force
+            kinetic = np.array(energy) - np.array(potential)
+            
+            if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
+                for n in range(configuration['DIM']):
+                    if mode == 'p':
+                        plt.plot(plist[:,:,n], color = color[mode], label = 'p')
+                    elif mode == 'q':
+                        plt.plot(qlist[:,:,n], color = color[mode], label = 'q')
+                    plt.xlabel('sampled steps')
+                    plt.ylabel(mode + ' ' + dim[n])
+                    plt.legend(loc = 'best')
+                    plt.show()
+            else : 
+                if mode == 'energy' : # if energy , we use average on every dimension
+                    plt.plot(energy, color = color[mode], label = 'total energy')
+                elif mode =='kinetic' : 
+                    plt.plot(kinetic, color = color[mode], label = 'kinetic energy')
+                elif mode == 'potential' : 
+                    plt.plot(potential, color = color[mode], label = 'potential energy')
+                
+                plt.xlabel('sampled steps')
+                plt.ylabel(mode)
+                plt.legend(loc = 'best')
+                plt.show()
+                    
+        else : 
+            try : 
+                _beta = 1 / (configuration['kB'] * configuration['Temperature'])
+                _m = configuration['m']
+            except : 
+                raise Exception('kB / Temperature not set ')
+                
+            for n in range(configuration['DIM']):
+                if mode == 'q_dist':
+                    curr = qlist[:,:,n].reshape(-1,1) # collapse to 1 long list
+                    #plot exact
+                    q = np.linspace(np.min(curr),np.max(curr),1000)
+                    #create hamiltonian list
+                    potential = np.array([])
+                    for i in range(len(q)):
+                        q_list_temp = np.expand_dims(q[i], axis = 1).reshape(1,1)
+                        p_list_temp = np.zeros(q_list_temp.shape) # prevent KE from integrated
+                        potential = np.append(potential,
+                                              hamiltonian.get_Hamiltonian(q_list_temp, p_list_temp))
+                    prob_q = np.exp(-_beta * potential)
+                    dq = q[1:] - q[:-1]
+                    yqs = 0.5 * (prob_q[1:] + prob_q[:-1])
+                    Zq = np.dot(yqs.T, dq) # total area
+                    plt.plot(q,prob_q/Zq,marker = None, color = "red", linestyle = '-',label = 'q exact') 
+                    
+                elif mode == 'v_dist': 
+                    curr = plist[:,:,n].reshape(-1,1) / _m # collapse to 1 long list
+                    #plot exact
+                    v = np.linspace(np.min(curr),np.max(curr),1000)
+                    prob_v = ((_m * _beta)/ (2 * np.pi))**0.5 * np.exp(-_beta * (v ** 2.0) / 2)
+                    
+                    plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
+                
+                elif mode == 'speed_dist':
+                    curr = plist[:,:,:].reshape(-1,configuration['DIM']) / _m # collapse to 1 long list of N X DIM
+                    speed = np.linalg.norm(curr, 2, axis = 1)
+                    v = np.linspace(np.min(speed),np.max(speed),1000)
+                    prob_v = 4 * np.pi * (_beta/(2 * np.pi)) ** 1.5 * v ** 2.0 *  np.exp(-_beta * v ** 2.0 / (2 * _m))
+                    plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
+                    
+                interval = (np.max(curr) - np.min(curr)) / 30
+                values, edges = np.histogram(curr, bins = np.arange(np.min(curr), np.max(curr) , interval),
+                         density = True) # plot pdf 
+                center_bins = 0.5 * (edges[1:] + edges[:-1])
+                plt.plot(center_bins, values, color = color[mode] , label = mode)
+                plt.ylabel('pdf')
+                plt.legend(loc = 'best')
+                
+                
+                if mode == 'speed_dist' : 
+                    plt.xlabel(mode[0])
+                    plt.show()
+                    return #exit the function since we take all the dimensions at once
+                
+                plt.xlabel(mode[0] + dim[n])
+                plt.show()
