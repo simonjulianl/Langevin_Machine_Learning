@@ -8,10 +8,8 @@ Created on Fri May 29 13:15:07 2020
 
 import numpy as np
 from tqdm import trange
-from utils.confStats import confStat 
-from base_simulation import Integration
+from .base_simulation import Integration
 import multiprocessing
-import warnings
 
 class Langevin(Integration):
     '''
@@ -46,6 +44,9 @@ class Langevin(Integration):
         time_step : float 
             discrete time step of the integration 
             
+        seed : float, optional.
+            seed for numpy random. default is 937162211
+            
         ! user helper function to get full parameter setting !
         
         Returns
@@ -63,31 +64,19 @@ class Langevin(Integration):
                 'DumpFreq' : kwargs['DumpFreq'],
                 'gamma' : kwargs['gamma'],
                 'time_step' : kwargs['time_step'],
+                'integrator_method' : kwargs['integrator_method'],
                 }
             
             if not self._intSetting['iterations'] >= self._intSetting['DumpFreq'] :
                 raise ValueError('DumpFreq must be smaller than iterations')
 
         except : 
-            raise TypeError('Integration setting error ( iterations / DumpFreq / gamma / time_step  )')
+            raise TypeError('Integration setting error ( iterations / DumpFreq / gamma / time_step /integrator_method )')
             
         #Seed Setting
-        try :
-            seed = kwargs['seed']
-            np.random.seed(int(seed))
-        except :
-            warnings.warn('Seed not set, start using default numpy/random/torch seed')
-        # temperature scaling 
-            
-        curr_temp = confStat.temp(**self._configuration) # get current temperature
-        lmbda = np.sqrt(self._configuration['Temperature'] / curr_temp)
-        
-        #lambda constant of (Tn / T0) ^0.5 by adjusting KE where Tn is target temp, T0 is initial temp
-        
-        self._configuration['vel'] = np.multiply(self._configuration['vel'], lmbda)
-    
-        
-        
+        seed = kwargs.get('seed', 937162211)
+        np.random.seed(seed)
+
     def integrate(self):
         '''
         Implementation of OBABO Langevin NVT Sampling 
@@ -104,6 +93,11 @@ class Langevin(Integration):
         ArithmeticError
             Integration error, the time step is unstable and numerical number is too big 
             
+        Precaution
+        ----------
+        Leapfrog is special, such that it takes v1/2 instead of v0 as initialization
+        hence all the p_list returned is advanced by 1/2 time step 
+        
         Returns
         -------
         q_list : np.array
@@ -121,7 +115,7 @@ class Langevin(Integration):
         m = self._configuration['m']
         Temp = self._configuration['Temperature']
         time_step = self._intSetting['time_step']
-        Hamiltonian = self._configuration['hamiltonian']
+        integrator_method = self._intSetting['integrator_method']
         
         #for langevin sampling, there 2 random terms
         #be careful of the memory size here
@@ -150,37 +144,29 @@ class Langevin(Integration):
                 split state that is passed into the integrate helper
             '''
             
-            total_particle = 1000 if N >= 1000 else N # total particle per process is split to max 1000
-            
+            total_particle = state['N_split']
+          
             q_list_temp = np.zeros((total_samples, total_particle, DIM))
             p_list_temp = np.zeros((total_samples, total_particle, DIM)) 
             
-            q = state['pos']
-            p = state['vel']
+            
             state['N'] = total_particle # update total_particle
             
-            for i in trange(total_samples): #
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
-                
+            for i in trange(total_samples): 
+                p = state['vel'] * m
+                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
+                state['vel'] = p / m
+
                 for j in range(self._intSetting['DumpFreq']):
-                    state['pos'] = q
-                    state['vel'] = p/m # update state before passed to obtain m
-                    p_list_dummy = np.zeros(state['pos'].shape) # to prevent KE from being integrated
-                    
-                    p = p + time_step / 2 * ( -Hamiltonian.get_derivative_q(state['pos'], p_list_dummy) ) #dp/dt
-                    
-                    q = q + time_step * p #dq/dt
-                    
-                    state['pos'] = q
-                    state['vel'] = p/m # update state before passed to obtain m
-                    
-                    p = p + time_step / 2 * ( -Hamiltonian.get_derivative_q(state['pos'], p_list_dummy) ) #dp/dt
-            
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
-             
-                q_list_temp[i] = q
-                p_list_temp[i] = p
-                   
+                    state = integrator_method(**state)
+
+                p = state['vel'] * m
+                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
+                state['vel'] = p / m
+
+                q_list_temp[i] = state['pos']
+                p_list_temp[i] = state['vel'] * m # sample
+           
             return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
     
         processes = [] # list of processes to be processed 
@@ -189,7 +175,7 @@ class Langevin(Integration):
        
         curr_q = self._configuration['pos']
         curr_p = self._configuration['vel']
-        
+
         assert curr_q.shape == curr_p.shape
         
         #split using multiprocessing for faster processing
@@ -197,6 +183,9 @@ class Langevin(Integration):
             split_state = self._configuration
             split_state['pos'] = curr_q[i:i+1000]
             split_state['vel'] = curr_p[i:i+1000]
+            split_state['time_step'] = time_step
+            split_state['N_split'] = len(split_state['pos'])
+            
             p  = multiprocessing.Process(target = integrate_helper, args = (i, return_dict), kwargs = split_state)
             processes.append(p)
        

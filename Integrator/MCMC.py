@@ -10,8 +10,8 @@ import numpy as np
 from tqdm import trange
 import copy
 import random
-from utils.confStats import confStat 
-from base_simulation import Integration
+from ..utils.confStats import confStat 
+from .base_simulation import Integration
 import warnings
 
 class MSMC(Integration):

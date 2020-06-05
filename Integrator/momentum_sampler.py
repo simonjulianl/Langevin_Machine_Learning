@@ -8,7 +8,6 @@ Created on Fri May 29 10:23:21 2020
 
 import numpy as np
 import warnings 
-from utils.confStats import confStat
 
 class sample_momentum:
     '''

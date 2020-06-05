@@ -9,8 +9,8 @@ Created on Thu May 28 17:30:43 2020
 import numpy as np
 from abc import ABC, abstractmethod 
 import warnings 
-from utils.data_util import data_loader
-from hamiltonian.hamiltonian import Hamiltonian
+from ..utils.data_util import data_loader
+from ..hamiltonian.hamiltonian import Hamiltonian
 
 class Integration(ABC) : 
 
@@ -47,18 +47,18 @@ class Integration(ABC) :
         Abstract Base Class, cannot be instantiated
         '''
         #Configuration settings 
+        hamiltonian = kwargs['hamiltonian']
+
+        if not isinstance(hamiltonian, Hamiltonian):
+            raise Exception('not a Hamiltonian class ')
+            
         try : 
-            hamiltonian = kwargs['hamiltonian']
-            if not isinstance(hamiltonian, Hamiltonian):
-                raise Exception('not a Hamiltonian class ')
-           
             self._configuration = {
                 'N' : kwargs['N'],
                 'DIM' : kwargs['DIM'],
                 'm' : kwargs['m'],
                 'hamiltonian' : hamiltonian,
             }
-          
         except : 
             raise ValueError('N / DIM / m / hamiltonian unset or error')
 
@@ -78,20 +78,23 @@ class Integration(ABC) :
         except : 
             raise ValueError('Constant kB / Temperature Setting Error')
             
- 
-        pos = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
-        vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
-        # create random particle initialization of U[-1,1) for q (pos) and v
-
-        if self._configuration['N'] == 1 : 
-            warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
-
-        else :
+        pos = kwargs.get('pos', None)
+        vel = kwargs.get('vel', None)
+        
+        if pos.any() == None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
+            pos = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
             MassCentre = np.sum(pos,axis = 0) / self._configuration['N']
-            VelCentre = np.sum(vel, axis = 0) / self._configuration['N']
-            for i in range(self._configuration['DIM']):
+            for i in range(self._configuration['DIM']) :
                 pos[:,i] = pos[:,i] - MassCentre[i]
-                vel[:,i] = vel[:,i] - VelCentre[i]
+                
+        if vel.any() == None:
+            vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
+            if self._configuration['N'] == 1 : 
+                warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
+            else :
+                VelCentre = np.sum(vel, axis = 0) / self._configuration['N']
+                for i in range(self._configuration['DIM']):
+                    vel[:,i] = vel[:,i] - VelCentre[i]
                 
         self._configuration['pos'] = pos
         self._configuration['vel'] = vel
@@ -113,7 +116,7 @@ class Integration(ABC) :
 
         '''
         
-        q_list, p_list = data_loader.loadp_q(path, 
+        q_list, v_list = data_loader.loadp_q(path, 
                                            [self._configuration['Temperature']],
                                            samples,
                                            self._configuration['DIM'])
@@ -129,7 +132,7 @@ class Integration(ABC) :
             warnings.warn('DIM is changed to the new value of  {}'.format(_new_DIM))
             self._configuration['DIM'] = _new_N
         
-        self._configuration['vel'] = p_list
+        self._configuration['vel'] = v_list
         self._configuration['pos'] = q_list # set the new value
         
     def get_configuration(self):
