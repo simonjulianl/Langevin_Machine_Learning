@@ -81,13 +81,13 @@ class Integration(ABC) :
         pos = kwargs.get('pos', None)
         vel = kwargs.get('vel', None)
         
-        if pos == None or pos.any() == None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
+        if pos is None or pos.any() == None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
             pos = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
             MassCentre = np.sum(pos,axis = 0) / self._configuration['N']
             for i in range(self._configuration['DIM']) :
                 pos[:,i] = pos[:,i] - MassCentre[i]
                 
-        if vel == None or vel.any() == None:
+        if vel is None or vel.any() == None:
             vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
             if self._configuration['N'] == 1 : 
                 warnings.warn('Initial velocity and pos is not adjusted to COM and external force')

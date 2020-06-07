@@ -178,6 +178,7 @@ class data_loader:
         #randomly choose the grid until N ~ ratio  and 1 - ratio 
         combination = list(product(qlist,plist))
         for i in range(10): # shuffle the all the grids, arbitrary choice 10 shuffling
+            np.random.shuffle(combination)
             combination = random.sample(combination,len(combination))
             
         grid_first, grid_second = [], [] #coordinate of grids for training
