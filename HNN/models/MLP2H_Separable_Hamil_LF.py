@@ -26,9 +26,9 @@ class MLP2H_Separable_Hamil_LF(nn.Module):
         Parameters
         ----------
         n_input : int
-            DESCRIPTION.
+            number of input dimensions/channel
         n_hidden : int
-            DESCRIPTION.
+            number of neurons per hidden layer
         n_stack : int, optional
             Number of stacked NN. The default is 1.
             
@@ -75,12 +75,24 @@ class MLP2H_Separable_Hamil_LF(nn.Module):
         q_list, p_list : tuple
             predicted q and p of next time_step, here is akin to using leapfrog
 
+        Precaution
+        ----------
+        Strictly speaking, the potential and kinetic produce hamiltonian by itself,
+        However since we want to chain it, the output becomes the next time step and it doesnt 
+        produce hamiltonian anymore,
+        
+        to get the approximate hamiltonian function
+        use class.linear_kinetic and class.linear_potential and then torch.load_state_dict 
         '''
         
         for i in range(self.n_stack) : # stack the NN 
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
             q_list = q_list + dqdt_predicted * time_step# next time step 
+            dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
             p_list = p_list + dpdt_predicted * time_step
             
         return (q_list, p_list)
     
+    def set_n_stack(self, n_stack:int):
+        '''setter function for n stack'''
+        self.n_stack = n_stack

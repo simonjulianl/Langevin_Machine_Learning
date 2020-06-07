@@ -21,7 +21,7 @@ def qp_MSE_loss(qp_quantities, label):
             -p_quantity : torch.tensor 
             quantities related to p such as p itself and dpdt
 
-    label : torch.tensor of N X 2 with elements :
+    label : tuple of length 2 with elements :
         -q_quantity : torch.tensor
         label of related q quantities
         -p_quantity : torch.tensor 
@@ -44,8 +44,8 @@ def qp_MSE_loss(qp_quantities, label):
 
     q_quantity, p_quantity = qp_quantities # unpack tuples
 
-    q_label, p_label = label[:,0], label[:,1] #since they are tensor, they cannot be unpacked
-    
+    q_label, p_label = label
+
     _reduction = 'sum' # to amplify the loss magnitude 
     criterion = nn.MSELoss(reduction = _reduction)
     loss = criterion(q_quantity, q_label) + criterion(p_quantity, p_label)

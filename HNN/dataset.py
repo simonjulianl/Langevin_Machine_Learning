@@ -22,7 +22,7 @@ class Hamiltonian_Dataset(Dataset):
     def __init__(self, temperature : list, samples : int, mode : str, **kwargs):
         '''
         Hamiltonian custom dataset using the proposed grid based splitting
-        return an item with tensor of (data, label)
+        return an item with list of (data, label)
 
         Parameters
         ----------
@@ -102,7 +102,7 @@ class Hamiltonian_Dataset(Dataset):
             data = (list(init_q[i]), list(init_p[i]))
             label = (list(q_after[i]), list(p_after[i]))
             # only make 1 big array instead of array of np.array 
-            self._dataset.append(torch.tensor([data,label])) # every data is made of torch.tensor
+            self._dataset.append([data,label])
             
         print('dataset loaded')
         
@@ -120,7 +120,7 @@ class Hamiltonian_Dataset(Dataset):
         where q2 = q0 + dpdt_1 + dpdt_2 and so on
 
         '''
-        DIM = self._dataset[0][0][0].shape[0] #sample the first particle for its property
+        DIM = len(self._dataset[0][0][0]) #sample the first particle for its property
         q_temporary = np.zeros((len(self._dataset), DIM)) 
         p_temporary = np.zeros(q_temporary.shape) # ensure they have the same shape
         for i,(original_qp, label_qp) in enumerate(self._dataset) :
@@ -134,6 +134,6 @@ class Hamiltonian_Dataset(Dataset):
         q_after, p_after = q_after[-1], p_after[-1] # only take the last from the list
         #populate the dataset again by changing the label only
         for i in range(len(self._dataset)):
-            label = (q_after[i], p_after[i])
+            label = (list(q_after[i]), list(p_after[i]))
             self._dataset[i][1] = label
             

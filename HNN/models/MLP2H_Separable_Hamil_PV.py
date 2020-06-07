@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun  4 18:07:07 2020
+Created on Fri Jun  5 20:26:35 2020
 
 @author: simon
 """
@@ -9,15 +9,15 @@ Created on Thu Jun  4 18:07:07 2020
 import torch.nn as nn
 from .derivative_estimator import derivative_ML
 
-class MLP2H_Separable_Hamil_VV(nn.Module):
+class MLP2H_Separable_Hamil_PV(nn.Module):
     def __init__(self, n_input, n_hidden, n_stack = 1):
         '''
-        VV : velocity verlet
+        PV : position verlet 
         
         please check MLP2H_Separable_Hamil_LF.py for full documentation
 
         '''
-        super(MLP2H_Separable_Hamil_VV,self).__init__()
+        super(MLP2H_Separable_Hamil_PV,self).__init__()
         self.linear_kinetic = nn.Sequential(
             nn.Linear(n_input, n_hidden),
             nn.Tanh(),
@@ -54,21 +54,18 @@ class MLP2H_Separable_Hamil_VV(nn.Module):
         -------
         q_list,p_list : torch.tensor 
             torch.tensor of (q_next,p_next) of N X 2 
-
-        please check MLP2H_Separable_Hamil_LF.py for full documentation
         '''
                         
         for i in range(self.n_stack) : # stack the NN 
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
-            p_list = p_list + dpdt_predicted * time_step / 2 
-            # we need to use prediction again instead of using p_list because we need correction
+            q_list = q_list + p_list * time_step / 2
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
-            q_list = q_list + dqdt_predicted * time_step# next time step 
-            dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list , self.linear_potential, self.linear_kinetic)
-            p_list = p_list + dpdt_predicted * time_step / 2
+            p_list = p_list + dpdt_predicted * time_step 
+            dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
+            q_list = p_list + p_list * time_step / 2
             
         return (q_list, p_list)
-    
+
     def set_n_stack(self, n_stack:int):
         '''setter function for n stack'''
         self.n_stack = n_stack
