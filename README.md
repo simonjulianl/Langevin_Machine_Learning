@@ -1,15 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-  </head>
-  
-  <body>
-    <div class = "content" > 
-      <h1> Langevin Machine Learning </h1>
-      <p> Currently refactoring </p>
-      <p> [] Need to add summary writer onto HNN for comparison </p>
-    </div>
-  </body>
-  
-</html>
+# Langevin Machine Learning 
+
+
+# prerequisites
+```
+matplotlib==3.1.1
+numpy==1.17.4
+torch==1.4.0
+tdqm==4.43.0
+
+python>=3.6.9
+```
