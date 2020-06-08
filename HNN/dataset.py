@@ -14,7 +14,6 @@ from ..Integrator.Langevin import Langevin
 import os 
 import numpy as np 
 import warnings 
-import torch 
 
 class Hamiltonian_Dataset(Dataset):
     '''Custom class dataset for hamiltonian dataset'''
@@ -101,6 +100,7 @@ class Hamiltonian_Dataset(Dataset):
         for i in range(N):
             data = (list(init_q[i]), list(init_p[i]))
             label = (list(q_after[i]), list(p_after[i]))
+
             # only make 1 big array instead of array of np.array 
             self._dataset.append([data,label])
             

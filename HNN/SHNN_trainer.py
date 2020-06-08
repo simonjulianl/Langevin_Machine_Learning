@@ -12,12 +12,13 @@ from torch.utils.data import DataLoader
 from .dataset import Hamiltonian_Dataset
 import matplotlib.pyplot as plt 
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
 class SHNN_trainer: 
     '''SHNN refers to Stacked Hamiltonian Neural Network trainer
     this is a trainer class to help train, validate, plot, and save '''
     
-    def __init__(self, level = 1, **kwargs):
+    def __init__(self, level, folder_name, **kwargs):
         '''
         Initialize the class for the SHNN trainer
         SHNN is Stacked Hamiltonian Neural Network with modified implementation of HNN
@@ -25,6 +26,13 @@ class SHNN_trainer:
 
         Parameters
         ----------
+        level : int
+            number of levels of training, level one is (q,p) -> NN ->(q,p)
+            level two is (q,p) -> NN ->(q,p) -> NN -> (q,p) and so on
+            
+        folder_name : string 
+            name of tensorboard folder to be saved to log all the data 
+            
         **kwargs : trainer_setting, containing : 
             
             optim : function
@@ -134,7 +142,96 @@ class SHNN_trainer:
             
         #initialize best model 
         self._best_validation_loss = float('inf') # arbitrary value 
-       
+        # to log all the data 
+        self._writer = SummaryWriter('runs/{}'.format(folder_name)) # explicitly mention in runs folder
+
+    def get_figure_hamiltonian(self): 
+        from torch.autograd import grad
+        '''helper function to plot hamiltonian for different p and q 
+        
+        Precaution
+        ----------
+        q_list range : [-4,4)
+        p_list range : [-6,6), this is for the sake of inference when T = 1, please adjust as you need
+        
+        Return
+        ------
+        fig : matplotlib.figure
+            figure object created by matplotlib
+            
+        '''
+        fig = plt.figure(figsize = (8, 6), dpi = 200)
+        
+        q_list = torch.tensor(np.arange(-4,4,0.01), # just arbitrary choice  
+                              dtype = torch.float32).to(self._device).requires_grad_(True)
+        p_list = torch.zeros(q_list.shape,
+                             dtype = torch.float32).to(self._device).requires_grad_(True) # keep constant at 0
+        coordinates = torch.cat((q_list.unsqueeze(1), p_list.unsqueeze(1)), dim = 1)
+        try :
+            U_q = self._model.linear_potential(coordinates)
+            dUdq = grad(U_q.sum(), q_list, create_graph = False)[0]
+        except : 
+            raise Exception('The model doesnot support linear_potential')
+        
+        x_value = list(q_list.cpu().detach().numpy())
+        y_value = list(U_q.cpu().detach().numpy())
+
+        ax = fig.add_subplot(2, 2, 1)    
+        ax.plot(x_value, y_value, color = 'orange', label = 'U(q)')
+        ax.legend(loc = 'best')                        
+        ax.grid(True)
+        ax.set_xlabel('q /  position')
+        ax.set_ylabel('Potential / H(q)')
+        ax.set_title('plot of H(q) when p = 0')
+        
+        #plot of derivative of U / H(q)
+        y_value = list(dUdq.cpu().detach().numpy())
+        ax = fig.add_subplot(2, 2, 2)
+        ax.plot(x_value, y_value, color = 'orange', label = 'dUdq')
+        ax.legend(loc = 'best') 
+        ax.grid(True)
+        ax.set_ylabel('dUdq')
+        ax.set_xlabel('q / position ')
+        ax.set_title('plot of dH(q)/dq when p = 0')
+        
+        p_list = torch.tensor(np.arange(-6,6,0.01), # just arbitrary choice  
+                              dtype = torch.float32).to(self._device).requires_grad_(True)
+        q_list = torch.zeros(p_list.shape,
+                             dtype = torch.float32).to(self._device).requires_grad_(True) # keep constant at 0
+        # H(p,q) = U(q) + KE(p) 
+        coordinates = torch.cat((q_list.unsqueeze(1), p_list.unsqueeze(1)), dim = 1)
+
+        try : 
+            KE_p = self._model.linear_kinetic(coordinates)
+            dKEdp = grad(KE_p.sum(), p_list, create_graph = False)[0]
+        except : 
+            raise Exception('The model doesnot support linear_kinetic')
+        
+        x_value = list(p_list.cpu().detach().numpy())
+        y_value = list(KE_p.cpu().detach().numpy())
+        
+        ax = fig.add_subplot(2, 2, 3)
+        ax.plot(x_value, y_value, color ='orange', label = 'KE(p)')
+        ax.grid(True)
+        ax.legend(loc = 'best')
+        ax.set_xlabel('p / momentum')
+        ax.set_ylabel('KE / H(p)')
+        ax.set_title('plot of H(p) when q = 0')
+        
+        #plot derivative of KE / H(p)
+        y_value = list(dKEdp.cpu().detach().numpy())
+        ax = fig.add_subplot(2, 2, 4)
+        ax.plot(x_value, y_value , color = 'orange', label = 'dKEdp')
+        ax.set_xlabel('p / momentum')
+        ax.set_ylabel('dKEdp')
+        ax.set_title('plot of dH(p)/dp when q = 0')
+        ax.legend(loc = 'best') 
+        ax.grid(True)
+        
+        fig.tight_layout(pad = 2.0) # add spacing
+        
+        return fig 
+    
     def train_epoch(self):
         '''
         helper function to train each epoch
@@ -156,13 +253,17 @@ class SHNN_trainer:
             p_list = data[1][0].to(self._device).squeeze().requires_grad_(True)
 
             q_list_label = label[0][0].squeeze().to(self._device) 
-            p_list_label = label[0][0].squeeze().to(self._device) 
+            p_list_label = label[1][0].squeeze().to(self._device) 
             label = (q_list_label, p_list_label) # rebrand the label
+ 
             #for 1 dimensional data, squeeze is the same as linearize as N x 2 data
             
             self._optimizer.zero_grad()
             
-            prediction = model(q_list, p_list, self._time_step)
+            try : 
+                prediction = model(q_list, p_list, self._time_step)
+            except : 
+                continue # this happens when the data batch length is 1
 
             loss = criterion(prediction, label)
             loss.backward()
@@ -199,10 +300,14 @@ class SHNN_trainer:
             p_list = data[1][0].to(self._device).squeeze().requires_grad_(True)
             
             q_list_label = label[0][0].squeeze().to(self._device) 
-            p_list_label = label[0][0].squeeze().to(self._device) 
+            p_list_label = label[1][0].squeeze().to(self._device) 
             label = (q_list_label, p_list_label)
-            
-            prediction = model(q_list, p_list, self._time_step) 
+
+            try : 
+                prediction = model(q_list, p_list, self._time_step)    
+            except :
+                continue # when data length is 1
+                
             loss = criterion(prediction, label)
             q_diff += torch.sum(torch.abs(prediction[0] - label[0])).item()
             p_diff += torch.sum(torch.abs(prediction[1] - label[1])).item()
@@ -269,8 +374,6 @@ class SHNN_trainer:
         Loss is saved in npy files with (train, validation) loss format
         '''
          
-        train_loss_list = []
-        validation_loss_list = []
         for i in range(1, self._n_epochs + 1):
             train_loss = self.train_epoch()
             q_diff, p_diff, validation_loss = self.validate_epoch()
@@ -278,30 +381,22 @@ class SHNN_trainer:
             self.record_best(train_loss, validation_loss, q_diff, p_diff, filename)
             self._current_epoch += 1
             
-            train_loss_list.append(train_loss)
-            validation_loss_list.append(validation_loss)
+            self._writer.add_scalar('training loss_level {}'.format(self._curr_level),
+                                    train_loss,
+                                    i # epoch
+                                    )
             
+            self._writer.add_scalar('validation loss_level {}'.format(self._curr_level),
+                        validation_loss,
+                        i # epoch
+                        )
+                    
         print('training level : {}'.format(self._curr_level))
         print('best setting : \n\t epoch : {} \n\t validation_loss : {:.6f}'.format(self._best_state['epoch'], 
                                                                                 self._best_state['best_validation_loss']))
         print('\t q_diff : {} \t p_diff : {}'.format(self._best_state['q_diff'],
                                                   self._best_state['p_diff']))
-        #plot loss, always see training curve
-        assert len(train_loss_list) == len(validation_loss_list)
-        
-        plt.plot(train_loss_list, color = 'orange', label = 'train_loss')
-        plt.plot(validation_loss_list, color = 'blue', label = 'validation_loss')
-        plt.xlabel('epoch / level {}'.format(self._curr_level))
-        plt.ylabel('loss')
-        plt.legend(loc = 'best')
-        plt.show()
-        
-        #save the loss in train, validation format 
-        np.save('loss_level{}.npy'.format(self._curr_level),
-                np.array((train_loss_list, validation_loss_list)))
-        
-        del train_loss_list, validation_loss_list 
-        
+                 
     def up_level(self):
         '''helper function to shift the dataset and level'''
         
@@ -329,5 +424,13 @@ class SHNN_trainer:
                 self._best_validation_loss = float('inf') # reset the validation loss
                 #choose the best model from the previous level and pass it to the next level
                 self._model.load_state_dict(self._best_state['state_dict'])
+                #using the best state
+                hamiltonian_figure = self.get_figure_hamiltonian()
+
+                self._writer.add_figure('hamiltonian_level{}'.format(self._curr_level), 
+                                        hamiltonian_figure,
+                                        global_step = (i+1) * len(self._train_loader)) # number of training batch done
                 self.up_level()
+                
+        self._writer.close() # close writer to avoid collision
         

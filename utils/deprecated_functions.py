@@ -111,3 +111,22 @@ Created on Tue Jun  2 17:13:15 2020
 #             force[i][j] = -eval(dUdq) # since F = -dU/dq
 
 #     return force
+
+#all plotting functions that are replaced by tensorboard
+
+       #save the loss in train, validation format 
+        # since we are using tensorboard, there is no need to explicitly save the data using numpy
+        # np.save('loss_level{}.npy'.format(self._curr_level),
+        #         np.array((train_loss_list, validation_loss_list)))
+
+
+#plot loss, always see training curve
+        
+        # assert len(train_loss_list) == len(validation_loss_list)
+        
+        # plt.plot(train_loss_list, color = 'orange', label = 'train_loss')
+        # plt.plot(validation_loss_list, color = 'blue', label = 'validation_loss')
+        # plt.xlabel('epoch / level {}'.format(self._curr_level))
+        # plt.ylabel('loss')
+        # plt.legend(loc = 'best')
+        # plt.show()

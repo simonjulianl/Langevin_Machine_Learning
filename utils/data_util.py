@@ -179,7 +179,7 @@ class data_loader:
         combination = list(product(qlist,plist))
         for i in range(10): # shuffle the all the grids, arbitrary choice 10 shuffling
             np.random.shuffle(combination)
-            combination = random.sample(combination,len(combination))
+            # combination = random.sample(combination,len(combination)) # redundant 
             
         grid_first, grid_second = [], [] #coordinate of grids for training
         N_first, N_first_current = ratio * N,0
