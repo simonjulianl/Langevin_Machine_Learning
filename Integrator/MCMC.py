@@ -14,7 +14,7 @@ from ..utils.confStats import confStat
 from .base_simulation import Integration
 import warnings
 
-class MSMC(Integration):
+class MCMC(Integration):
     '''
     This is a Monte Carlo Molecular Simulation
     Only integrate potential function, sampling is for momentum is done exact 
@@ -23,7 +23,7 @@ class MSMC(Integration):
     
     def helper(self = None): 
         '''print the common parameters helper'''
-        for parent in MSMC.__bases__:
+        for parent in MCMC.__bases__:
             print(help(parent))
         
     def __init__(self, *args, **kwargs) -> object:
@@ -55,7 +55,7 @@ class MSMC(Integration):
         
         '''
 
-        super(MSMC, self).__init__(*args, **kwargs)
+        super(MCMC, self).__init__(*args, **kwargs)
                 
         #Configuration settings 
         try : 

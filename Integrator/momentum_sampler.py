@@ -9,7 +9,7 @@ Created on Fri May 29 10:23:21 2020
 import numpy as np
 import warnings 
 
-class sample_momentum:
+class momentum_sampler:
     '''
     Helper class to sample momentum based on direct integration approach
     '''
