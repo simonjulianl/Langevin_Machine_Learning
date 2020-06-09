@@ -171,7 +171,7 @@ NN_trainer_setting = {
 
 Dataset_setting = {
     'Temperature_List' : [1,2,3,4,5,6,7,8,9,10],
-    'sample' : 2500,
+    'sample' : 2500, # samples per temperature
     }
 
 configuration.update(integration_setting)
