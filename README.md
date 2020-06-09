@@ -67,8 +67,8 @@ Full documentation could be found by using python ```help()``` function on the e
 import Langevin_Machine_Learning.hamiltonian as Hamiltonian
 import Langevin_Machine_Learning.Integrator as Integrator
 
-energy = Hamiltonian() # energy model container
-energy.append(asymmetrical_double_well())
+energy = Hamiltonian.Hamiltonian() # energy model container
+energy.append(Hamiltonian.asymmetrical_double_well())
 
 configuration = {
     'kB' : 1.0, # put as a constant 
