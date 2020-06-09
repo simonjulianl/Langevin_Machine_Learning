@@ -10,6 +10,46 @@ tdqm==4.43.0
 
 python>=3.6.9
 ```
+# Available Modules
+tested modules are marked by the check marks. All classes could be used directly once the header module is imported, please check the code examples.
+
+#### Langevin_Machine_Learning.hamiltonian 
+- [x] Hamiltonian
+- [x] kinetic_energy
+- [x] asymmetrical_double_well
+- [ ] Lennard_Jones
+- [ ] SHO_interactions ( Simple Harmonic Oscillator )
+- [x] SHO_potential
+
+#### Langevin_Machine_Learning.Integrator
+- [x] Langevin (Molecular Dynamics, Langevin simulator )
+- [x] MCMC
+- [x] momentum_sampler 
+
+#### Langevin_Machine_Learning.methods
+- [x] leap_frog
+- [x] position_verlet
+- [x] velocity_verlet
+- [ ] leap_frog_ML
+- [ ] position_verlet_ML
+- [ ] velocity_verlet_ML
+
+#### Langevin_Machine_Learning.utils
+- [x] temp
+- [x] kinetic_energy
+- [x] plot_stat
+
+#### Langevin_Machine_Learning.HNN
+- [x] SHNN_trainer
+- [x] MLP2H_Separable_Hamil_LF ( pytorch NN models / Leap Frog)
+- [x] MLP2H_Separable_Hamil_VV ( pytorch NN models / Velocity Verlet)
+- [x] MLP2H_Separable_Hamil_PV ( pytorch NN models / Position Verlet)
+
+#### Langevin_Machine_Learning.HNN.loss
+- [x] qp_MSE_loss
+
+<hr>
+
 # code example 
 Full documentation could be found by using python ```help()``` function on the enquired class 
 
@@ -49,7 +89,7 @@ np.save('init/p_N2500_T1_DIM1_MCMC.npy',np.array(q_list))
 import Langevin_Machine_Learning.hamiltonian as Hamiltonian
 import Langevin_Machine_Learning.Integrator as Integrator
 import Langevin_Machine_Learning.Integrator.methods as methods 
-import Langevin_Machine_Learning.utils.confStat as confStat
+import Langevin_Machine_Learning.utils as confStat # configuration statistics
 
 energy = Hamiltonian.Hamiltonian()
 energy.append(Hamiltonian.asymmetrical_double_well())
