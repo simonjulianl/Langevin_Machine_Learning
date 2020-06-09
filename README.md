@@ -53,7 +53,7 @@ tested modules are marked by the check marks. All classes could be used directly
 # Directions to use 
 All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog). 
 
-Secondly, view the plot of training loss/ validation loss and hamiltonian, backend tensorboard by pytorch is used and can be accessed by inputting following command in the terminal : 
+Secondly, to view the plot of training loss/ validation loss and hamiltonian, by using backend tensorboard by pytorch, input following command in the terminal : 
 ```
 $ tensorboard --logdir==runs
 ``` 
