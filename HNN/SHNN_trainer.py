@@ -425,6 +425,11 @@ class SHNN_trainer:
         self._validation_dataset.shift_layer() 
         # this is a function to label of the layer up for each dataset
         
+        #change learning rate per level, tuning required 
+        for param_group in self._optimizer.param_groups :
+            param_group['lr'] = param_group['lr'] / 10
+            #every level increase reduce lr by factor of 10
+        
     def train(self):
         '''overall function to train the networks for different levels'''
         
