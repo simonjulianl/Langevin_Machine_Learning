@@ -96,7 +96,7 @@ class SHNN_trainer:
             np.random.seed(seed)
             
             shuffle = kwargs.get('shuffle', True) # default shuffle the dataloader
-            num_workers = kwargs.get('num_wokers', 8)
+            num_workers = kwargs.get('num_wokers', 0)
             self._n_epochs = int(kwargs['epoch']) 
         
         except :
@@ -254,6 +254,7 @@ class SHNN_trainer:
 
             q_list_label = label[0][0].squeeze().to(self._device) 
             p_list_label = label[1][0].squeeze().to(self._device) 
+     
             label = (q_list_label, p_list_label) # rebrand the label
  
             #for 1 dimensional data, squeeze is the same as linearize as N x 2 data
@@ -419,17 +420,19 @@ class SHNN_trainer:
         
         for i in range(self._level_epochs):
             self.train_level(filename = 'checkpoint_level{}.pth'.format(self._curr_level))
-            # for last epoch do not need to up level
-            if i + 1 != self._level_epochs :  
-                self._best_validation_loss = float('inf') # reset the validation loss
-                #choose the best model from the previous level and pass it to the next level
-                self._model.load_state_dict(self._best_state['state_dict'])
-                #using the best state
-                hamiltonian_figure = self.get_figure_hamiltonian()
 
-                self._writer.add_figure('hamiltonian_level{}'.format(self._curr_level), 
-                                        hamiltonian_figure,
-                                        global_step = (i+1) * len(self._train_loader)) # number of training batch done
+            self._best_validation_loss = float('inf') # reset the validation loss
+            #choose the best model from the previous level and pass it to the next level
+            self._model.load_state_dict(self._best_state['state_dict'])
+            #using the best state
+            hamiltonian_figure = self.get_figure_hamiltonian()
+
+            self._writer.add_figure('hamiltonian_level{}'.format(self._curr_level), 
+                                    hamiltonian_figure,
+                                    global_step = (i+1) * len(self._train_loader)) # number of training batch done
+            
+            if i + 1 != self._level_epochs :  
+                # for last epoch do not need to up level
                 self.up_level()
                 
         self._writer.close() # close writer to avoid collision

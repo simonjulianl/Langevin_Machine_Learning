@@ -178,8 +178,7 @@ class data_loader:
         #randomly choose the grid until N ~ ratio  and 1 - ratio 
         combination = list(product(qlist,plist))
         for i in range(10): # shuffle the all the grids, arbitrary choice 10 shuffling
-            np.random.shuffle(combination)
-            # combination = random.sample(combination,len(combination)) # redundant 
+            combination = random.sample(combination,len(combination)) 
             
         grid_first, grid_second = [], [] #coordinate of grids for training
         N_first, N_first_current = ratio * N,0
@@ -215,34 +214,5 @@ class data_loader:
             
         return coordinates
         
-    @staticmethod        
-    def plot_loss(loss : list, mode : str) :
-        '''
-        helper function to plot loss
-
-        Parameters
-        ----------
-        loss : list
-            np.array of loss 
-        mode : str
-            change the label for validation, train, test modes
-
-        Raises
-        ------
-        Exception
-            modes not found
-        '''
-        if mode not in ['validation', 'train', 'test']:
-            raise Exception('mode not found, please check the mode')
-            
-        if mode == 'validation':
-            plt.plot(loss, color = 'blue', label='validation loss')
-        elif mode =='train' : 
-            plt.plot(loss, color = 'blue', label = 'train loss')
-        else : 
-            plt.plot(loss, color = 'blue', label = 'test loss')
-            
-        plt.legend(loc = 'best')
-        plt.xlabel('epoch')
-        plt.show()       
+    
                 

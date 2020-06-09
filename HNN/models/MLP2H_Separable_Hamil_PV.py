@@ -58,11 +58,11 @@ class MLP2H_Separable_Hamil_PV(nn.Module):
                         
         for i in range(self.n_stack) : # stack the NN 
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
-            q_list = q_list + p_list * time_step / 2
+            q_list = q_list + dqdt_predicted * time_step / 2
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
             p_list = p_list + dpdt_predicted * time_step 
             dqdt_predicted, dpdt_predicted = derivative_ML(q_list, p_list, self.linear_potential, self.linear_kinetic)
-            q_list = p_list + p_list * time_step / 2
+            q_list = p_list + dqdt_predicted * time_step / 2
             
         return (q_list, p_list)
 

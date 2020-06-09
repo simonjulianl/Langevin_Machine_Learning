@@ -63,7 +63,36 @@ Created on Tue Jun  2 17:13:15 2020
 #     return ene_pot_aver
 
 
+# @staticmethod        
+#     def plot_loss(loss : list, mode : str) :
+#         '''
+#         helper function to plot loss
 
+#         Parameters
+#         ----------
+#         loss : list
+#             np.array of loss 
+#         mode : str
+#             change the label for validation, train, test modes
+
+#         Raises
+#         ------
+#         Exception
+#             modes not found
+#         '''
+#         if mode not in ['validation', 'train', 'test']:
+#             raise Exception('mode not found, please check the mode')
+            
+#         if mode == 'validation':
+#             plt.plot(loss, color = 'blue', label='validation loss')
+#         elif mode =='train' : 
+#             plt.plot(loss, color = 'blue', label = 'train loss')
+#         else : 
+#             plt.plot(loss, color = 'blue', label = 'test loss')
+            
+#         plt.legend(loc = 'best')
+#         plt.xlabel('epoch')
+#         plt.show()       
 # @staticmethod 
 # def force(**configuration):
 #     '''
