@@ -72,6 +72,7 @@ class Hamiltonian:
         '''
         assert q_list.shape == p_list.shape and len(q_list.shape) == 2
         dHdq = np.zeros(q_list.shape)
+ 
         for term in self.hamiltonian_terms : 
             dHdq += term.evaluate_derivative_q(q_list, p_list)
             

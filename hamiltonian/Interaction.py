@@ -83,7 +83,9 @@ class Interaction(ABC):
             else : 
                 temp = np.expand_dims(eval(self._derivative_q), 0)
                 dHdq = np.concatenate((dHdq, temp))
-                
+       
+        dHdq = dHdq.reshape(q_state.shape) # should have the same dimension
+        
         return dHdq
     
     def evaluate_derivative_p(self, q_state, p_state):
@@ -104,6 +106,8 @@ class Interaction(ABC):
             else : 
                 temp = np.expand_dims(eval(self._derivative_p), 0)
                 dHdp = np.concatenate((dHdp, temp))
+       
+        dHdp = dHdp.reshape(p_state.shape)
         
         return dHdp
 

@@ -74,6 +74,6 @@ class Lennard_Jones(Interaction):
                 if q < self._cutoff_r : 
                     dHdq[i] -= eval(self._derivative_q) * delta_q / q
                     dHdq[j] += eval(self._derivative_q) * delta_q / q             
-     
+             
         return dHdq
     
