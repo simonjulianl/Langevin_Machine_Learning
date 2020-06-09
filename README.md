@@ -126,6 +126,11 @@ integration_setting = {
 
 configuration.update(integration_setting)
 MD_integrator = Integrator.Langevin(**configuration)
+#only load for initial condition Temperature = 1.0
+MD_integrator.loadp_q(path = '~Desktop/Langevin_Machine_Learning/init', samples = 2500)
+    
+#update configuration after loading
+configuration = MD_integrator.get_configuration()
 q_list, p_list = MD_integrator.integrate() 
 confStat.plot_stat(q_list, p_list, 'q_dist',**configuration) 
 #plot the statistic of q distribution based on current state configuration
