@@ -11,7 +11,7 @@ tdqm==4.43.0
 python>=3.6.9
 ```
 # Available Modules
-tested modules are marked by the check marks. All classes could be used directly once the header module is imported, please check the code examples.
+tested modules are marked by the check marks. All classes could be used directly once the header module is imported, please check the code examples. 
 
 #### Langevin_Machine_Learning.hamiltonian 
 - [x] Hamiltonian
@@ -49,6 +49,15 @@ tested modules are marked by the check marks. All classes could be used directly
 - [x] qp_MSE_loss
 
 <hr>
+
+# Directions to use 
+All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog). 
+
+Secondly, view the plot of training loss/ validation loss and hamiltonian, backend tensorboard by pytorch is used and can be accessed by inputting following command in the terminal : 
+```
+$ tensorboard --logdir==runs
+``` 
+By default, all the data is stored in the *runs* folder which has the same path to the Langevin_Machine_Learning folder. 
 
 # code example 
 Full documentation could be found by using python ```help()``` function on the enquired class 
