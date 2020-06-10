@@ -372,6 +372,14 @@ class SHNN_trainer:
         Loss is saved in npy files with (train, validation) loss format
         '''
          
+        if self._curr_level != 1 : 
+            # if its not level 1 , check performance of previous level weight of more steps to compare
+            q_diff, p_diff, validation_loss = self.validate_epoch(self._validation_loader)
+            print('performance of level {} weight on level {}'.format(self._curr_level - 1, self._curr_level))
+            print('\t q_diff : {:.6f} \t p_diff : {:.6f} \n\t validation loss : {:.6f}'.format(
+                q_diff, p_diff, validation_loss
+                ))
+            
         for i in range(1, self._n_epochs + 1):
             train_loss = self.train_epoch()
             q_diff, p_diff, validation_loss = self.validate_epoch(self._validation_loader)
@@ -454,6 +462,7 @@ class SHNN_trainer:
             if i + 1 != self._level_epochs :  
                 # for last epoch do not need to up level
                 self.up_level()
+                
                 
         self._writer.close() # close writer to avoid collision
         
