@@ -50,7 +50,7 @@ class ML_integrator:
         p = torch.tensor(state['vel'], dtype = torch.float32).requires_grad_(True).to(device) * m
     
         self.ML_integrator.eval()
-        q_next, p_next = self.ML_integrator(q,p)
+        q_next, p_next = self.ML_integrator(q,p, state['time_step'])
         
         state['pos'] = q_next.cpu().detach().numpy()
         state['vel'] = p_next.cpu().detach().numpy() / m

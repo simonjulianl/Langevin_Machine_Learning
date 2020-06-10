@@ -323,24 +323,17 @@ class SHNN_trainer:
         
         return (q_diff, p_diff, validation_loss / len(validation_loader.dataset) ) #return the average 
         
-    def record_best(self, train_loss, validation_loss, q_diff, p_diff, filename = 'checkpoint.pth') : 
+    def record_best(self, validation_loss, q_diff, p_diff, filename = 'checkpoint.pth') : 
         '''
         helper function to record the state after each training
 
         Parameters
         ----------
-        train_loss : float
-            training loss per epoch
         validation_loss : float
             validation loss per epoch
         filename : string
             path to the saving the checkpoint
         '''
-        #output the loss
-        print('Epoch : {} \n\t Average Train Loss : {:.6f} \n\t Average Validation Loss : {:.6f}'.format(
-                self._current_epoch, train_loss, validation_loss
-                ))
-        print('\t q diff : {:5f} \t p diff : {:5f}'.format(q_diff, p_diff))
         
         is_best = validation_loss < self._best_validation_loss 
         self._best_validation_loss = min(validation_loss, self._best_validation_loss)
@@ -382,8 +375,8 @@ class SHNN_trainer:
         for i in range(1, self._n_epochs + 1):
             train_loss = self.train_epoch()
             q_diff, p_diff, validation_loss = self.validate_epoch(self._validation_loader)
-            
-            self.record_best(train_loss, validation_loss, q_diff, p_diff, filename)
+                    
+            self.record_best(validation_loss, q_diff, p_diff, filename)
             self._current_epoch += 1
             
             self._writer.add_scalar('training loss_level {}'.format(self._curr_level),
@@ -395,6 +388,16 @@ class SHNN_trainer:
                         validation_loss,
                         i # epoch
                         )
+            
+            self._writer.add_scalar('q difference_level {}'.format(self._curr_level),
+                                    q_diff,
+                                    i # epoch
+                                    )
+            
+            self._writer.add_scalar('p difference_level {}'.format(self._curr_level),
+                        p_diff,
+                        i # epoch
+                        )
                     
         print('training level : {}'.format(self._curr_level))
         print('best setting : \n\t epoch : {} \n\t validation_loss : {:.6f}'.format(self._best_state['epoch'], 
@@ -403,6 +406,8 @@ class SHNN_trainer:
                                                   self._best_state['p_diff']))
         
         #check the performace of current weight level on base level 
+        self._model.load_state_dict(self._best_state['state_dict']) 
+        #choose the best model from the previous level and pass it to the next level
         self._model.set_n_stack(1) # set the model level
         q_diff, p_diff, base_validation_loss = self.validate_epoch(self._base_validation_loader)
         print('performance on base level (1) : \n\t validation_loss : {:.6f}'.format(base_validation_loss))
@@ -434,11 +439,11 @@ class SHNN_trainer:
         '''overall function to train the networks for different levels'''
         
         for i in range(self._level_epochs):
+            print('current level : {}'.format(self._curr_level))
             self.train_level(filename = 'checkpoint_level{}.pth'.format(self._curr_level))
 
-            self._best_validation_loss = float('inf') # reset the validation loss
-            #choose the best model from the previous level and pass it to the next level
-            self._model.load_state_dict(self._best_state['state_dict'])
+            self._best_validation_loss = float('inf') # reset the validation loss, always prefer higher levels
+            
             #using the best state
             hamiltonian_figure = self.get_figure_hamiltonian()
 

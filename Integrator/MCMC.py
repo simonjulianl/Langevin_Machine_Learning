@@ -77,7 +77,7 @@ class MCMC(Integration):
             np.random.seed(int(seed))
             random.seed(int(seed))
         except :
-            warnings.warn('Seed not seed, start using default numpy/random/torch seed')
+            warnings.warn('Seed not set, start using default numpy/random/torch seed')
             
         # temperature scaling 
             
