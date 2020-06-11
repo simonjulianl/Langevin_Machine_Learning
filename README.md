@@ -102,7 +102,7 @@ confStat.plot_stat(q_hist, p_hist, 'q_dist', **configuration)
 DIM = q_hist.shape[-1] # flatten the q_hist of samples x N X DIM to a phase space
 q_list = q_hist.reshape(-1,DIM)
 p_list = p_hist.reshape(-1,DIM)
-phase_space = phase_space() # wrapper of phase space class
+phase_space = phase_space.phase_space() # wrapper of phase space class
 phase_space.set_q(q_list)
 phase_space.set_p(p_list)
 phase_space.write(filename = ./PATH TO INIT FOLDER/phase_space_N2500_T1_DIM1.npy) 
