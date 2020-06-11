@@ -49,6 +49,7 @@ tested modules are marked by the check marks. All classes could be used directly
 - [x] qp_MSE_loss
 
 #### Langevin_Machine_Learning.phase_space
+- [x] phase_space
 <hr>
 
 # Directions to use 
