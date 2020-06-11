@@ -27,10 +27,13 @@ integration_setting = {
 configuration.update(integration_setting)
 MD_integrator = Integrator.Langevin(**configuration)
 #only load for initial condition Temperature = 1.0
-MD_integrator.loadp_q(path = '~Desktop/Langevin_Machine_Learning/init', samples = 2500)
+MD_integrator.set_phase_space(samples = 100)
     
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
-q_list, p_list = MD_integrator.integrate() 
-confStat.plot_stat(q_list, p_list, 'q_dist',**configuration) 
+q_hist, p_hist = MD_integrator.integrate() 
+confStat.plot_stat(q_hist, p_hist, 'q_dist',**configuration) 
 #plot the statistic of q distribution based on current state configuration
+
+#to save the current phase space to continue as a checkpoint
+MD_integrator.save_phase_space() # by default, it is in init file
