@@ -48,10 +48,11 @@ tested modules are marked by the check marks. All classes could be used directly
 #### Langevin_Machine_Learning.HNN.loss
 - [x] qp_MSE_loss
 
+#### Langevin_Machine_Learning.phase_space
 <hr>
 
 # Directions to use 
-All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog). 
+All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, using the **phase space class** ( look at code example MCMC ) and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog). 
 
 Secondly, to view the plot of training loss/ validation loss and hamiltonian, by using backend tensorboard by pytorch, input following command in the terminal : 
 ```
@@ -62,11 +63,12 @@ By default, all the data is stored in the *runs* folder which has the same path 
 # code example 
 Full documentation could be found by using python ```help()``` function on the enquired class 
 
-1. Using Monte Carlo Markov Chain (MCMC) Integrator
+1. Using Monte Carlo Markov Chain (MCMC) Integrator and Momentum Sampler
 ```
 import Langevin_Machine_Learning.hamiltonian as Hamiltonian
 import Langevin_Machine_Learning.Integrator as Integrator
 import Langevin_Machine_Learning.utils as confStat
+import Langevin_Machine_Learning.phase_space as phase_space 
 
 energy = Hamiltonian.Hamiltonian() # energy model container
 energy.append(Hamiltonian.asymmetrical_double_well())
@@ -81,7 +83,7 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 50000,
+    'iterations' : 2500,
     'DumpFreq' : 1,
     'dq' : 1.0,
     }
@@ -89,11 +91,21 @@ integration_setting = {
 configuration.update(integration_setting) # combine the 2 dictionaries
 
 MSMC_integrator = Integrator.MSMC(**configuration)
-q_list = MSMC_integrator.integrate()
-p_list_dummy = np.zeros(q_list.shape) # to be passed to confstat
-confStat.plot_stat(q_list, p_list_dummy, 'q_dist', **configuration)
-np.save('init/p_N2500_T1_DIM1_MCMC.npy',np.array(q_list))  
-#the folder init could be used for next NN / MD initialization 
+q_hist = MSMC_integrator.integrate()
+
+# total samples used in momentum sampler is iterations / dumpfreq as they are usually used together 
+Momentum_sampler = Integrator.momentum_sampler(**configuration)
+p_hist = Momentum_sampler.integrate()
+confStat.plot_stat(q_hist, p_hist, 'q_dist', **configuration)
+
+DIM = q_hist.shape[-1] # flatten the q_hist of samples x N X DIM to a phase space
+q_list = q_hist.reshape(-1,DIM)
+p_list = p_hist.reshape(-1,DIM)
+phase_space = phase_space() # wrapper of phase space class
+phase_space.set_q(q_list)
+phase_space.set_p(p_list)
+phase_space.write(filename = ./PATH TO INIT FOLDER/phase_space_N2500_T1_DIM1.npy) 
+#the folder init could be used for next NN / MD initialization, check the convention of name saving
 ```
 
 2. Using MD Langevin Simulator ( NVT Ensemble / NVE Ensemble if gamma = 0 )
@@ -127,13 +139,16 @@ integration_setting = {
 configuration.update(integration_setting)
 MD_integrator = Integrator.Langevin(**configuration)
 #only load for initial condition Temperature = 1.0
-MD_integrator.loadp_q(path = '~Desktop/Langevin_Machine_Learning/init', samples = 2500)
+MD_integrator.set_phase_space(samples = 100)
     
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
-q_list, p_list = MD_integrator.integrate() 
-confStat.plot_stat(q_list, p_list, 'q_dist',**configuration) 
+q_hist, p_hist = MD_integrator.integrate() 
+confStat.plot_stat(q_hist, p_hist, 'q_dist',**configuration) 
 #plot the statistic of q distribution based on current state configuration
+
+#to save the current phase space to continue as a checkpoint
+MD_integrator.save_phase_space() # by default, it is in init file
 ```
 3. Using Stacked NN trainer
 ```
