@@ -8,8 +8,9 @@ Created on Fri May 29 10:23:21 2020
 
 import numpy as np
 import warnings 
+from .base_simulation import Integration
 
-class momentum_sampler:
+class momentum_sampler(Integration):
     '''
     Helper class to sample momentum based on direct integration approach
     '''
@@ -29,17 +30,15 @@ class momentum_sampler:
             missing samples in the kwargs
 
         '''
+        super().__init__(**kwargs) 
+        
         try :
             self._intSetting = {
-                'samples' : kwargs['samples'],
-                'Temperature' : kwargs['Temperature'],
-                'DIM' : kwargs['DIM'],
-                'm' : kwargs['m'],
-                'kB' : kwargs['kB']
+                'samples' : int(kwargs['iterations'] / kwargs['DumpFreq'])
                 }
 
         except : 
-            raise Exception('samples not found')
+            raise Exception('iterations/ DumpFreq not found')
         
         #Seed Setting
         try :
@@ -50,7 +49,7 @@ class momentum_sampler:
         # temperature scaling 
             
         
-    def sample(self) -> list :
+    def integrate(self) -> list :
         '''
         Static method to generate momentum sample that satisfies boltzmann distribution 
         of the state
@@ -78,13 +77,12 @@ class momentum_sampler:
 
         '''
         
-        try : 
-            DIM = self._intSetting['DIM']
-            beta = 1 / (self._intSetting['kB'] * self._intSetting['Temperature'])
-            m = self._intSetting['m']
-            
-        except : 
-            raise Exception('DIM/ temp / mass / kB not found')
+        # try : 
+        DIM = self._configuration['DIM']
+        beta = 1 / (self._configuration['kB'] * self._configuration['Temperature'])
+        m = self._configuration['m']
+        # except : 
+            # raise Exception('DIM/ temp / mass / kB not found')
             
         total_sample = self._intSetting['samples'] # get total sample
         _dp = 0.005 # the width of the dp stripe

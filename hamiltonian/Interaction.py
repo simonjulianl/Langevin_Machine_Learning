@@ -47,7 +47,7 @@ class Interaction(ABC):
         except :
             raise Exception('Differentiation fail')
         
-    def evaluate_expression(self, q_state, p_state):
+    def energy(self, q_state, p_state):
         '''
         function to calculate the term directly
         

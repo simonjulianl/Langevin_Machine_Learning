@@ -45,9 +45,9 @@ class confStat:
             N = configuration['N']
             DIM = configuration['DIM']
             m = configuration['m']
-            vel = configuration['vel']
+            vel = configuration['phase_space'].get_p() / m # v = p/m
         except : 
-            raise Exception('N / Dimension / Mass not supplied')
+            raise Exception('N / Dimension / Mass / vel not supplied')
             
         try : 
             BoxSize = configuration['BoxSize']
@@ -95,7 +95,7 @@ class confStat:
         return ene_kin_aver
     
     @staticmethod
-    def plot_stat(qlist : list , plist : list , mode : str, **configuration):
+    def plot_stat(q_hist : list , p_hist : list , mode : str, **configuration):
         '''
         Static function to help plot various statistic according to the supplied
         trajectories of qlist and plist as well as p 
@@ -126,7 +126,7 @@ class confStat:
         if mode not in line_plot and mode not in hist_plot:
             raise Exception('Modes not available , check the mode')
             
-        assert qlist.shape == plist.shape # q list and p list must have the same size
+        assert q_hist.shape == p_hist.shape # q list and p list must have the same size
         
         color = {
             'p' : 'blue',
@@ -144,19 +144,19 @@ class confStat:
         if mode in line_plot :      
             potential = []
             energy = []
-            for i in range(qlist):
-                p_dummy_list = np.zeros(qlist[i].shape)
-                potential.append(hamiltonian.get_Hamiltonian(qlist[i], p_dummy_list))
-                energy.append(hamiltonian.get_Hamiltonian(qlist[i], plist[i]))
+            for i in range(q_hist):
+                p_dummy_list = np.zeros(q_hist[i].shape)
+                potential.append(hamiltonian.total_energy(q_hist[i], p_dummy_list))
+                energy.append(hamiltonian.total_energy(q_hist[i], p_hist[i]))
             
             kinetic = np.array(energy) - np.array(potential)
             
             if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
                 for n in range(configuration['DIM']):
                     if mode == 'p':
-                        plt.plot(plist[:,:,n], color = color[mode], label = 'p')
+                        plt.plot(p_hist[:,:,n], color = color[mode], label = 'p')
                     elif mode == 'q':
-                        plt.plot(qlist[:,:,n], color = color[mode], label = 'q')
+                        plt.plot(q_hist[:,:,n], color = color[mode], label = 'q')
                     plt.xlabel('sampled steps')
                     plt.ylabel(mode + ' ' + dim[n])
                     plt.legend(loc = 'best')
@@ -183,7 +183,7 @@ class confStat:
                 
             for n in range(configuration['DIM']):
                 if mode == 'q_dist':
-                    curr = qlist[:,:,n].reshape(-1,1) # collapse to 1 long list
+                    curr = q_hist[:,:,n].reshape(-1,1) # collapse to 1 long list
                     #plot exact
                     q = np.linspace(np.min(curr),np.max(curr),1000)
                     #create hamiltonian list
@@ -192,7 +192,7 @@ class confStat:
                         q_list_temp = np.expand_dims(q[i], axis = 1).reshape(1,1)
                         p_list_temp = np.zeros(q_list_temp.shape) # prevent KE from integrated
                         potential = np.append(potential,
-                                              hamiltonian.get_Hamiltonian(q_list_temp, p_list_temp))
+                                              hamiltonian.total_energy(q_list_temp, p_list_temp))
                     prob_q = np.exp(-_beta * potential)
                     dq = q[1:] - q[:-1]
                     yqs = 0.5 * (prob_q[1:] + prob_q[:-1])
@@ -200,7 +200,7 @@ class confStat:
                     plt.plot(q,prob_q/Zq,marker = None, color = "red", linestyle = '-',label = 'q exact') 
                     
                 elif mode == 'v_dist': 
-                    curr = plist[:,:,n].reshape(-1,1) / _m # collapse to 1 long list
+                    curr = p_hist[:,:,n].reshape(-1,1) / _m # collapse to 1 long list
                     #plot exact
                     v = np.linspace(np.min(curr),np.max(curr),1000)
                     prob_v = ((_m * _beta)/ (2 * np.pi))**0.5 * np.exp(-_beta * (v ** 2.0) / 2)
@@ -208,7 +208,7 @@ class confStat:
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                 
                 elif mode == 'speed_dist':
-                    curr = plist[:,:,:].reshape(-1,configuration['DIM']) / _m # collapse to 1 long list of N X DIM
+                    curr = p_hist[:,:,:].reshape(-1,configuration['DIM']) / _m # collapse to 1 long list of N X DIM
                     speed = np.linalg.norm(curr, 2, axis = 1)
                     v = np.linspace(np.min(speed),np.max(speed),1000)
                     prob_v = 4 * np.pi * (_beta/(2 * np.pi)) ** 1.5 * v ** 2.0 *  np.exp(-_beta * v ** 2.0 / (2 * _m))

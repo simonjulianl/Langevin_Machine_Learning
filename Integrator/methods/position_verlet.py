@@ -32,24 +32,21 @@ def position_verlet(**state) :
     '''
     
     #get all the constants
-    q = state['pos']
-    m = state['m']
-    p = state['vel'] * m
+    q = state['phase_space'].get_q()
+    p = state['phase_space'].get_p()
     
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
     
     q = q + time_step / 2 * p #dq/dt
     
-    p_list_dummy = np.zeros(state['pos'].shape) # to prevent KE from being integrated
+    p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
     
-    p = p + time_step  * ( -Hamiltonian.get_derivative_q(state['pos'], p_list_dummy) ) #dp/dt
- 
-    state['pos'] = q ; state['vel'] = p/m # update state 
-    
+    p = p + time_step  * ( -Hamiltonian.dHdq(q, p_list_dummy) ) #dp/dt
+     
     q = q + time_step / 2 * p #dq/dt
     
-    state['pos'] = q ; state['vel'] = p/m # update state 
+    state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state 
     
     return state 
 

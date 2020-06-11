@@ -6,7 +6,6 @@ Created on Thu May 28 20:59:47 2020
 @author: simon
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 from itertools import product
@@ -27,7 +26,7 @@ class data_loader:
             path to initialization folder
             
             default file name : 
-                eg. q_N1000_T1_DIM1_MCMC.npy 
+                eg. q_N1000_T1_DIM1.npy 
                 means the file contains q for 10 000 samples at T = 1, kB is assumed to be 1
                 at DIM = 1
                 
@@ -64,7 +63,7 @@ class data_loader:
             raise Exception('path doesnt exist')
             
         _total_particle = 2500
-        file_format = path + '{}_N' + str(_total_particle) + '_T{}_DIM{}_MCMC.npy'
+        file_format = path + 'phase_space_N' + str(_total_particle) + '_T{}_DIM{}.npy'
             # by default each file has 10000 samples
         
         if samples > _total_particle :
@@ -78,8 +77,9 @@ class data_loader:
             fraction = math.modf(temp)[0] != 0 # boolean
             temp = str(temp).replace('.','-') if fraction else str(int(temp))
             #for fractional temp, use - instead of . when saving
-            curr_q = np.load(file_format.format('q',temp,DIM))[:samples] # truncate according to samples
-            curr_p = np.load(file_format.format('p',temp,DIM))[:samples]
+            phase_space = np.load(file_format.format(temp,DIM))
+            curr_q, curr_p = phase_space[0][:samples], phase_space[1][:samples]
+            # truncate according to samples
             if i == 0 : # first iteration, copy the data 
                 q_list = curr_q
                 p_list = curr_p

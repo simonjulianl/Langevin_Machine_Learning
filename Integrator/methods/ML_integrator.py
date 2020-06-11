@@ -45,15 +45,14 @@ class ML_integrator:
     def __call__(self, **state): #base integrator function to call the class as a function 
         '''this allows the ML integrator to be called'''
         device = state.get('device', 'cpu')
-        q = torch.tensor(state['pos'], dtype = torch.float32).requires_grad_(True).to(device)
-        m = state['m']
-        p = torch.tensor(state['vel'], dtype = torch.float32).requires_grad_(True).to(device) * m
+        q = torch.tensor(state['phase_space'].get_q(), dtype = torch.float32).requires_grad_(True).to(device)
+        p = torch.tensor(state['phase_space'].get_p(), dtype = torch.float32).requires_grad_(True).to(device) 
     
         self.ML_integrator.eval()
         q_next, p_next = self.ML_integrator(q,p, state['time_step'])
         
-        state['pos'] = q_next.cpu().detach().numpy()
-        state['vel'] = p_next.cpu().detach().numpy() / m
+        state['phase_space'].set_q(q_next.cpu().detach().numpy())
+        state['phase_space'].set_p(p_next.cpu().detach().numpy())
         
         return state 
 

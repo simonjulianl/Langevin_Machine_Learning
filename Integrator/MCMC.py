@@ -86,7 +86,8 @@ class MCMC(Integration):
         
         #lambda constant of (Tn / T0) ^0.5 by adjusting KE where Tn is target temp, T0 is initial temp
         
-        self._configuration['vel'] = np.multiply(self._configuration['vel'], lmbda)
+        curr_vel = self._configuration['phase_space'].get_p() / kwargs['m']
+        self._configuration['phase_space'].set_p(np.multiply(curr_vel , lmbda))
     
     def mcmove(self) :
         '''
@@ -102,29 +103,31 @@ class MCMC(Integration):
 
         '''
     
-        curr_q = self._configuration['pos']
+        curr_q = self._configuration['phase_space'].get_q()
         o = random.randint(0, len(curr_q) - 1) # randomly pick one particle from the state
         
         
         #eno is the old potential energy configuration
-        q_list = self._configuration['pos']
+        q_list = self._configuration['phase_space'].get_q()
         p_list = np.zeros(q_list.shape) # we pass in zero matrix to prevent KE from accidentally integrated
-        eno_p = self._configuration['hamiltonian'].get_Hamiltonian(q_list, p_list)
+        eno_p = self._configuration['hamiltonian'].total_energy(q_list, p_list)
         
         #perform random step with proposed uniform distribution
         qn = np.array(curr_q[o]) + (np.random.uniform(0,1, np.array(curr_q[o]).shape) - 0.5) * self._intSetting['dq']
         qo = np.array(curr_q[o]) # store old position
 
-        self._configuration['pos'][o] = qn # try the new state
+        curr_q[o] = qn # set new position 
+        self._configuration['phase_space'].set_q(curr_q) # try the new state
             
         #enn is the new potential energy configuration
-        q_list = self._configuration['pos']
-        enn_p = self._configuration['hamiltonian'].get_Hamiltonian(q_list, p_list)
+        q_list = self._configuration['phase_space'].get_q()
+        enn_p = self._configuration['hamiltonian'].total_energy(q_list, p_list)
      
         #accept with probability proportional di e ^ -beta * delta E
         if random.uniform(0,1) >= np.exp(-self._configuration['beta'] * (enn_p - eno_p)):
             self.rejection += 1 # rejected
-            self._configuration['pos'][o] = qo #restore to old position 
+            curr_q[o] = qo # restore the old position
+            self._configuration['phase_space'].set_q(curr_q) 
         
         
     def integrate(self):
@@ -149,7 +152,7 @@ class MCMC(Integration):
         for i in trange(1, self._intSetting['iterations'] + 1, desc = "simulating"):
             self.mcmove()
             if i % self._intSetting['DumpFreq'] == 0 :
-                q_list[i-1] = copy.deepcopy(self._configuration['pos'])
+                q_list[i-1] = copy.deepcopy(self._configuration['phase_space'].get_q())
                 
         
         print('Rejection Rate : {}%'.format(self.rejection * 100/ self._intSetting['iterations']))

@@ -25,7 +25,7 @@ class SHO_interactions(Interaction):
         self._name = 'Simple Harmonic Oscillation Interactions' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def evaluate_expression(self, q_state, p_state):
+    def energy(self, q_state, p_state):
         '''
         function to calculate the term directly
         

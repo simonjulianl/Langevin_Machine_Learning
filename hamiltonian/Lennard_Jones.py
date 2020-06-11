@@ -28,7 +28,7 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def evaluate_expression(self, q_state, p_state):
+    def energy(self, q_state, p_state):
         '''
         function to calculate the term directly for truncated lennard jones
         

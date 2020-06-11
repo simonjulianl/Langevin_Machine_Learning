@@ -11,6 +11,8 @@ from abc import ABC, abstractmethod
 import warnings 
 from ..utils.data_util import data_loader
 from ..hamiltonian.hamiltonian import Hamiltonian
+from ..phase_space.phase_space import phase_space
+import os
 
 class Integration(ABC) : 
 
@@ -96,34 +98,51 @@ class Integration(ABC) :
                 for i in range(self._configuration['DIM']):
                     vel[:,i] = vel[:,i] - VelCentre[i]
                 
-        self._configuration['pos'] = pos
-        self._configuration['vel'] = vel
-    
+        self._configuration['phase_space'] = phase_space()
+        self._configuration['phase_space'].set_q(pos)
+        self._configuration['phase_space'].set_p(vel * kwargs['m'])
+
     @abstractmethod
     def integrate(self):
         pass
     
-    def loadp_q(self, path : str, samples : int) :
+    def _filename_creator(self): 
+        '''helper function to create the filename based on current configuration'''
+        
+        base_library = os.path.abspath('Langevin_Machine_Learning/init')
+        N = self._configuration['N']
+        temp = self._configuration['Temperature']
+        DIM = self._configuration['DIM']
+        
+        import math #check whether temperature is fractional
+        fraction = math.modf(temp)[0] != 0 # boolean
+        temp = str(temp).replace('.','-') if fraction else str(int(temp)) # tokenizer, change . to -
+            
+        filename = '/phase_space_N{}_T{}_DIM{}.npy'.format(N, temp, DIM)
+        return base_library + filename
+    
+    def set_phase_space(self, samples : int = -1) :
         '''
         Base Loader function for load p and q given MCMC initialization
-
+        all the numpy file must be saved in the init folder 
+        
         Parameters
         ----------
-        path : str
-            absolute path to the init file
-        samples : int
+        samples : int, optional
             how many sampels per temperature stated in the configuration 
+            by default -1, meaning take everything in the init
 
         '''
+        file_path = self._filename_creator()
+        self._configuration['phase_space'].read(file_path, samples)
+        q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
         
-        q_list, v_list = data_loader.loadp_q(path, 
-                                           [self._configuration['Temperature']],
-                                           samples,
-                                           self._configuration['DIM'])
+        if samples > self._configuration['N']:
+            raise Exception('samples exceed available particles')
             
         # the loaded file must contain N X DIM matrix of p and q
         _new_N, _new_DIM = q_list.shape
-        
+       
         if self._configuration['N'] != _new_N : 
             warnings.warn('N is changed to the new value of  {}'.format(_new_N))
             self._configuration['N'] = _new_N
@@ -131,9 +150,19 @@ class Integration(ABC) :
         if self._configuration['DIM'] != _new_DIM : 
             warnings.warn('DIM is changed to the new value of  {}'.format(_new_DIM))
             self._configuration['DIM'] = _new_N
+                
+    def save_phase_space(self, filename = None): 
+        '''if None, by default its save in init Langevin_Machine_Learning/init
+        wrapper function to save the phase space onto the init file
         
-        self._configuration['vel'] = v_list
-        self._configuration['pos'] = q_list # set the new value
+        Parameters
+        ----------
+        filename : str, optional
+            default is None. Meaning save in init folder, can be modified to other folders 
+        '''
+        phase_space = self._configuration['phase_space']
+        file_path  = self._filename_creator()
+        phase_space.write(filename = file_path)
         
     def get_configuration(self):
         '''getter function for configuration'''

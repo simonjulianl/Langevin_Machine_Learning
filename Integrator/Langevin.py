@@ -10,6 +10,7 @@ import numpy as np
 from tqdm import trange
 from .base_simulation import Integration
 import multiprocessing
+import copy 
 
 class Langevin(Integration):
     '''
@@ -151,21 +152,21 @@ class Langevin(Integration):
             
             
             state['N'] = total_particle # update total_particle
-            
+
             for i in trange(total_samples): 
-                p = state['vel'] * m
+                p = state['phase_space'].get_p()
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
-                state['vel'] = p / m
+                state['phase_space'].set_p(p)
 
                 for j in range(self._intSetting['DumpFreq']):
                     state = integrator_method(**state)
 
-                p = state['vel'] * m
+                p = state['phase_space'].get_p()
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
-                state['vel'] = p / m
+                state['phase_space'].set_p(p)
 
-                q_list_temp[i] = state['pos']
-                p_list_temp[i] = state['vel'] * m # sample
+                q_list_temp[i] = state['phase_space'].get_q()
+                p_list_temp[i] = state['phase_space'].get_p()  # sample
            
             return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
     
@@ -173,18 +174,18 @@ class Langevin(Integration):
         manager = multiprocessing.Manager()
         return_dict = manager.dict() # common dictionary 
        
-        curr_q = self._configuration['pos']
-        curr_p = self._configuration['vel']
+        curr_q = self._configuration['phase_space'].get_q()
+        curr_p = self._configuration['phase_space'].get_p()
 
         assert curr_q.shape == curr_p.shape
         
         #split using multiprocessing for faster processing
         for i in range(0,len(curr_q),1000):
-            split_state = self._configuration
-            split_state['pos'] = curr_q[i:i+1000]
-            split_state['vel'] = curr_p[i:i+1000]
+            split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
+            split_state['phase_space'].set_q(curr_q[i:i+1000])
+            split_state['phase_space'].set_p(curr_p[i:i+1000])
             split_state['time_step'] = time_step
-            split_state['N_split'] = len(split_state['pos'])
+            split_state['N_split'] = len(split_state['phase_space'].get_q())
             
             p  = multiprocessing.Process(target = integrate_helper, args = (i, return_dict), kwargs = split_state)
             processes.append(p)
@@ -200,8 +201,8 @@ class Langevin(Integration):
             q_list[:,i:i+1000] = return_dict[i][0] # q
             p_list[:,i:i+1000] = return_dict[i][1] # p 
             
-        self._configuration['pos'] = q_list[-1] # update current state
-        self._configuration['vel'] = p_list[-1] # get the latest code
+        self._configuration['phase_space'].set_q(q_list[-1]) # update current state
+        self._configuration['phase_space'].set_p(p_list[-1]) # get the latest code
                 
         if (np.isnan(q_list).any()) or (np.isnan(p_list).any()):
             raise ArithmeticError('Numerical Integration error, nan is detected')

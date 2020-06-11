@@ -49,13 +49,13 @@ class Hamiltonian_Dataset(Dataset):
         init_path = base_dir + '/init/'
         DIM = kwargs['DIM']
         seed = kwargs.get('seed',  937162211)
-        q_list, v_list = data_loader.loadp_q(init_path,
+        q_list, p_list = data_loader.loadp_q(init_path,
                                              temperature, 
                                              samples, 
                                              DIM) # wrapper for dataloader 
         
         _ratio = 0.6 # this splitting ratio is kept constant             
-        train_data, validation_data = data_loader.grid_split_data(q_list, v_list, _ratio,  seed)
+        train_data, validation_data = data_loader.grid_split_data(q_list, p_list, _ratio,  seed)
         #change the configuration as needed before integrate
         if mode == 'train' : # for training data 
             curr_data = train_data
