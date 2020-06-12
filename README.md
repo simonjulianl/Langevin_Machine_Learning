@@ -118,6 +118,7 @@ import Langevin_Machine_Learning.utils as confStat # configuration statistics
 
 energy = Hamiltonian.Hamiltonian()
 energy.append(Hamiltonian.asymmetrical_double_well())
+energy.append(Hamiltonian.Lennard_Jones(epsilon = 1, sigma = 1)) # arbitrary constants
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
 configuration = {
@@ -127,6 +128,8 @@ configuration = {
     'm' : 1,
     'N' : 100,
     'hamiltonian' : energy,
+    'periodicity' : True, # only periodic boundary condition is applied here 
+    'BoxSize' : 10, 
     }
 
 integration_setting = {
