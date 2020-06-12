@@ -44,7 +44,7 @@ class Hamiltonian:
             
         self.hamiltonian_terms.append(term)
         
-    def total_energy(self, q_list, p_list):
+    def total_energy(self, q_list, p_list, periodicity = False):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -57,11 +57,11 @@ class Hamiltonian:
         
         H = 0 # hamiltonian container
         for term in self.hamiltonian_terms : 
-            H += term.energy(q_list, p_list)
+            H += term.energy(q_list, p_list, periodicity)
     
         return H
 
-    def dHdq(self, q_list, p_list):
+    def dHdq(self, q_list, p_list, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -74,11 +74,11 @@ class Hamiltonian:
         dHdq = np.zeros(q_list.shape)
  
         for term in self.hamiltonian_terms : 
-            dHdq += term.evaluate_derivative_q(q_list, p_list)
+            dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
             
         return dHdq 
     
-    def dHdp(self, q_list, p_list):
+    def dHdp(self, q_list, p_list, periodicity = False):
         '''
         Function to get dHdp for every separable terms 
 
@@ -90,7 +90,7 @@ class Hamiltonian:
         assert q_list.shape == p_list.shape and len(q_list.shape) == 2
         dHdp = np.zeros(q_list.shape)
         for term in self.hamiltonian_terms : 
-            dHdp += term.evaluate_derivative_p(q_list, p_list)
+            dHdp += term.evaluate_derivative_p(q_list, p_list, periodicity)
             
         return dHdp
         

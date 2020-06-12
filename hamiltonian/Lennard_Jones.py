@@ -28,7 +28,7 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def energy(self, q_state, p_state):
+    def energy(self, q_state, p_state, periodicty = False):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -46,12 +46,15 @@ class Lennard_Jones(Interaction):
                 q1 = q_state[i]
                 q2 = q_state[j]
                 delta_q = q2 - q1 # calculate delta q 
+                if periodicty : # PBC only 
+                    if np.abs(delta_q > 0.5):
+                        delta_q = delta_q - np.copysign(1.0, delta_q)
                 q = np.dot(delta_q, delta_q) ** 0.5
                 term += eval(self._expression) - truncated_potential
                 
         return term 
     
-    def evaluate_derivative_q(self, q_state, p_state):
+    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -69,6 +72,9 @@ class Lennard_Jones(Interaction):
                 q1,p1 = q_state[i], p_state[i]
                 q2,p2 = q_state[j], p_state[j]
                 delta_q,p = q2 - q1, p2 - p1 # calculate delta q and delta p
+                if periodicty : # PBC only 
+                    if np.abs(delta_q > 0.5):
+                        delta_q = delta_q - np.copysign(1.0, delta_q)
                 #since dUdr = dUdx x/r 
                 q = np.dot(delta_q,delta_q) ** 0.5
                 if q < self._cutoff_r : 

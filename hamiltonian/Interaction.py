@@ -47,7 +47,7 @@ class Interaction(ABC):
         except :
             raise Exception('Differentiation fail')
         
-    def energy(self, q_state, p_state):
+    def energy(self, q_state, p_state, periodicity = False):
         '''
         function to calculate the term directly
         
@@ -65,7 +65,7 @@ class Interaction(ABC):
 
         return term
     
-    def evaluate_derivative_q(self, q_state, p_state):
+    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -88,7 +88,7 @@ class Interaction(ABC):
         
         return dHdq
     
-    def evaluate_derivative_p(self, q_state, p_state):
+    def evaluate_derivative_p(self, q_state, p_state, periodicty = False):
         '''
         Function to calculate dHdp
         

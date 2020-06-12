@@ -35,12 +35,13 @@ def leap_frog(**state) :
     
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
+    periodicity = state['periodicity']
     
     p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
     
     q = q + time_step * p #dq/dt
         
-    p = p + time_step  * ( -Hamiltonian.dHdq(q, p_list_dummy) ) #dp/dt
+    p = p + time_step  * ( -Hamiltonian.dHdq(q, p_list_dummy, periodicity) ) #dp/dt
     
     state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state 
     

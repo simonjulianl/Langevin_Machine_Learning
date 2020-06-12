@@ -102,7 +102,7 @@ class MCMC(Integration):
             directly change the current configuration setting
 
         '''
-    
+        periodicity = self._configuration['periodicity']
         curr_q = self._configuration['phase_space'].get_q()
         o = random.randint(0, len(curr_q) - 1) # randomly pick one particle from the state
         
@@ -110,7 +110,7 @@ class MCMC(Integration):
         #eno is the old potential energy configuration
         q_list = self._configuration['phase_space'].get_q()
         p_list = np.zeros(q_list.shape) # we pass in zero matrix to prevent KE from accidentally integrated
-        eno_p = self._configuration['hamiltonian'].total_energy(q_list, p_list)
+        eno_p = self._configuration['hamiltonian'].total_energy(q_list, p_list, periodicity)
         
         #perform random step with proposed uniform distribution
         qn = np.array(curr_q[o]) + (np.random.uniform(0,1, np.array(curr_q[o]).shape) - 0.5) * self._intSetting['dq']
@@ -121,7 +121,7 @@ class MCMC(Integration):
             
         #enn is the new potential energy configuration
         q_list = self._configuration['phase_space'].get_q()
-        enn_p = self._configuration['hamiltonian'].total_energy(q_list, p_list)
+        enn_p = self._configuration['hamiltonian'].total_energy(q_list, p_list, periodicity)
      
         #accept with probability proportional di e ^ -beta * delta E
         if random.uniform(0,1) >= np.exp(-self._configuration['beta'] * (enn_p - eno_p)):

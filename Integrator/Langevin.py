@@ -154,6 +154,14 @@ class Langevin(Integration):
             state['N'] = total_particle # update total_particle
 
             for i in trange(total_samples): 
+                
+                if self._configuration['periodicity'] : 
+                    # check pbc if activated
+                    q = state['phase_space'].get_q()
+                    q = np.where(q > 0.5, q - 1.0, q) # if more than 0.5 since box is [-0.5,0.5], pbc applies
+                    q = np.where(q < 0.5, q + 1.0, q)                
+                    state['phase_space'].set_q(q)
+                
                 p = state['phase_space'].get_p()
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
                 state['phase_space'].set_p(p)
@@ -167,7 +175,7 @@ class Langevin(Integration):
 
                 q_list_temp[i] = state['phase_space'].get_q()
                 p_list_temp[i] = state['phase_space'].get_p()  # sample
-           
+                
             return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
     
         processes = [] # list of processes to be processed 

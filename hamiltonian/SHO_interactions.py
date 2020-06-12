@@ -25,7 +25,7 @@ class SHO_interactions(Interaction):
         self._name = 'Simple Harmonic Oscillation Interactions' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def energy(self, q_state, p_state):
+    def energy(self, q_state, p_state, periodicty = False):
         '''
         function to calculate the term directly
         
@@ -42,13 +42,16 @@ class SHO_interactions(Interaction):
                 q1 = q_state[i]
                 q2 = q_state[j]
                 delta_q = q2 - q1 # calculate delta q 
+                if periodicty : # PBC only 
+                    if np.abs(delta_q > 0.5):
+                        delta_q = delta_q - np.copysign(1.0, delta_q)
                 #since it is a radial function
                 q = np.dot(delta_q,delta_q) ** 0.5
                 term += np.sum(eval(self._expression))     
                 
         return term 
     
-    def evaluate_derivative_q(self, q_state, p_state):
+    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -67,6 +70,9 @@ class SHO_interactions(Interaction):
                 q2,p2 = q_state[j], p_state[j]
                 delta_q,p = q2 - q1, p2 - p1 # calculate delta q and delta p
                 q = np.dot(delta_q, delta_q) ** 0.5 # this is the r
+                if periodicty : # PBC only 
+                    if np.abs(delta_q > 0.5):
+                        delta_q = delta_q - np.copysign(1.0, delta_q)
                 #since dUdr = dUdx x/r
                 dHdq[i] -= eval(self._derivative_q) * delta_q / q
                 dHdq[j] += eval(self._derivative_q) * delta_q / q            

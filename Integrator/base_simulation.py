@@ -9,7 +9,6 @@ Created on Thu May 28 17:30:43 2020
 import numpy as np
 from abc import ABC, abstractmethod 
 import warnings 
-from ..utils.data_util import data_loader
 from ..hamiltonian.hamiltonian import Hamiltonian
 from ..phase_space.phase_space import phase_space
 import os
@@ -101,7 +100,16 @@ class Integration(ABC) :
         self._configuration['phase_space'] = phase_space()
         self._configuration['phase_space'].set_q(pos)
         self._configuration['phase_space'].set_p(vel * kwargs['m'])
-
+        
+        self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
+        
+        if self._configuration['periodicity']:  # applying boundary condition 
+            try :
+                self._configuration['BoxSize'] = kwargs['BoxSize'] # get boxsize if possible , by default one 
+                #only PBC is considered here, rigid boundary condition and others are not considered.
+            except :
+                raise Exception('periodicity is True, but BoxSize / boundary not found')
+            
     @abstractmethod
     def integrate(self):
         pass
@@ -135,6 +143,14 @@ class Integration(ABC) :
         '''
         file_path = self._filename_creator()
         self._configuration['phase_space'].read(file_path, samples)
+        
+        if self._configuration['periodicity']: 
+            phase_space = self._configuration['phase_space']
+            scaled_q = phase_space.get_q() / self._configuration['BoxSize']
+            scaled_p = phase_space.get_p() / self._configuration['BoxSize']
+            phase_space.set_q(scaled_q)
+            phase_space.set_p(scaled_p) # scale to box size of -1 ro 1
+            
         q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
         
         if samples > self._configuration['N']:
@@ -161,6 +177,13 @@ class Integration(ABC) :
             default is None. Meaning save in init folder, can be modified to other folders 
         '''
         phase_space = self._configuration['phase_space']
+        
+        if self._configuration['periodicity'] :
+            scaled_q = phase_space.get_q() * self._configuration['BoxSize']
+            scaled_p = phase_space.get_p() * self._configuration['BoxSize']
+            phase_space.set_q(scaled_q)
+            phase_space.set_p(scaled_p)
+            
         file_path  = self._filename_creator()
         phase_space.write(filename = file_path)
         
