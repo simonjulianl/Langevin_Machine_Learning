@@ -29,6 +29,7 @@ q_hist = MSMC_integrator.integrate()
 # total samples used in momentum sampler is iterations / dumpfreq as they are usually used together 
 Momentum_sampler = Integrator.momentum_sampler(**configuration)
 p_hist = Momentum_sampler.integrate()
+p_hist = p_hist.reshape(q_hist.shape)
 confStat.plot_stat(q_hist, p_hist, 'q_dist', **configuration)
 
 DIM = q_hist.shape[-1] # flatten the q_hist of samples x N X DIM to a phase space

@@ -54,17 +54,26 @@ class Hamiltonian_Dataset(Dataset):
                                              samples, 
                                              DIM) # wrapper for dataloader 
         
-        _ratio = 0.6 # this splitting ratio is kept constant             
-        train_data, validation_data = data_loader.grid_split_data(q_list, p_list, _ratio,  seed)
+        _ratio_train = 0.6 # train-validation + test splitting      
+        train_data, validation_data = data_loader.grid_split_data(q_list, p_list, _ratio_train,  seed)
+        
+        q_list, p_list = validation_data[:,0], validation_data[:,1]
+        _ratio_validation = 0.5 # 0.5 of 0.4 so 0.2 of the entire dataset
+        validation_data, test_data = data_loader.grid_split_data(q_list, p_list, _ratio_validation, seed)
+        
         #change the configuration as needed before integrate
         if mode == 'train' : # for training data 
             curr_data = train_data
             print('generating the training data \n')
-            del validation_data
+            del validation_data, test_data
         elif mode == 'validation':
             print('generating the validation data \n')
             curr_data = validation_data
-            del train_data
+            del train_data, test_data
+        elif mode == 'test' : 
+            print('generating the test data \n')
+            curr_data = test_data
+            del train_data, validation_data
         else : 
             raise Exception('Mode not recognized, only train/validation')
             

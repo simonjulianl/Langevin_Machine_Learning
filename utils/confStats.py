@@ -189,7 +189,7 @@ class confStat:
                     #create hamiltonian list
                     potential = np.array([])
                     for i in range(len(q)):
-                        q_list_temp = np.expand_dims(q[i], axis = 1).reshape(1,1)
+                        q_list_temp = np.expand_dims(q[i], axis = 0).reshape(1,1)
                         p_list_temp = np.zeros(q_list_temp.shape) # prevent KE from integrated
                         potential = np.append(potential,
                                               hamiltonian.total_energy(q_list_temp, p_list_temp))

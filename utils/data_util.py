@@ -193,7 +193,7 @@ class data_loader:
         
         grid_second = combination[i:]
         
-        print('Actual Split : {:.4f}% Train / {:.4f}% Validation '.format(
+        print('Actual Split : {:.4f}% first split / {:.4f}% second split '.format(
             100.*N_first_current / N, 100. * (total_particle - N_first_current) / N
             )) # mention the splitting 
     
