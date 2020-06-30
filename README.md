@@ -17,8 +17,8 @@ tested modules are marked by the check marks. All classes could be used directly
 - [x] Hamiltonian
 - [x] kinetic_energy
 - [x] asymmetrical_double_well
-- [ ] Lennard_Jones
-- [ ] SHO_interactions ( Simple Harmonic Oscillator )
+- [x] Lennard_Jones
+- [x] SHO_interactions ( Simple Harmonic Oscillator )
 - [x] SHO_potential
 
 #### Langevin_Machine_Learning.Integrator
@@ -53,7 +53,7 @@ tested modules are marked by the check marks. All classes could be used directly
 <hr>
 
 # Directions to use 
-All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, using the **phase space class** ( look at code example MCMC ) and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog). 
+All initialization data for MD / NN trainer should be stored  at **./Langevin_Machine_Learning/init folder**, using the **phase space class** ( look at code example MCMC ) and all the states to be used for ML integrator should be stored at **./Langevin_Machine_Learning/Integrator/states** folder according to the naming convention (eg. **'LF_state_best.pth'** for Leapfrog).  Moreover **T999** is just a dummy value in init, to indicate a mix of temperature from 1 - 10 used for test dataset. It is used to compare the performance between ML and non-ML.
 
 Secondly, to view the plot of training loss/ validation loss and hamiltonian, by using backend tensorboard by pytorch, input following command in the terminal : 
 ```
