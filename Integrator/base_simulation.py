@@ -38,10 +38,11 @@ class Integration(ABC) :
                 default : 1 unit
             -hamiltonian : Hamiltonian
                 Hamiltonian class consisting all the interactions
-                
+            -pos : np.array ( N X DIM Shape ) (Optional)
+                Position Matrix ( q )
+            -vel : np.array( N X DIM Shape ) (Optional)
+                Velocity Matrix ( p ) 
             the potential is assumed to be symmetrical around x, y and z axis
-                
-        Position and Velocity Matrix : N x DIM matrix 
         
         Returns
         -------
@@ -87,7 +88,7 @@ class Integration(ABC) :
             MassCentre = np.sum(pos,axis = 0) / self._configuration['N']
             for i in range(self._configuration['DIM']) :
                 pos[:,i] = pos[:,i] - MassCentre[i]
-                
+        
         if vel is None :
             vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['DIM']))
             if self._configuration['N'] == 1 : 
