@@ -315,7 +315,7 @@ class SHNN_trainer:
             #for 1 dimensional data, squeeze is the same as linearize as N x 2 data
             
             self._optimizer.zero_grad()
-  
+     
             try :
                 prediction = model(q_list, p_list, self._time_step)
             except : 

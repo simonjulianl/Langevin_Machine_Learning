@@ -40,34 +40,36 @@ class ML_integrator:
         elif 'PV' in filename.upper() : #position verlet
             self.ML_integrator = MLP2H_Separable_Hamil_PV(2,20)
             
-        self.ML_integrator.load_state_dict(best_setting['state_dict'])
-                
+        self.ML_integrator.set_n_stack(1) # set stack to 1
+        self.ML_integrator.load_state_dict(best_setting[0]['state_dict'])
+
     def __call__(self, **state): #base integrator function to call the class as a function 
         '''this allows the ML integrator to be called'''
-        device = state.get('device', 'cpu')
-        q = torch.tensor(state['phase_space'].get_q(), dtype = torch.float32).requires_grad_(True).to(device)
-        p = torch.tensor(state['phase_space'].get_p(), dtype = torch.float32).requires_grad_(True).to(device) 
+        device = 'cpu'
+        q = torch.tensor(state['phase_space'].get_q(), dtype = torch.float32).squeeze().requires_grad_(True).to(device)
+        p = torch.tensor(state['phase_space'].get_p(), dtype = torch.float32).squeeze().requires_grad_(True).to(device) 
     
         self.ML_integrator.eval()
+
         q_next, p_next = self.ML_integrator(q,p, state['time_step'])
-        
-        state['phase_space'].set_q(q_next.cpu().detach().numpy())
-        state['phase_space'].set_p(p_next.cpu().detach().numpy())
+
+        state['phase_space'].set_q(q_next.cpu().detach().numpy().reshape(-1,state['DIM']))
+        state['phase_space'].set_p(p_next.cpu().detach().numpy().reshape(-1,state['DIM']))
         
         return state 
 
 class position_verlet_ML(ML_integrator):
-    def __init__(self):
+    def __init__(self, filename):
         ''' full documentation is written in the ML_integrator class'''
-        super().__init__('PV_state_best')
+        super().__init__(filename)
         
 class velocity_verlet_ML(ML_integrator):
-    def __init__(self):
+    def __init__(self,filename):
         ''' full documentation is written in the ML_integrator class'''
-        super().__init__('VV_state_best')
+        super().__init__(filename)
         
 class leap_frog_ML(ML_integrator):
-    def __init__(self):
+    def __init__(self, filename):
         ''' full documentation is written in the ML_integrator class'''
-        super().__init__('LF_state_best')
+        super().__init__(filename)
         
