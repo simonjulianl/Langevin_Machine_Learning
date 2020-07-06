@@ -79,12 +79,12 @@ class Interaction(ABC):
         dHdq = np.array([]) #derivative of separable term in N X DIM matrix 
         for q,p in zip(q_state,p_state):
             if len(dHdq) == 0 :
-                if eval(self._derivative_q) == 0 :
+                if np.array(eval(self._derivative_q)).all() == 0 :
                     dHdq = np.expand_dims(np.zeros(q.shape), axis = 0)
                 else : 
                     dHdq = np.expand_dims(eval(self._derivative_q), 0)
             else : 
-                if eval(self._derivative_q) == 0 :    
+                if np.array(eval(self._derivative_q)).all() == 0 :    
                     temp = np.expand_dims(np.zeros(q.shape), axis = 0)
                 else : 
                     temp = np.expand_dims(eval(self._derivative_q), 0)
