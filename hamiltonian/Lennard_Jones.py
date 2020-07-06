@@ -54,7 +54,7 @@ class Lennard_Jones(Interaction):
                 
         return term 
     
-    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_q(self, q_state, p_state, BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -69,8 +69,8 @@ class Lennard_Jones(Interaction):
         N, DIM  = q_state.shape
         for i in range(N-1) : # loop for every pair of q1,q2
             for j in range(i+1, N) :
-                q1,p1 = q_state[i], p_state[i]
-                q2,p2 = q_state[j], p_state[j]
+                q1,p1 = q_state[i] * BoxSize, p_state[i] * BoxSize
+                q2,p2 = q_state[j] * BoxSize, p_state[j] * BoxSize
                 delta_q,p = q2 - q1, p2 - p1 # calculate delta q and delta p
                 if periodicty : # PBC only 
                     if np.abs(delta_q > 0.5):
@@ -78,8 +78,12 @@ class Lennard_Jones(Interaction):
                 #since dUdr = dUdx x/r 
                 q = np.dot(delta_q,delta_q) ** 0.5
                 if q < self._cutoff_r : 
-                    dHdq[i] -= eval(self._derivative_q) * delta_q / q
-                    dHdq[j] += eval(self._derivative_q) * delta_q / q             
+                    try : 
+                        dHdq[i] -= eval(self._derivative_q) * (delta_q / q) / BoxSize 
+                        # scale acceleration by boxsize
+                        dHdq[j] += eval(self._derivative_q) * (delta_q / q) / BoxSize        
+                    except : 
+                        raise Exception('dHdq computational error')
              
         return dHdq
     

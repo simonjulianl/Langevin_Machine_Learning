@@ -61,7 +61,7 @@ class Hamiltonian:
     
         return H
 
-    def dHdq(self, q_list, p_list, periodicity = False):
+    def dHdq(self, q_list, p_list, BoxSize = 1, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -74,7 +74,10 @@ class Hamiltonian:
         dHdq = np.zeros(q_list.shape)
  
         for term in self.hamiltonian_terms : 
-            dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
+            if 'Lennard_Jones' in term.__class__.__name__ : # Exception because need to scale by boxsize
+                dHdq += term.evaluate_derivative_q(q_list, p_list, BoxSize, periodicity)
+            else : 
+                dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
             
         return dHdq 
     

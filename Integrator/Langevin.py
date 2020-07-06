@@ -159,7 +159,7 @@ class Langevin(Integration):
                     # check pbc if activated
                     q = state['phase_space'].get_q()
                     q = np.where(q > 0.5, q - 1.0, q) # if more than 0.5 since box is [-0.5,0.5], pbc applies
-                    q = np.where(q < 0.5, q + 1.0, q)                
+                    q = np.where(q < -0.5, q + 1.0, q)      
                     state['phase_space'].set_q(q)
                 
                 p = state['phase_space'].get_p()
@@ -168,7 +168,7 @@ class Langevin(Integration):
 
                 for j in range(self._intSetting['DumpFreq']):
                     state = integrator_method(**state)
-
+            
                 p = state['phase_space'].get_p()
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
                 state['phase_space'].set_p(p)
