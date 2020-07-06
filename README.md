@@ -31,8 +31,8 @@ tested modules are marked by the check marks. All classes could be used directly
 - [x] position_verlet
 - [x] velocity_verlet
 - [ ] leap_frog_ML
-- [ ] position_verlet_ML
-- [ ] velocity_verlet_ML
+- [x] position_verlet_ML
+- [x] velocity_verlet_ML
 
 #### Langevin_Machine_Learning.utils
 - [x] temp
