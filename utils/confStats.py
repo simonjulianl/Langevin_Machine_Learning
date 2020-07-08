@@ -181,6 +181,13 @@ class confStat:
             except : 
                 raise Exception('kB / Temperature not set ')
                 
+            def KL_divergence(p,q,dq):
+                '''helper function to calculate the KL divergence between two distributions
+                with smoothing eps = 1e-9 where they are two discrteized continuous functions'''
+                eps = 1e-9
+                return np.sum(np.fromiter(((p[i] + eps) * dq * np.log((p[i] + eps)/(q[i] + eps)) for i in range(len(p))),
+                                          dtype = np.float32))
+            
             for n in range(configuration['DIM']):
                 if mode == 'q_dist':
                     curr = q_hist[:,:,n].reshape(-1,1) # collapse to 1 long list
@@ -197,6 +204,7 @@ class confStat:
                     dq = q[1:] - q[:-1]
                     yqs = 0.5 * (prob_q[1:] + prob_q[:-1])
                     Zq = np.dot(yqs.T, dq) # total area
+                    P = prob_q / Zq
                     plt.plot(q,prob_q/Zq,marker = None, color = "red", linestyle = '-',label = 'q exact') 
                     
                 elif mode == 'v_dist': 
@@ -204,7 +212,7 @@ class confStat:
                     #plot exact
                     v = np.linspace(np.min(curr),np.max(curr),1000)
                     prob_v = ((_m * _beta)/ (2 * np.pi))**0.5 * np.exp(-_beta * (v ** 2.0) / 2)
-                    
+                    P = prob_v
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                 
                 elif mode == 'speed_dist':
@@ -212,16 +220,18 @@ class confStat:
                     speed = np.linalg.norm(curr, 2, axis = 1)
                     v = np.linspace(np.min(speed),np.max(speed),1000)
                     prob_v = 4 * np.pi * (_beta/(2 * np.pi)) ** 1.5 * v ** 2.0 *  np.exp(-_beta * v ** 2.0 / (2 * _m))
+                    P = prob_v
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                     
-                interval = (np.max(curr) - np.min(curr)) / 30
+                interval = (np.max(curr) - np.min(curr)) / 1001
                 values, edges = np.histogram(curr, bins = np.arange(np.min(curr), np.max(curr) , interval),
                          density = True) # plot pdf 
+                Q = values # approximation to P
+                dq = edges[1] - edges[0]
                 center_bins = 0.5 * (edges[1:] + edges[:-1])
                 plt.plot(center_bins, values, color = color[mode] , label = mode)
                 plt.ylabel('pdf')
                 plt.legend(loc = 'best')
-                
                 
                 if mode == 'speed_dist' : 
                     plt.xlabel(mode[0])
@@ -229,4 +239,5 @@ class confStat:
                     return #exit the function since we take all the dimensions at once
                 
                 plt.xlabel(mode[0] + dim[n])
+                print('KL Divergence of Q to P : ', KL_divergence(P, Q, dq))
                 plt.show()
