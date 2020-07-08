@@ -230,9 +230,7 @@ class confStat:
                          density = True) # plot pdf 
                 Q = values # approximation to P
                 dq = edges[1] - edges[0]
-
-                    plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
-                    
+   
                 interval = (np.max(curr) - np.min(curr)) / 30
                 values, edges = np.histogram(curr, bins = np.arange(np.min(curr), np.max(curr) , interval),
                          density = True) # plot pdf 
@@ -248,5 +246,5 @@ class confStat:
                     return #exit the function since we take all the dimensions at once
                 
                 plt.xlabel(mode[0] + dim[n])
-                print('KL Divergence of Q to P : ', KL_divergence(P, Q, dq))
+                print('KL Divergence of Q  to P : ', KL_divergence(P, Q, dq))
                 plt.show()
