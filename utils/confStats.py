@@ -181,6 +181,7 @@ class confStat:
             except : 
                 raise Exception('kB / Temperature not set ')
                 
+<<<<<<< HEAD
             def KL_divergence(p,q,dq):
                 '''helper function to calculate the KL divergence between two distributions
                 with smoothing eps = 1e-9 where they are two discrteized continuous functions'''
@@ -188,6 +189,8 @@ class confStat:
                 return np.sum(np.fromiter(((p[i] + eps) * dq * np.log((p[i] + eps)/(q[i] + eps)) for i in range(len(p))),
                                           dtype = np.float32))
             
+=======
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
             for n in range(configuration['DIM']):
                 if mode == 'q_dist':
                     curr = q_hist[:,:,n].reshape(-1,1) # collapse to 1 long list
@@ -204,7 +207,10 @@ class confStat:
                     dq = q[1:] - q[:-1]
                     yqs = 0.5 * (prob_q[1:] + prob_q[:-1])
                     Zq = np.dot(yqs.T, dq) # total area
+<<<<<<< HEAD
                     P = prob_q / Zq
+=======
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
                     plt.plot(q,prob_q/Zq,marker = None, color = "red", linestyle = '-',label = 'q exact') 
                     
                 elif mode == 'v_dist': 
@@ -212,7 +218,11 @@ class confStat:
                     #plot exact
                     v = np.linspace(np.min(curr),np.max(curr),1000)
                     prob_v = ((_m * _beta)/ (2 * np.pi))**0.5 * np.exp(-_beta * (v ** 2.0) / 2)
+<<<<<<< HEAD
                     P = prob_v
+=======
+                    
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                 
                 elif mode == 'speed_dist':
@@ -220,6 +230,7 @@ class confStat:
                     speed = np.linalg.norm(curr, 2, axis = 1)
                     v = np.linspace(np.min(speed),np.max(speed),1000)
                     prob_v = 4 * np.pi * (_beta/(2 * np.pi)) ** 1.5 * v ** 2.0 *  np.exp(-_beta * v ** 2.0 / (2 * _m))
+<<<<<<< HEAD
                     P = prob_v
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                     
@@ -228,16 +239,30 @@ class confStat:
                          density = True) # plot pdf 
                 Q = values # approximation to P
                 dq = edges[1] - edges[0]
+=======
+                    plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
+                    
+                interval = (np.max(curr) - np.min(curr)) / 30
+                values, edges = np.histogram(curr, bins = np.arange(np.min(curr), np.max(curr) , interval),
+                         density = True) # plot pdf 
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
                 center_bins = 0.5 * (edges[1:] + edges[:-1])
                 plt.plot(center_bins, values, color = color[mode] , label = mode)
                 plt.ylabel('pdf')
                 plt.legend(loc = 'best')
                 
+<<<<<<< HEAD
+=======
+                
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
                 if mode == 'speed_dist' : 
                     plt.xlabel(mode[0])
                     plt.show()
                     return #exit the function since we take all the dimensions at once
                 
                 plt.xlabel(mode[0] + dim[n])
+<<<<<<< HEAD
                 print('KL Divergence of Q to P : ', KL_divergence(P, Q, dq))
+=======
+>>>>>>> 608d48f2dd4e8e1195ef21881301c12ba2ffd977
                 plt.show()
