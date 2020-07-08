@@ -44,7 +44,7 @@ class Hamiltonian:
             
         self.hamiltonian_terms.append(term)
         
-    def total_energy(self, q_list, p_list, periodicity = False):
+    def total_energy(self, q_list, p_list, BoxSize = 1,periodicity = False):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -60,12 +60,16 @@ class Hamiltonian:
             print('hamiltonian.py term',term)
             print('hamiltonian.py q_list',q_list)
             print('hamiltonian.py p_list',p_list)
-            H += term.energy(q_list, p_list, periodicity)
+            if 'Lennard_Jones' in term.__class__.__name__:
+                H += term.energy(q_list, p_list, BoxSize,periodicity)
+            else:
+                H += term.energy(q_list, p_list,periodicity)
+
             print('hamiltonian.py periodicity term', periodicity, term)
     
         return H
 
-    def dHdq(self, q_list, p_list, periodicity = False):
+    def dHdq(self, q_list, p_list, BoxSize = 1, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -80,9 +84,15 @@ class Hamiltonian:
         print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
 
         for term in self.hamiltonian_terms :
-            print('Hamiltonian.py for dHdq', dHdq)
-            dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
-            print('Hamiltonian.py dHdq+', dHdq.shape)
+            if 'Lennard_Jones' in term.__class__.__name__ : # Exception because need to scale by boxsize
+                print('Hamiltonian.py for dHdq', dHdq)
+                dHdq += term.evaluate_derivative_q(q_list, p_list, BoxSize, periodicity)
+                print('Hamiltonian.py dHdq+', dHdq.shape)
+            else:
+                print('Hamiltonian.py for dHdq', dHdq)
+                dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
+                print('Hamiltonian.py dHdq+', dHdq.shape)
+
         return dHdq 
     
     def dHdp(self, q_list, p_list, periodicity = False):

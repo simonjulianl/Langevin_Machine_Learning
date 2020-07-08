@@ -29,7 +29,7 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential'
         #since interaction is a function of r or delta q instead of q, we need to modift the data
 
-    def energy(self, q_state, p_state, periodicty = False):
+    def energy(self, q_state, p_state, BoxSize = 1,periodicty = False):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -51,7 +51,7 @@ class Lennard_Jones(Interaction):
                     print('Lennard_Jones.py energy q1', q1)
                     q2 = q_state[k,j]
                     print('Lennard_Jones.py energy q2', q2)
-                    delta_q = q2 - q1 # calculate delta q
+                    delta_q = q2 - q1 # Reduced LJ units
                     print('Lennard_Jones.py energy dq_x ', delta_q[0])
                     print('Lennard_Jones.py energy dq_y ', delta_q[1])
                     if periodicty : # PBC only
@@ -60,7 +60,8 @@ class Lennard_Jones(Interaction):
                                 delta_q[l] = delta_q[l] - np.copysign(1.0, delta_q[l])
                                 print('Lennard_Jones.py energy delta_q{} pbc'.format(l), delta_q[l])
 
-                    q = np.dot(delta_q, delta_q) ** 0.5
+                    Rij = BoxSize * delta_q  # scale the box to the real units
+                    q = np.sqrt(np.dot(Rij, Rij))
                     print('Lennard_Jones.py energy q', q)
                     #term += eval(self._expression) - truncated_potential
                     print('Lennard_Jones.py energy self._expression', self._expression)
@@ -68,7 +69,7 @@ class Lennard_Jones(Interaction):
 
         return term
 
-    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_q(self, q_state, p_state, BoxSize = 1,periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -93,7 +94,7 @@ class Lennard_Jones(Interaction):
                     q2 = q_state[k,j]
                     print('Lennard_Jones.py q2',q2.shape)
                     print(q2)
-                    delta_q  = q2 - q1  # calculate delta q and delta p
+                    delta_q  = q2 - q1  # Reduced LJ units
                     print('Lennard_Jones.py dq_x ',delta_q[0])
                     print('Lennard_Jones.py dq_y ', delta_q[1])
                     if periodicty : # PBC only
@@ -104,7 +105,8 @@ class Lennard_Jones(Interaction):
                                 print('Lennard_Jones.py delta_q{} pbc'.format(l),delta_q[l])
 
                     #since dUdr = dUdx x/r
-                    q = np.dot(delta_q,delta_q) ** 0.5
+                    Rij = BoxSize * delta_q  # scale the box to the real units
+                    q = np.sqrt(np.dot(Rij, Rij))
                     print('Lennard_Jones.py q',q)
                     #if q < self._cutoff_r :
                     print('Lennard_Jones.py derivative_q',self._derivative_q)
