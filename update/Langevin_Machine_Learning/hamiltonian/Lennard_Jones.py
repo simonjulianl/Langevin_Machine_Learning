@@ -29,6 +29,17 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential'
         #since interaction is a function of r or delta q instead of q, we need to modift the data
 
+    # def pos_pbc(self,q_state):
+    #
+    #     N, particle, DIM = q_state.shape
+    #     # Refold positions according to periodic boundary conditions
+    #     for i in range(DIM):
+    #         period = np.where(pos[:, i] > 0.5)
+    #         pos[period, i] = pos[period, i] - 1.0
+    #         period = np.where(pos[:, i] < -0.5)
+    #         pos[period, i] = pos[period, i] + 1.0
+
+
     def energy(self, q_state, p_state, BoxSize = 1,periodicty = False):
         '''
         function to calculate the term directly for truncated lennard jones

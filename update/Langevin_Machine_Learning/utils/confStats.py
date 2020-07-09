@@ -120,7 +120,7 @@ class confStat:
             Error in Modes supplied or kB/ Temperature not supplied in configuration
 
         '''
-        line_plot = ['energy', 'p', 'potential', 'kinetic','q']
+        line_plot = ['energy', 'p', 'potential', 'kinetic','q','all']
         hist_plot = ['v_dist', 'q_dist', 'speed_dist']
  
         if mode not in line_plot and mode not in hist_plot:
@@ -163,18 +163,31 @@ class confStat:
                     plt.ylabel(mode + ' ' + dim[n])
                     plt.legend(loc = 'best')
                     plt.show()
-            else : 
+
+            elif mode == 'all':
+
+                plt.plot(energy, label = 'total energy')
+                plt.plot(kinetic, label='kinetic energy')
+                plt.plot(potential, label='potential energy')
+
+                plt.xlabel('sampled steps')
+                plt.legend(loc = 'best')
+                plt.show()
+
+            else :
                 if mode == 'energy' : # if energy , we use average on every dimension
                     plt.plot(energy, color = color[mode], label = 'total energy')
-                elif mode =='kinetic' : 
+                elif mode =='kinetic' :
                     plt.plot(kinetic, color = color[mode], label = 'kinetic energy')
-                elif mode == 'potential' : 
+                elif mode == 'potential' :
                     plt.plot(potential, color = color[mode], label = 'potential energy')
-                
+
                 plt.xlabel('sampled steps')
                 plt.ylabel(mode)
                 plt.legend(loc = 'best')
                 plt.show()
+
+
                     
         else : 
             try : 

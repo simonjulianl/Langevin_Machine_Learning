@@ -19,14 +19,14 @@ configuration = {
     'm' : 1,
     'particle' : 2,
     'N' : 64000,   # Total number of particle
-    'BoxSize': 1,
+    'BoxSize': 0.55,
     'periodicity' : True,
     'hamiltonian' : energy,
     'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.55))
     }
 
 integration_setting = {
-    'iterations' : 500,
+    'iterations' : 10,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
     'time_step' : 0.01,
@@ -52,7 +52,8 @@ print('\n')
 q_hist, p_hist = MD_integrator.integrate()
 print('q_hist.shape',q_hist.shape)
 print('p_hist.shape',p_hist.shape)
-confStat.plot_stat(q_hist, p_hist, 'energy',**configuration)
+
+confStat.plot_stat(q_hist, p_hist, 'all',**configuration)
 quit()
 #plot the statistic of q distribution based on current state configuration
 
