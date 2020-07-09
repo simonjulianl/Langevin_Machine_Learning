@@ -78,7 +78,7 @@ class Langevin(Integration):
         seed = kwargs.get('seed', 937162211)
         np.random.seed(seed)
 
-    def integrate(self):
+    def integrate(self,multicpu=True):
         '''
         Implementation of OBABO Langevin NVT Sampling 
         
@@ -130,112 +130,139 @@ class Langevin(Integration):
         print('Langevin.py q_list_zero',q_list.shape)
         print('Langevin.py p_list_zero',p_list.shape)
 
-        def integrate_helper(num, return_dict , **state):    
-            ''' helper function for multiprocessing 
-            
-            Precaution
-            ----------
-            Max N per Process is 1000, be careful with the memory
-            
-            Parameters
-            ----------
-            num : int 
-                Number of the process passed into the integrate helper
-            
-            return_dict : dict
-                common dictionary between processes
-                
-            **state : dict
-                split state that is passed into the integrate helper
-            '''
-            
-            total_particle = state['N_split']
-            print('Langevin.py total_particle',total_particle)
-          
-            q_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
-            print('Langevin.py q_list_temp', q_list_temp.shape)
-            p_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
-            print('Langevin.py q_list_temp', q_list_temp.shape)
-            
-            state['N'] = total_particle # update total_particle
-            print('Langevin.py N', N)
+        if not multicpu:
+            for i in trange(total_samples):
 
-            for i in trange(total_samples): 
-                
-                if self._configuration['periodicity'] : 
+                if self._configuration['periodicity']:
                     # check pbc if activated
-                    q = state['phase_space'].get_q()
-                    print('Langevin.py q',q.shape)
-                    q = np.where(q > 0.5, q - 1.0, q) # if more than 0.5 since box is [-0.5,0.5], pbc applies
-                    q = np.where(q < 0.5, q + 1.0, q)                
-                    state['phase_space'].set_q(q)
-                
-                p = state['phase_space'].get_p()
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
-                state['phase_space'].set_p(p)
+                    q = self._configuration['phase_space'].get_q()
+                    q = np.where(q > 0.5, q - 1.0, q)  # if more than 0.5 since box is [-0.5,0.5], pbc applies
+                    q = np.where(q < -0.5, q + 1.0, q)
+                    self._configuration['phase_space'].set_q(q)
+
+                p = self._configuration['phase_space'].get_p()
+                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * time_step))) * \
+                    random_1[i]
+                self._configuration['phase_space'].set_p(p)
 
                 for j in range(self._intSetting['DumpFreq']):
-                    state = integrator_method(**state)
+                    self._configuration = integrator_method(**self._configuration)
 
-                p = state['phase_space'].get_p()
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
-                state['phase_space'].set_p(p)
+                p = self._configuration['phase_space'].get_p()
+                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * time_step))) * \
+                    random_2[i]
+                self._configuration['phase_space'].set_p(p)
 
-                q_list_temp[i] = state['phase_space'].get_q()
-                p_list_temp[i] = state['phase_space'].get_p()  # sample
-                
-            return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
-            print('return',return_dict[num])
-    
-        processes = [] # list of processes to be processed
-        # every process creates own 'manager' and 'return_dict'
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict() # common dictionary
-        curr_q = self._configuration['phase_space'].get_q()
-        curr_p = self._configuration['phase_space'].get_p()
-        print('Langevin.py curr_q',curr_q.shape)
-        print('Langevin.py curr_p', curr_p.shape)
-        assert curr_q.shape == curr_p.shape
-        
-        #split using multiprocessing for faster processing
-        #for i in range(0,len(curr_q),1000):
-        for i in range(0, len(curr_q), 4):
-            print('Langevin.py', i)
-            split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
-            print('Langevin.py split_state',split_state)
-            #split_state['phase_space'].set_q(curr_q[i:i+1000])
-            split_state['phase_space'].set_q(curr_q[i:i + 4])
-            print('Langevin.py curr_q[i:i + 100]',curr_q[i:i + 4].shape)
-            #split_state['phase_space'].set_p(curr_p[i:i+1000])
-            split_state['phase_space'].set_p(curr_p[i:i+4])
-            split_state['time_step'] = time_step
-            split_state['N_split'] = len(split_state['phase_space'].get_q())
-            
-            p  = multiprocessing.Process(target = integrate_helper, args = (i, return_dict), kwargs = split_state)
-            print('Langevin.py  p_',p)
+                q_list[i] = self._configuration['phase_space'].get_q()
+                p_list[i] = self._configuration['phase_space'].get_p()  # sample
 
-            processes.append(p)
-       
-        for p in processes :
-            p.start()
-            
-        for p in processes :
-            p.join() # block the main thread
+        else:
+            def integrate_helper(num, return_dict , **state):
+                ''' helper function for multiprocessing
 
-        print('Langevin.py return_dict', return_dict.keys())
-        #populate the original q list and p list
-        for i in return_dict.keys(): #skip every 1000
-            #q_list[:,i:i+1000] = return_dict[i][0] # q
-            #p_list[:,i:i+1000] = return_dict[i][1] # p
-            print('Langevin.py return_dict[i][0]', return_dict[i][0].shape)
-            q_list[:,i:i+4] = return_dict[i][0] # q
-            print('Langevin.py q_list' ,q_list.shape)
-            p_list[:,i:i+4] = return_dict[i][1] # p
-            print('Langevin.py p_list' ,p_list.shape)
-            
-        self._configuration['phase_space'].set_q(q_list[-1]) # update current state
-        self._configuration['phase_space'].set_p(p_list[-1]) # get the latest code
-                
+                Precaution
+                ----------
+                Max N per Process is 1000, be careful with the memory
+
+                Parameters
+                ----------
+                num : int
+                    Number of the process passed into the integrate helper
+
+                return_dict : dict
+                    common dictionary between processes
+
+                **state : dict
+                    split state that is passed into the integrate helper
+                '''
+
+                total_particle = state['N_split']
+                print('Langevin.py total_particle',total_particle)
+
+                q_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
+                print('Langevin.py q_list_temp', q_list_temp.shape)
+                p_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
+                print('Langevin.py q_list_temp', q_list_temp.shape)
+
+                state['N'] = total_particle # update total_particle
+                print('Langevin.py N', N)
+
+                for i in trange(total_samples):
+
+                    if self._configuration['periodicity'] :
+                        # check pbc if activated
+                        q = state['phase_space'].get_q()
+                        print('Langevin.py q',q.shape)
+                        q = np.where(q > 0.5, q - 1.0, q) # if more than 0.5 since box is [-0.5,0.5], pbc applies
+                        q = np.where(q < 0.5, q + 1.0, q)
+                        state['phase_space'].set_q(q)
+
+                    p = state['phase_space'].get_p()
+                    p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
+                    state['phase_space'].set_p(p)
+
+                    for j in range(self._intSetting['DumpFreq']):
+                        state = integrator_method(**state)
+
+                    p = state['phase_space'].get_p()
+                    p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
+                    state['phase_space'].set_p(p)
+
+                    q_list_temp[i] = state['phase_space'].get_q()
+                    p_list_temp[i] = state['phase_space'].get_p()  # sample
+
+                return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
+                print('return',return_dict[num])
+
+            processes = [] # list of processes to be processed
+            # every process creates own 'manager' and 'return_dict'
+            manager = multiprocessing.Manager()
+            return_dict = manager.dict() # common dictionary
+            curr_q = self._configuration['phase_space'].get_q()
+            curr_p = self._configuration['phase_space'].get_p()
+            print('Langevin.py curr_q',curr_q.shape)
+            print('Langevin.py curr_p', curr_p.shape)
+            assert curr_q.shape == curr_p.shape
+
+            #split using multiprocessing for faster processing
+            #for i in range(0,len(curr_q),1000):
+            for i in range(0, len(curr_q), 4):
+                print('Langevin.py', i)
+                split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
+                print('Langevin.py split_state',split_state)
+                #split_state['phase_space'].set_q(curr_q[i:i+1000])
+                split_state['phase_space'].set_q(curr_q[i:i + 4])
+                print('Langevin.py curr_q[i:i + 100]',curr_q[i:i + 4].shape)
+                #split_state['phase_space'].set_p(curr_p[i:i+1000])
+                split_state['phase_space'].set_p(curr_p[i:i+4])
+                split_state['time_step'] = time_step
+                split_state['N_split'] = len(split_state['phase_space'].get_q())
+
+                p  = multiprocessing.Process(target = integrate_helper, args = (i, return_dict), kwargs = split_state)
+                print('Langevin.py  p_',p)
+
+                processes.append(p)
+
+            for p in processes :
+                p.start()
+
+            for p in processes :
+                p.join() # block the main thread
+
+            print('Langevin.py return_dict', return_dict.keys())
+            #populate the original q list and p list
+            for i in return_dict.keys(): #skip every 1000
+                #q_list[:,i:i+1000] = return_dict[i][0] # q
+                #p_list[:,i:i+1000] = return_dict[i][1] # p
+                print('Langevin.py return_dict[i][0]', return_dict[i][0].shape)
+                q_list[:,i:i+4] = return_dict[i][0] # q
+                print('Langevin.py q_list' ,q_list.shape)
+                p_list[:,i:i+4] = return_dict[i][1] # p
+                print('Langevin.py p_list' ,p_list.shape)
+
+            self._configuration['phase_space'].set_q(q_list[-1]) # update current state
+            self._configuration['phase_space'].set_p(p_list[-1]) # get the latest code
+
         if (np.isnan(q_list).any()) or (np.isnan(p_list).any()):
             raise ArithmeticError('Numerical Integration error, nan is detected')
             

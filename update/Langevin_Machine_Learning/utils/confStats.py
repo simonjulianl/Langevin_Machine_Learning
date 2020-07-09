@@ -9,6 +9,7 @@ Created on Thu May 28 16:50:15 2020
 import numpy as np
 import warnings
 import matplotlib.pyplot as plt 
+from ..phase_space import phase_space
 
 class confStat:
     '''Helper Class to get the statistic of the configuration
@@ -141,6 +142,9 @@ class confStat:
         
         dim = {0 : 'x', 1 : 'y', 2 :'z'}
         hamiltonian = configuration['hamiltonian']
+        BoxSize = configuration['BoxSize']
+        periodicity = configuration['periodicity']
+
         print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot :      
             potential = []
@@ -148,11 +152,22 @@ class confStat:
             print('confStats.py q_hist',q_hist.shape)
             for i in range(len(q_hist)):
                 p_dummy_list = np.zeros(q_hist[i].shape)
-                potential.append(hamiltonian.total_energy(q_hist[i], p_dummy_list,periodicity=True)) # ADD periodicity=True
-                energy.append(hamiltonian.total_energy(q_hist[i], p_hist[i]))
+                temporary_phase_space = phase_space()
+                temporary_phase_space.set_q(q_hist[i])
+                temporary_phase_space.set_p(p_dummy_list)
+
+                print('confStats.py temporary_phase_space ',temporary_phase_space)
+                potential.append(hamiltonian.total_energy(temporary_phase_space, BoxSize,periodicity=True)) # ADD periodicity=True
+
+                temporary_phase_space.set_p(p_hist[i])
+                energy.append(hamiltonian.total_energy(temporary_phase_space, BoxSize,periodicity=True))
+
             
             kinetic = np.array(energy) - np.array(potential)
-            
+            print('confStats.py kinetic', kinetic)
+            print('confStats.py potential',potential)
+            print('confStats.py energy',energy)
+
             if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
                 for n in range(configuration['DIM']):
                     if mode == 'p':

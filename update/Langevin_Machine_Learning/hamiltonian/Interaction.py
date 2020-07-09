@@ -53,7 +53,7 @@ class Interaction(ABC):
         print('Interaction.py _derivative_q', self._derivative_q)
         print('Interaction.py _derivative_p', self._derivative_p)
         
-    def energy(self, q_state, p_state, periodicity = False):
+    def energy(self, phase_space, BoxSize,periodicity = False):
         '''
         function to calculate the term directly
         
@@ -64,6 +64,10 @@ class Interaction(ABC):
 
         '''
         term = 0 # sum of separable term
+        # both q_list and p_list must have the same shape and q_state is N X particle X DIM matrix
+        print('interation.py phase_space',phase_space)
+        q_state = phase_space.get_q()
+        p_state = phase_space.get_p()
         print('interation.py q_state',q_state.shape)
         print('interation.py p_state',p_state.shape)
         assert q_state.shape == p_state.shape and len(q_state.shape) == 3
@@ -73,7 +77,7 @@ class Interaction(ABC):
 
         return term
     
-    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_q(self, phase_space,BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdq
         Returns
@@ -81,6 +85,9 @@ class Interaction(ABC):
         dHdq: np.array 
             dHdq calculated given the terms of N X DIM
         '''
+
+        q_state = phase_space.get_q()
+        p_state = phase_space.get_p()
         assert q_state.shape == p_state.shape and len(q_state.shape) == 3
         print('interation.py evaluate_derivative_q',q_state.shape)
         dHdq = np.array([]) #derivative of separable term in N x particle X DIM matrix

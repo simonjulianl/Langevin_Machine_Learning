@@ -40,7 +40,7 @@ class Lennard_Jones(Interaction):
     #         pos[period, i] = pos[period, i] + 1.0
 
 
-    def energy(self, q_state, p_state, BoxSize = 1,periodicty = False):
+    def energy(self, phase_space, BoxSize = 1,periodicty = False):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -51,6 +51,8 @@ class Lennard_Jones(Interaction):
 
         '''
         #truncated_potential = 4 * self._epsilon * ((1/2.5) ** 12.0 - (1/2.5) ** 6.0)
+        print('Lennard_Jones.py energy phase_space',phase_space)
+        q_state = phase_space.get_q()
         term = 0
         print('Lennard_Jones.py energy q_state',q_state.shape)
         N, particle,DIM  = q_state.shape # ADD particle
@@ -80,7 +82,7 @@ class Lennard_Jones(Interaction):
 
         return term
 
-    def evaluate_derivative_q(self, q_state, p_state, BoxSize = 1,periodicty = False):
+    def evaluate_derivative_q(self, phase_space, BoxSize = 1,periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -90,6 +92,8 @@ class Lennard_Jones(Interaction):
             dHdq calculated given the terms of N X DIM 
 
         '''
+        q_state = phase_space.get_q()
+        p_state = phase_space.get_p()
         assert q_state.shape == p_state.shape and len(q_state.shape) == 3
         dHdq = np.zeros(q_state.shape) #derivative of separable term in N X DIM matrix
         print('Lennard_Jones.py evaluate_derivative_q q_state',q_state.shape)

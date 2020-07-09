@@ -115,14 +115,9 @@ class Integration(ABC) :
         
         self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
 
-        if self._configuration['periodicity']:  # applying boundary condition 
-            try :
-                self._configuration['BoxSize'] = kwargs['BoxSize'] # get boxsize if possible , by default one
-                print('base_simulation.py Boxsize')
-                #only PBC is considered here, rigid boundary condition and others are not considered.
-            except :
-                raise Exception('periodicity is True, but BoxSize / boundary not found')
-            
+        self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
+
+
     @abstractmethod
     def integrate(self):
         pass

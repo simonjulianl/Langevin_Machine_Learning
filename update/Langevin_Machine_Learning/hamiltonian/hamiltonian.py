@@ -39,12 +39,12 @@ class Hamiltonian:
             the interaction term as defined per each hamiltonian term of class Interaction
 
         '''
-        if not isinstance(term, Interaction) : 
+        if not isinstance(term, Interaction) :
             raise Exception('Interaction term is not derived from Interaction class')
-            
+
         self.hamiltonian_terms.append(term)
         
-    def total_energy(self, q_list, p_list, BoxSize = 1,periodicity = False):
+    def total_energy(self, phase_space, BoxSize = 1,periodicity = False):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -58,18 +58,14 @@ class Hamiltonian:
         H = 0 # hamiltonian container
         for term in self.hamiltonian_terms :
             print('hamiltonian.py term',term)
-            print('hamiltonian.py q_list',q_list)
-            print('hamiltonian.py p_list',p_list)
-            if 'Lennard_Jones' in term.__class__.__name__:
-                H += term.energy(q_list, p_list, BoxSize,periodicity)
-            else:
-                H += term.energy(q_list, p_list,periodicity)
+            print('hamiltonian.py phase_space',phase_space)
+            H += term.energy(phase_space, BoxSize,periodicity)
 
             print('hamiltonian.py periodicity term', periodicity, term)
     
         return H
 
-    def dHdq(self, q_list, p_list, BoxSize = 1, periodicity = False):
+    def dHdq(self,phase_space, BoxSize = 1, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -78,24 +74,20 @@ class Hamiltonian:
         dHdq : float 
             dHdq is the derivative of H with respect to q for N X DIM dimension 
         '''
-        assert q_list.shape == p_list.shape and len(q_list.shape) == 3
+        q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
+
         print('Hamiltonian.py dHdq', dHdq.shape)
         print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
 
         for term in self.hamiltonian_terms :
-            if 'Lennard_Jones' in term.__class__.__name__ : # Exception because need to scale by boxsize
-                print('Hamiltonian.py for dHdq', dHdq)
-                dHdq += term.evaluate_derivative_q(q_list, p_list, BoxSize, periodicity)
-                print('Hamiltonian.py dHdq+', dHdq.shape)
-            else:
-                print('Hamiltonian.py for dHdq', dHdq)
-                dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
-                print('Hamiltonian.py dHdq+', dHdq.shape)
+            print('Hamiltonian.py for dHdq', dHdq)
+            dHdq += term.evaluate_derivative_q(phase_space, BoxSize, periodicity)
+            print('Hamiltonian.py dHdq+', dHdq.shape)
 
         return dHdq 
     
-    def dHdp(self, q_list, p_list, periodicity = False):
+    def dHdp(self, phase_space, periodicity = False):
         '''
         Function to get dHdp for every separable terms 
 
@@ -104,6 +96,8 @@ class Hamiltonian:
         dHdp : float 
             dHdqp is the derivative of H with respect to p for N X DIM dimension 
         '''
+        q_list = phase_space.get_q()
+        p_list = phase_space.get_p()
         assert q_list.shape == p_list.shape and len(q_list.shape) == 3
         dHdp = np.zeros(q_list.shape)
         print('Hamiltonian.py dHdp',dHdp.shape)
