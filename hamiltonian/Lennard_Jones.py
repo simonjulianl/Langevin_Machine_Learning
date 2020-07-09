@@ -28,7 +28,7 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def energy(self, q_state, p_state, periodicty = False):
+    def energy(self, phase_space, BoxSize = 1, periodicty = False):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -38,6 +38,7 @@ class Lennard_Jones(Interaction):
             Hamiltonian calculated
 
         '''
+        q_state = phase_space.get_q() * BoxSize
         truncated_potential = 4 * self._epsilon * ((1/2.5) ** 12.0 - (1/2.5) ** 6.0) 
         term = 0
         N, DIM  = q_state.shape
@@ -54,7 +55,7 @@ class Lennard_Jones(Interaction):
                 
         return term 
     
-    def evaluate_derivative_q(self, q_state, p_state, BoxSize = 1, periodicty = False):
+    def evaluate_derivative_q(self, phase_space, BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -64,13 +65,14 @@ class Lennard_Jones(Interaction):
             dHdq calculated given the terms of N X DIM 
 
         '''
-        assert q_state.shape == p_state.shape and len(q_state.shape) == 2
+        q_state = phase_space.get_q() * BoxSize
+        p_state = phase_space.get_p() * BoxSize
         dHdq = np.zeros(q_state.shape) #derivative of separable term in N X DIM matrix 
         N, DIM  = q_state.shape
         for i in range(N-1) : # loop for every pair of q1,q2
             for j in range(i+1, N) :
-                q1,p1 = q_state[i] * BoxSize, p_state[i] * BoxSize
-                q2,p2 = q_state[j] * BoxSize, p_state[j] * BoxSize
+                q1,p1 = q_state[i] , p_state[i] 
+                q2,p2 = q_state[j] , p_state[j] 
                 delta_q,p = q2 - q1, p2 - p1 # calculate delta q and delta p
                 if periodicty : # PBC only 
                     if np.abs(delta_q > 0.5):

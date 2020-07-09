@@ -44,7 +44,7 @@ class Hamiltonian:
             
         self.hamiltonian_terms.append(term)
         
-    def total_energy(self, q_list, p_list, periodicity = False):
+    def total_energy(self, phase_space, BoxSize = 1,periodicity = False):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -57,11 +57,11 @@ class Hamiltonian:
         
         H = 0 # hamiltonian container
         for term in self.hamiltonian_terms : 
-            H += term.energy(q_list, p_list, periodicity)
+            H += term.energy(phase_space, BoxSize, periodicity)
     
         return H
 
-    def dHdq(self, q_list, p_list, BoxSize = 1, periodicity = False):
+    def dHdq(self, phase_space, BoxSize = 1, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -70,18 +70,15 @@ class Hamiltonian:
         dHdq : float 
             dHdq is the derivative of H with respect to q for N X DIM dimension 
         '''
-        assert q_list.shape == p_list.shape and len(q_list.shape) == 2
+        q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
  
         for term in self.hamiltonian_terms : 
-            if 'Lennard_Jones' in term.__class__.__name__ : # Exception because need to scale by boxsize
-                dHdq += term.evaluate_derivative_q(q_list, p_list, BoxSize, periodicity)
-            else : 
-                dHdq += term.evaluate_derivative_q(q_list, p_list, periodicity)
+            dHdq += term.evaluate_derivative_q(phase_space, BoxSize, periodicity)
             
         return dHdq 
     
-    def dHdp(self, q_list, p_list, periodicity = False):
+    def dHdp(self, phase_space, BoxSize = 1,periodicity = False):
         '''
         Function to get dHdp for every separable terms 
 
@@ -90,10 +87,10 @@ class Hamiltonian:
         dHdp : float 
             dHdqp is the derivative of H with respect to p for N X DIM dimension 
         '''
-        assert q_list.shape == p_list.shape and len(q_list.shape) == 2
+        q_list = phase_space.get_q()
         dHdp = np.zeros(q_list.shape)
         for term in self.hamiltonian_terms : 
-            dHdp += term.evaluate_derivative_p(q_list, p_list, periodicity)
+            dHdp += term.evaluate_derivative_p(phase_space , BoxSize, periodicity)
             
         return dHdp
         

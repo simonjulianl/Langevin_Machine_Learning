@@ -9,6 +9,7 @@ Created on Thu May 28 16:50:15 2020
 import numpy as np
 import warnings
 import matplotlib.pyplot as plt 
+from ..phase_space import phase_space
 
 class confStat:
     '''Helper Class to get the statistic of the configuration
@@ -141,13 +142,21 @@ class confStat:
         
         dim = {0 : 'x', 1 : 'y', 2 :'z'}
         hamiltonian = configuration['hamiltonian']
+        BoxSize = configuration['BoxSize']
+        periodicity = configuration['periodicity']
+        
         if mode in line_plot :      
             potential = []
             energy = []
             for i in range(q_hist):
                 p_dummy_list = np.zeros(q_hist[i].shape)
-                potential.append(hamiltonian.total_energy(q_hist[i], p_dummy_list))
-                energy.append(hamiltonian.total_energy(q_hist[i], p_hist[i]))
+                temporary_phase_space = phase_space()
+                temporary_phase_space.set_q(q_hist[i])
+                temporary_phase_space.set_p(p_dummy_list)
+                potential.append(hamiltonian.total_energy(temporary_phase_space, BoxSize, periodicity))
+                
+                temporary_phase_space.set_p(p_hist[i])
+                energy.append(hamiltonian.total_energy(temporary_phase_space, BoxSize, periodicity))
             
             kinetic = np.array(energy) - np.array(potential)
             
@@ -198,8 +207,12 @@ class confStat:
                     for i in range(len(q)):
                         q_list_temp = np.expand_dims(q[i], axis = 0).reshape(1,1)
                         p_list_temp = np.zeros(q_list_temp.shape) # prevent KE from integrated
+                        temp_phase_space = phase_space()
+                        temp_phase_space.set_q(q_list_temp)
+                        temp_phase_space.set_p(p_list_temp)
                         potential = np.append(potential,
-                                              hamiltonian.total_energy(q_list_temp, p_list_temp))
+                                              hamiltonian.total_energy(temp_phase_space, BoxSize, periodicity))
+              
                     prob_q = np.exp(-_beta * potential)
                     dq = q[1:] - q[:-1]
                     yqs = 0.5 * (prob_q[1:] + prob_q[:-1])
@@ -212,9 +225,7 @@ class confStat:
                     #plot exact
                     v = np.linspace(np.min(curr),np.max(curr),1000)
                     prob_v = ((_m * _beta)/ (2 * np.pi))**0.5 * np.exp(-_beta * (v ** 2.0) / 2)
-
                     P = prob_v
-
                     plt.plot(v,prob_v,marker = None, color = "red", linestyle = '-',label = 'v exact') 
                 
                 elif mode == 'speed_dist':
@@ -246,5 +257,7 @@ class confStat:
                     return #exit the function since we take all the dimensions at once
                 
                 plt.xlabel(mode[0] + dim[n])
-                print('KL Divergence of Q  to P : ', KL_divergence(P, Q, dq))
+                print()
+                print('KL Divergence of Q to P : ', KL_divergence(P, Q, dq))
+                print('JS Divergence of Q to P', 1/2 * KL_divergence(P, Q, dq) + 1/2 * KL_divergence(Q, P, dq))
                 plt.show()

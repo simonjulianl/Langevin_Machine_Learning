@@ -47,7 +47,7 @@ class Interaction(ABC):
         except :
             raise Exception('Differentiation fail')
         
-    def energy(self, q_state, p_state, periodicity = False):
+    def energy(self, phase_space, BoxSize = 1, periodicity = False):
         '''
         function to calculate the term directly
         
@@ -58,14 +58,15 @@ class Interaction(ABC):
 
         '''
         term = 0 # sum of separable term 
-        assert q_state.shape == p_state.shape and len(q_state.shape) == 2
         # both q_list and p_list must have the same shape and q_state is N X DIM matrix
+        q_state = phase_space.get_q() * BoxSize
+        p_state = phase_space.get_p() * BoxSize
         for q,p in zip(q_state,p_state) : 
             term += np.sum(eval(self._expression)) # sum across all dimensions
 
         return term
     
-    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_q(self, phase_space, BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -75,7 +76,8 @@ class Interaction(ABC):
             dHdq calculated given the terms of N X DIM 
 
         '''
-        assert q_state.shape == p_state.shape and len(q_state.shape) == 2
+        q_state = phase_space.get_q() * BoxSize
+        p_state = phase_space.get_p() * BoxSize
         dHdq = np.array([]) #derivative of separable term in N X DIM matrix 
         for q,p in zip(q_state,p_state):
             if len(dHdq) == 0 :
@@ -91,10 +93,11 @@ class Interaction(ABC):
                 dHdq = np.concatenate((dHdq, temp))
        
         dHdq = dHdq.reshape(q_state.shape) # should have the same dimension
+        dHdq /= BoxSize
         
         return dHdq
     
-    def evaluate_derivative_p(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_p(self, phase_space, BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdp
         
@@ -104,7 +107,8 @@ class Interaction(ABC):
             dHdp calculated given the terms, of N X DIM 
 
         '''
-        assert q_state.shape == p_state.shape and len(q_state.shape) == 2
+        q_state = phase_space.get_q() * BoxSize
+        p_state = phase_space.get_p() * BoxSize
         dHdp = np.array([])#derivative of separable term in N X DIM matrix 
         for q,p in zip(q_state,p_state):
             if len(dHdp) == 0 : 
@@ -114,6 +118,7 @@ class Interaction(ABC):
                 dHdp = np.concatenate((dHdp, temp))
        
         dHdp = dHdp.reshape(p_state.shape)
+        dHdp /= BoxSize
         
         return dHdp
 

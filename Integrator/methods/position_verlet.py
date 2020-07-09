@@ -39,16 +39,15 @@ def position_verlet(**state) :
     time_step = state['time_step']
     periodicity = state['periodicity']
     
-    if periodicity :    
-        BoxSize = state['BoxSize']
-    else : 
-        BoxSize = 1
-        
+    BoxSize = state['BoxSize']
+
     q = q + time_step / 2 * p #dq/dt
     
     p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
     
-    p = p + time_step  * ( -Hamiltonian.dHdq(q, p_list_dummy, BoxSize, periodicity) ) #dp/dt
+    state['phase_space'].set_p(p_list_dummy)
+    
+    p = p + time_step  * ( -Hamiltonian.dHdq(state['phase_space'], BoxSize, periodicity) ) #dp/dt
      
     q = q + time_step / 2 * p #dq/dt
     

@@ -103,13 +103,11 @@ class Integration(ABC) :
         self._configuration['phase_space'].set_p(vel * kwargs['m'])
         
         self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
+        #only PBC is considered here, rigid boundary condition and others are not considered.
         
-        if self._configuration['periodicity']:  # applying boundary condition 
-            try :
-                self._configuration['BoxSize'] = kwargs['BoxSize'] # get boxsize if possible , by default one 
-                #only PBC is considered here, rigid boundary condition and others are not considered.
-            except :
-                raise Exception('periodicity is True, but BoxSize / boundary not found')
+        self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one 
+        
+   
             
     @abstractmethod
     def integrate(self):

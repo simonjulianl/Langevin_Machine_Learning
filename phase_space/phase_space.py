@@ -7,6 +7,7 @@ Created on Thu Jun 11 10:21:28 2020
 """
 
 import numpy as np
+import copy 
 
 class phase_space :
     '''phase space container class that have a 
@@ -20,16 +21,16 @@ class phase_space :
         self._p_list = None
 
     def set_p(self, p_list): 
-        self._p_list = p_list 
+        self._p_list = copy.deepcopy(p_list) 
     
     def set_q(self, q_list): 
-        self._q_list = q_list 
+        self._q_list = copy.deepcopy(q_list) 
     
     def get_p(self): 
-        return self._p_list # N X DIM array
+        return copy.deepcopy(self._p_list) # N X DIM array
     
     def get_q(self):
-        return self._q_list # N X DIM array
+        return copy.deepcopy(self._q_list) # N X DIM array
 
     def read(self, filename, samples = -1):
         '''function to read the phase space file, 

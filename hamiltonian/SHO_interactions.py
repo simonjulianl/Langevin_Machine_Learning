@@ -25,7 +25,7 @@ class SHO_interactions(Interaction):
         self._name = 'Simple Harmonic Oscillation Interactions' 
         #since interaction is a function of r or delta q instead of q, we need to modift the data 
 
-    def energy(self, q_state, p_state, periodicty = False):
+    def energy(self, phase_space, BoxSize = 1,periodicty = False):
         '''
         function to calculate the term directly
         
@@ -35,6 +35,7 @@ class SHO_interactions(Interaction):
             Hamiltonian calculated
 
         '''
+        q_state = phase_space.get_q() * BoxSize
         term = 0 
         N, DIM = q_state.shape
         for i in range(N-1) : # loop for every pair of q1,q2
@@ -51,7 +52,7 @@ class SHO_interactions(Interaction):
                 
         return term 
     
-    def evaluate_derivative_q(self, q_state, p_state, periodicty = False):
+    def evaluate_derivative_q(self, phase_space, BoxSize = 1, periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -61,7 +62,8 @@ class SHO_interactions(Interaction):
             dHdq calculated given the terms of N X DIM 
 
         '''
-        assert q_state.shape == p_state.shape and len(q_state.shape) == 2
+        q_state = phase_space.get_q() * BoxSize
+        p_state = phase_space.get_p() * BoxSize
         N, DIM = q_state.shape
         dHdq = np.zeros(q_state.shape) #derivative of separable term in N X DIM matrix 
         for i in range(N-1) : # loop for every pair of q1,q2
@@ -74,8 +76,8 @@ class SHO_interactions(Interaction):
                     if np.abs(delta_q > 0.5):
                         delta_q = delta_q - np.copysign(1.0, delta_q)
                 #since dUdr = dUdx x/r
-                dHdq[i] -= eval(self._derivative_q) * delta_q / q
-                dHdq[j] += eval(self._derivative_q) * delta_q / q            
+                dHdq[i] -= eval(self._derivative_q) * (delta_q / q) / BoxSize
+                dHdq[j] += eval(self._derivative_q) * (delta_q / q) / BoxSize            
      
         return dHdq
  
