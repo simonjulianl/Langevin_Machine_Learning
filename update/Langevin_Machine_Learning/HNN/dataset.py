@@ -89,11 +89,13 @@ class Hamiltonian_Dataset(Dataset):
             raise Exception('integrator_method / time_step not found')
         # ===================================================================
         if getattr(integrator_method, 'name').startswith('leapfrog') :  #we need to shift v0 to v1/2
-            vel = kwargs['vel'] 
+            phase_space = kwargs['phase_space']
             Hamiltonian = kwargs['hamiltonian']
-            p_list_dummy = np.zeros(kwargs['pos'].shape) # to prevent KE from being integrated
-            vel = vel +  time_step/2  * ( -Hamiltonian.get_derivative_q(kwargs['pos'], p_list_dummy) ) #dp/dt
-            kwargs['vel'] = vel
+            p_list_dummy = np.zeros(phase_space.get_p().shape) # to prevent KE from being integrated
+            p = phase_space.get_p()
+            phase_space.set_p(p_list_dummy)
+            p = p +  time_step/2  * ( -Hamiltonian.get_derivative_q(phase_space) ) #dp/dt
+            kwargs['phase_space'].set_p(p)
             warnings.warn('Leapfrog is used, from now on v is 1/2 step ahead of p for same index')
         # ===================================================================
         

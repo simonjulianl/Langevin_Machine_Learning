@@ -315,7 +315,7 @@ class SHNN_trainer:
             #for 1 dimensional data, squeeze is the same as linearize as N x 2 data
             
             self._optimizer.zero_grad()
-  
+     
             try :
                 prediction = model(q_list, p_list, self._time_step)
             except : 
@@ -349,6 +349,7 @@ class SHNN_trainer:
         
         #with torch.no_grad() should not be used as we need to differentiate intermediate variables
         q_diff, p_diff = 0, 0
+        q_diff_2 , p_diff_2  = 0, 0 # to calculate variance and hence std
         for batch_idx, (data,label) in enumerate(validation_loader) : 
             #cast to torch 
             q_list = data[0][0].to(self._device).squeeze().requires_grad_(True)
@@ -366,14 +367,20 @@ class SHNN_trainer:
             loss = criterion(prediction, label)
             q_diff += torch.sum(torch.abs(prediction[0] - label[0])).item()
             p_diff += torch.sum(torch.abs(prediction[1] - label[1])).item()
+            
+            q_diff_2 += torch.sum((prediction[0] - label[0]) ** 2.0).item()
+            p_diff_2 += torch.sum((prediction[1] - label[1]) ** 2.0).item()
             validation_loss += loss.item() # get the scalar output
             
         q_diff /= len(validation_loader.dataset)
         p_diff /= len(validation_loader.dataset)
         
-        return (q_diff, p_diff, validation_loss / len(validation_loader.dataset) ) #return the average 
+        q_diff_2 /= len(validation_loader.dataset)
+        p_diff_2 /= len(validation_loader.dataset)
+        
+        return (q_diff, p_diff, validation_loss / len(validation_loader.dataset), q_diff_2, p_diff_2) #return the average 
 
-    def record_best(self, validation_loss, q_diff, p_diff, filename = 'checkpoint.pth') : 
+    def record_best(self, validation_loss, q_diff, p_diff, q_diff_2, p_diff_2, filename = 'checkpoint.pth') : 
         '''
         helper function to record the state after each training
 
@@ -399,6 +406,8 @@ class SHNN_trainer:
             'q_diff' : q_diff,
             'p_diff' : p_diff,
             'batch_size' : self._batch_size,
+            'p_diff_2' : p_diff_2,
+            'q_diff_2' : q_diff_2,
             }, is_best ) 
    
         torch.save(state, filename)
@@ -424,17 +433,20 @@ class SHNN_trainer:
          
         if self._curr_level != 1 : 
             # if its not level 1 , check performance of previous level weight of more steps to compare
-            q_diff, p_diff, validation_loss = self.validate_epoch(self._validation_loader)
+            q_diff, p_diff, validation_loss, q_diff_2, p_diff_2 = self.validate_epoch(self._test_loader)
             print('performance of level {} weight on level {}'.format(self._curr_level - 1, self._curr_level))
-            print('\t q_diff : {:.6f} \t p_diff : {:.6f} \n\t validation loss : {:.6f}'.format(
-                q_diff, p_diff, validation_loss
+            std_q = (q_diff_2 - q_diff ** 2.0) ** 0.5
+            std_p = (p_diff_2 - p_diff ** 2.0) ** 0.5
+            
+            print('\t q_diff : {:.5f} ± {:.5f} \t p_diff : {:.5f} ± {:.5f} \n\t test loss : {:.6f}'.format(
+                q_diff, std_q, p_diff, std_p, validation_loss
                 ))
             
         for i in range(1, self._n_epochs + 1):
             train_loss = self.train_epoch()
-            q_diff, p_diff, validation_loss = self.validate_epoch(self._validation_loader)
-                    
-            self.record_best(validation_loss, q_diff, p_diff, filename)
+            q_diff, p_diff, validation_loss, q_diff_2, p_diff_2 = self.validate_epoch(self._validation_loader)
+                     
+            self.record_best(validation_loss, q_diff, p_diff, q_diff_2, p_diff_2, filename)
             self._current_epoch += 1
             
             self._writer.add_scalar('training loss_level {}'.format(self._curr_level),
@@ -460,21 +472,33 @@ class SHNN_trainer:
         print('training level : {}'.format(self._curr_level))
         print('best setting : \n\t epoch : {} \n\t validation_loss : {:.6f}'.format(self._best_state['epoch'], 
                                                                                 self._best_state['best_validation_loss']))
-        print('\t q_diff : {} \t p_diff : {}'.format(self._best_state['q_diff'],
-                                                  self._best_state['p_diff']))
+        
+        std_q = (self._best_state['q_diff_2']- self._best_state['q_diff'] ** 2.0) ** 0.5
+        std_p = (self._best_state['p_diff_2']- self._best_state['p_diff'] ** 2.0) ** 0.5
+        print('\t q_diff : {} ± {} \t p_diff : {} ± {}'.format(self._best_state['q_diff'],
+                                                                 std_q,
+                                                                 self._best_state['p_diff'],
+                                                                 std_p))
         
         #check the performace of current weight level on base level 
         self._model.load_state_dict(self._best_state['state_dict']) 
         #check performance on test loader 
-        q_diff, p_diff, test_loss = self.validate_epoch(self._test_loader)
-        print('performance on test dataset : \n\t test_loss : {:.6f}'.format(test_loss))
-        print('\t q_diff : {} \t p_diff : {}'.format(q_diff, p_diff))
+        q_diff, p_diff, test_loss, q_diff_2, p_diff_2 = self.validate_epoch(self._test_loader)
+        
+        std_q = (q_diff_2 - q_diff ** 2.0) ** 0.5
+        std_p = (p_diff_2 - p_diff ** 2.0) ** 0.5
+        
+        print('performance on test dataset : \n\t test_loss : {:.5f}'.format(test_loss))
+        print('\t q_diff : {:.5f} ± {:.5f} \t p_diff : {:.5f} ± {:.5f} '.format(q_diff, std_q, p_diff, std_p))
         #choose the best model from the previous level and pass it to the next level
         
         self._model.set_n_stack(1) # set the model level
-        q_diff, p_diff, base_test_loss = self.validate_epoch(self._base_test_loader)
-        print('performance on base level (1) : \n\t test_loss : {:.6f}'.format(base_test_loss))
-        print('\t q_diff : {} \t p_diff : {}'.format(q_diff, p_diff))
+        q_diff, p_diff, base_test_loss, q_diff_2, p_diff_2 = self.validate_epoch(self._base_test_loader)
+        std_q = (q_diff_2 - q_diff ** 2.0) ** 0.5
+        std_p = (p_diff_2 - p_diff ** 2.0) ** 0.5
+        
+        print('performance on base level (1) : \n\t test_loss : {:.5f}'.format(base_test_loss))
+        print('\t q_diff : {:.5f} ± {:.5f}\t p_diff : {:.5f} ± {:.5f}'.format(q_diff, std_q, p_diff, std_p ))
           
     def up_level(self):
         '''helper function to shift the dataset and level'''
