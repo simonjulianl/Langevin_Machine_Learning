@@ -24,6 +24,7 @@ class Lennard_Jones(Interaction):
             #self._cutoff_r = 2.5 * self._sigma
         except :
             raise Exception('sigma / epsilon rror')
+
         super().__init__('4 * {0} * (({1}/ q) ** 12.0 - ({1}/q) ** 6.0)'.format(self._epsilon, self._sigma))
         print('Lennard_Jones.py call LJ potential')
         self._name = 'Lennard Jones Potential'

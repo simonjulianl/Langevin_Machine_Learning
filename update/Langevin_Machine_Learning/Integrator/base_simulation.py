@@ -84,9 +84,9 @@ class Integration(ABC) :
 
         # just create container
         pos = kwargs.get('pos', None)
-        print('pos', pos.shape)
+        print('base_simulation.py pos', pos.shape)
         vel = kwargs.get('vel', None)
-        print('vel', vel)
+        print('base_simulation.py vel', vel)
         
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
             pos = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
@@ -97,24 +97,30 @@ class Integration(ABC) :
                 
         if vel is None :
             vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
-            print('vel',vel.shape)
+            #print('vel',vel)
+            #print('vel.shape',vel.shape)
             if self._configuration['N'] == 1 : 
                 warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
             else :
-                VelCentre = np.sum(vel, axis = 0) / self._configuration['N']
-                print('VelCentre:',VelCentre)
+                VelCentre = np.sum(vel, axis = 1) / self._configuration['particle']
+                #print('VelCentre:',VelCentre)
+                #print('VelCentre.shape:',VelCentre.shape)
                 for j in range(self._configuration['particle']): ### ADD
                     for i in range(self._configuration['DIM']):
+                        #print(vel[:,j,i],VelCentre[j,i])
                         vel[:,j,i] = vel[:,j,i] - VelCentre[j,i]  ### change
-                        print(vel[:,j,i].shape)
+                        #print(vel[:,j,i])
 
-        print('vel',vel.shape)
+        print('base_simulation.py vel.shape',vel.shape)
         self._configuration['phase_space'] = phase_space()
+        print('base_simulation.py phase_space')
         self._configuration['phase_space'].set_q(pos)
+        print('base_simulation.py set_q')
+        print('base_simulation.py vel',vel)
         self._configuration['phase_space'].set_p(vel * kwargs['m'])
-        
+        print('base_simulation.py set_p')
         self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
-
+        print('base_simulation.py periodicity',self._configuration['periodicity'])
         self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
 
 
@@ -151,17 +157,13 @@ class Integration(ABC) :
 
         '''
         file_path = self._filename_creator()
+        #print('base_simultion.py file_path',file_path )
+        #print('base_simultion.py read', self._configuration['phase_space'].read(file_path, samples))
         self._configuration['phase_space'].read(file_path, samples)
 
-        if self._configuration['periodicity']:
-            print('base_simultion.py periodicity')
-            phase_space = self._configuration['phase_space']
-            scaled_q = phase_space.get_q() / self._configuration['BoxSize']
-            scaled_p = phase_space.get_p() / self._configuration['BoxSize']
-            phase_space.set_q(scaled_q)
-            phase_space.set_p(scaled_p) # scale to box size of -1 ro 1
-            
         q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
+
+        print('base_simultion.py q_list',q_list)
         print('base_simultion.py q_list',q_list.shape)
         if samples > self._configuration['N']:
             raise Exception('samples exceed available particles')

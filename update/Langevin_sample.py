@@ -1,16 +1,15 @@
 import Langevin_Machine_Learning.hamiltonian as Hamiltonian
 import Langevin_Machine_Learning.Integrator as Integrator
-import Langevin_Machine_Learning.Integrator.methods as methods 
+import Langevin_Machine_Learning.Integrator.methods as methods
 import Langevin_Machine_Learning.utils as confStat # configuration statistics
 import numpy as np
 
-print('1')
 energy = Hamiltonian.Hamiltonian()
-print('2')
+print('1')
 energy.append(Hamiltonian.Lennard_Jones(epsilon =1, sigma =1))
-print('3')
+print('2')
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
-print('energy \n',energy)
+print('energy ',energy)
 
 configuration = {
     'kB' : 1.0, # put as a constant 
@@ -18,11 +17,11 @@ configuration = {
     'DIM' : 2,
     'm' : 1,
     'particle' : 2,
-    'N' : 64000,   # Total number of particle
-    'BoxSize': 0.55,
+    'N' : 16000,   # Total number of particle
+    'BoxSize': 3.16,
     'periodicity' : True,
     'hamiltonian' : energy,
-    'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.55))
+    'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.95))
     }
 
 integration_setting = {
@@ -36,23 +35,27 @@ integration_setting = {
 configuration.update(integration_setting)
 print(configuration)
 print('\n')
+print('-----------------')
 print('MD_integrator')
 MD_integrator = Integrator.Langevin(**configuration)
-print("-----------------")
-print('MD_integrator: ',MD_integrator)
-print("-----------------")
 #only load for initial condition Temperature = 1.0
+print('-----------------')
+print('set_phase_space')
+print('\n')
 MD_integrator.set_phase_space(samples = 4) # command out when save a file
-
+print('-----------------')
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
 print('\n')
-print(configuration)
+#print(configuration)
+print('-----------------')
+print('Run MD simulation')
 print('\n')
 q_hist, p_hist = MD_integrator.integrate()
 print('q_hist.shape',q_hist.shape)
 print('p_hist.shape',p_hist.shape)
-
+print('-----------------')
+quit()
 confStat.plot_stat(q_hist, p_hist, 'all',**configuration)
 quit()
 #plot the statistic of q distribution based on current state configuration

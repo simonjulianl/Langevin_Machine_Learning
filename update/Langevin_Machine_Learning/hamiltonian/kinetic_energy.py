@@ -23,6 +23,6 @@ class kinetic_energy(Interaction):
         except : 
             raise Exception('Mass is not a float / error in mass')
             
-        self._name = 'Kinetic Energy' 
         super().__init__('p**2.0 / (2 * {})'.format(str_mass))
         print('kinetic_energy.py call kinetic')
+        self._name = 'Kinetic Energy'

@@ -109,7 +109,6 @@ class Langevin(Integration):
         '''
         #obtain all the constants
         N = self._configuration['N'] # total number of particles
-        #print('N,,',N)
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
         total_samples = self._intSetting['iterations'] // self._intSetting['DumpFreq']
@@ -157,6 +156,7 @@ class Langevin(Integration):
                 p_list[i] = self._configuration['phase_space'].get_p()  # sample
 
         else:
+            print('multicpu')
             def integrate_helper(num, return_dict , **state):
                 ''' helper function for multiprocessing
 
@@ -219,9 +219,9 @@ class Langevin(Integration):
             manager = multiprocessing.Manager()
             return_dict = manager.dict() # common dictionary
             curr_q = self._configuration['phase_space'].get_q()
+            print('Langevin.py curr_q',curr_q)
             curr_p = self._configuration['phase_space'].get_p()
-            print('Langevin.py curr_q',curr_q.shape)
-            print('Langevin.py curr_p', curr_p.shape)
+            print('Langevin.py curr_p', curr_p)
             assert curr_q.shape == curr_p.shape
 
             #split using multiprocessing for faster processing

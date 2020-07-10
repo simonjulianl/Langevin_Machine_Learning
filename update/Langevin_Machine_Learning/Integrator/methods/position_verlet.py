@@ -34,7 +34,7 @@ def position_verlet(**state) :
     #get all the constants
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
-    print('position_verlet.py q,p',q.shape,p.shape)
+    print('position_verlet.py q,p',q,p)
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
     periodicity = state['periodicity']

@@ -39,10 +39,12 @@ class Interaction(ABC):
         
         def function_wrapper(q, p) :
             ''' helper function for sympy differentiation'''
-            print('Interaction.py eval',eval(self._expression))
             return eval(self._expression)
-        
+
         q, p = sym.symbols('q p', real = True) # automatically calculate derivative for q and p expression
+        print('Interaction.py q p',q, p)
+        print('Interaction.py eval', eval(self._expression))
+
         try : 
             self._derivative_q = str(sym.diff(function_wrapper(q, p),q)) # d term dq
             self._derivative_p = str(sym.diff(function_wrapper(q, p),p)) # d term dp
