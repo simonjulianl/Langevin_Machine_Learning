@@ -54,11 +54,13 @@ class Lennard_Jones(Interaction):
         #truncated_potential = 4 * self._epsilon * ((1/2.5) ** 12.0 - (1/2.5) ** 6.0)
         print('Lennard_Jones.py energy phase_space',phase_space)
         q_state = phase_space.get_q()
-        term = 0
+        term = np.zeros(q_state.shape[0])
         print('Lennard_Jones.py energy q_state',q_state.shape)
         N, particle,DIM  = q_state.shape # ADD particle
         print('Lennard_Jones.py energy', q_state)
         for k in range(N):
+            #term = 0
+            print('Lennard_Jones.py energy term',term.shape)
             for i in range(particle-1) : # loop for every pair of q1,q2
                 for j in range(i+1, particle) :
                     q1 = q_state[k,i]
@@ -79,7 +81,9 @@ class Lennard_Jones(Interaction):
                     print('Lennard_Jones.py energy q', q)
                     #term += eval(self._expression) - truncated_potential
                     print('Lennard_Jones.py energy self._expression', self._expression)
-                    term += eval(self._expression)
+                    print('Lennard_Jones.py energy eval(self._expression)', eval(self._expression))
+                    #term += eval
+                    term[k] = eval(self._expression)
 
         return term
 
@@ -97,22 +101,20 @@ class Lennard_Jones(Interaction):
         p_state = phase_space.get_p()
         assert q_state.shape == p_state.shape and len(q_state.shape) == 3
         dHdq = np.zeros(q_state.shape) #derivative of separable term in N X DIM matrix
-        print('Lennard_Jones.py evaluate_derivative_q q_state',q_state.shape)
         N, particle,DIM  = q_state.shape
-        print('Lennard_Jones.py',q_state)
+        #print('Lennard_Jones.py evaluate_derivative_q p_state', p_state)
+        print('Lennard_Jones.py evaluate_derivative_q q_state',q_state)
         for k in range(N):
-            print('Lennard_Jones.py evaluate_derivative_q dHdp',dHdq)
+            print('Lennard_Jones.py evaluate_derivative_q dHdq',dHdq)
             for i in range(particle-1) : # loop for every pair of q1,q2
                 for j in range(i+1, particle) :
                     q1 = q_state[k,i]
-                    print('Lennard_Jones.py q1',q1.shape)
-                    print(q1)
+                    print('Lennard_Jones.py k {} q1'.format(k),q1)
                     q2 = q_state[k,j]
-                    print('Lennard_Jones.py q2',q2.shape)
-                    print(q2)
+                    print('Lennard_Jones.py k {} q2'.format(k),q2)
                     delta_q  = q2 - q1  # Reduced LJ units
-                    print('Lennard_Jones.py dq_x ',delta_q[0])
-                    print('Lennard_Jones.py dq_y ', delta_q[1])
+                    print('Lennard_Jones.py k {} dq_x '.format(k),delta_q[0])
+                    print('Lennard_Jones.py k {} dq_y '.format(k), delta_q[1])
                     if periodicty : # PBC only
                         for l in range(DIM):
                             print('Lennard_Jones.py delta_q{}'.format(l),delta_q[l])
@@ -122,6 +124,8 @@ class Lennard_Jones(Interaction):
 
                     #since dUdr = dUdx x/r
                     Rij = BoxSize * delta_q  # scale the box to the real units
+                    print('Lennard_Jones.py Rij',Rij)
+                    print('Lennard_Jones.py dot(Rij,Rij)', np.dot(Rij,Rij))
                     q = np.sqrt(np.dot(Rij, Rij))
                     print('Lennard_Jones.py q',q)
                     #if q < self._cutoff_r :
@@ -133,7 +137,7 @@ class Lennard_Jones(Interaction):
                     print('Lennard_Jones.py dHdq[{},{}]'.format(k,i), dHdq[k,i])
                     print('Lennard_Jones.py dHdq[{},{}]'.format(k,j), dHdq[k,j])
 
-        print('Lennard_Jones.py evaluate_derivative_q dHdq', dHdq.shape)
-        print('Lennard_Jones.py evaluate_derivative_q dHdq', dHdq)
+        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq.shape)
+        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
         return dHdq
 

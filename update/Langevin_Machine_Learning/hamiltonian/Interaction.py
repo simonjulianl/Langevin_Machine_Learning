@@ -101,21 +101,21 @@ class Interaction(ABC):
                 print('interation.py self._derivative_q', self._derivative_q)
                 if(eval(self._derivative_q) == 0):
                     dHdq = np.expand_dims(np.zeros(q.shape),axis=0)
-                    print('interation.py len(dHdq)=0', dHdq)
+                    print('interation.py len(dHdq)=0 if ', dHdq)
                 else:
                     dHdq = np.expand_dims(eval(self._derivative_q), axis=0)
-                    print('interation.py len(dHdq)=0', dHdq)
+                    print('interation.py len(dHdq)=0 else', dHdq)
             else :
                 if(eval(self._derivative_q) == 0):
                     temp = np.expand_dims(np.zeros(q.shape),axis=0)
-                    print('interation.py temp len(dHdq)', temp.shape)
+                    print('interation.py temp len(dHdq) if ', temp)
                 else:
                     temp = np.expand_dims(eval(self._derivative_q), axis=0)
-                    print('interation.py temp len(dHdq)', temp.shape)
+                    print('interation.py temp len(dHdq) else', temp)
 
                 dHdq = np.concatenate((dHdq, temp))
-                print('interation.py len(dHdq)', dHdq.shape)
-       
+                print('interation.py len(dHdq)', dHdq)
+
         dHdq = dHdq.reshape(q_state.shape) # should have the same dimension
         print('interation.py evaluate_derivative_q dHdq',dHdq.shape)
 

@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 import warnings 
 from ..hamiltonian.hamiltonian import Hamiltonian
 from ..phase_space.phase_space import phase_space
+from ..utils import confStat
 import os
 
 class Integration(ABC) : 
@@ -96,10 +97,20 @@ class Integration(ABC) :
                     pos[:,j,i] = pos[:,j,i] - MassCentre[j,i]
                 
         if vel is None :
-            vel = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
-            #print('vel',vel)
-            #print('vel.shape',vel.shape)
-            if self._configuration['N'] == 1 : 
+            vel = []
+            print('base_simulation.py Temperature',self._configuration['Temperature'])
+            sigma = np.sqrt(self._configuration['Temperature']) # sqrt(kT/m)
+            print('base_simulation.py sigma',sigma)
+            for i in range(self._configuration['N']):
+                vx = np.random.normal(0.0,sigma,self._configuration['particle'])
+                vy = np.random.normal(0.0,sigma,self._configuration['particle'])
+                vel_xy = np.stack((vx,vy),axis=-1)
+                vel.append(vel_xy)
+
+            vel = np.array(vel)
+            #print('base_simulation.py vel ',vel)
+
+            if self._configuration['N'] == 1 :
                 warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
             else :
                 VelCentre = np.sum(vel, axis = 1) / self._configuration['particle']
@@ -107,10 +118,12 @@ class Integration(ABC) :
                 #print('VelCentre.shape:',VelCentre.shape)
                 for j in range(self._configuration['particle']): ### ADD
                     for i in range(self._configuration['DIM']):
-                        #print(vel[:,j,i],VelCentre[j,i])
-                        vel[:,j,i] = vel[:,j,i] - VelCentre[j,i]  ### change
+                        #print(vel[:,j,i],VelCentre[:,i])
+                        vel[:,j,i] = vel[:,j,i] - VelCentre[:,i]  ### change
                         #print(vel[:,j,i])
 
+
+        print('base_simulation.py vel-centre ', vel)
         print('base_simulation.py vel.shape',vel.shape)
         self._configuration['phase_space'] = phase_space()
         print('base_simulation.py phase_space')
@@ -123,6 +136,15 @@ class Integration(ABC) :
         print('base_simulation.py periodicity',self._configuration['periodicity'])
         self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
 
+        Temp = confStat.temp(**self._configuration)
+        print('base_simulation.py Temp', Temp)
+        scalefactor = np.sqrt(self._configuration['Temperature']/Temp)
+        scalefactor = scalefactor[:,np.newaxis,np.newaxis]
+        print('base_simulation.py scalefactor',scalefactor)
+        print('base_simulation.py before scalefactor',vel)
+        vel = vel*scalefactor
+        print('base_simulation.py after scalefactor',vel)
+        self._configuration['phase_space'].set_p(vel)
 
     @abstractmethod
     def integrate(self):

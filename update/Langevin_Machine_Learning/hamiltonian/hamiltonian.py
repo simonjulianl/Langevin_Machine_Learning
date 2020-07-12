@@ -54,13 +54,13 @@ class Hamiltonian:
             H is the hamiltonian of the states with separable terms
 
         '''
-        
-        H = 0 # hamiltonian container
+        H = 0
+        #H = 0 # hamiltonian container
         for term in self.hamiltonian_terms :
             print('hamiltonian.py term',term)
             print('hamiltonian.py phase_space',phase_space)
             H += term.energy(phase_space, BoxSize,periodicity)
-
+            print('hamiltonian.py H',H)
             print('hamiltonian.py periodicity term', periodicity, term)
     
         return H
@@ -83,7 +83,7 @@ class Hamiltonian:
         for term in self.hamiltonian_terms :
             print('Hamiltonian.py for dHdq', dHdq)
             dHdq += term.evaluate_derivative_q(phase_space, BoxSize, periodicity)
-            print('Hamiltonian.py dHdq+', dHdq.shape)
+            print('Hamiltonian.py dHdq+', dHdq)
 
         return dHdq 
     
