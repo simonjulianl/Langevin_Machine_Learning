@@ -83,7 +83,7 @@ class Lennard_Jones(Interaction):
                     #print('Lennard_Jones.py energy self._expression', self._expression)
                     #print('Lennard_Jones.py energy eval(self._expression)', eval(self._expression))
                     #term += eval
-                    term[k] = eval(self._expression)
+                    term[k] += eval(self._expression)
 
         return term
 

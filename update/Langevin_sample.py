@@ -22,7 +22,7 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 500,
+    'iterations' : 3,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
     'time_step' : 0.01,
@@ -38,7 +38,7 @@ MD_integrator = Integrator.Langevin(**configuration)
 #only load for initial condition Temperature = 1.0
 print('-----------------')
 print('set_phase_space')
-MD_integrator.set_phase_space(samples = 100) # command out when save a file
+MD_integrator.set_phase_space(samples = 4) # command out when save a file
 print('-----------------')
 #update configuration after loading
 configuration = MD_integrator.get_configuration()

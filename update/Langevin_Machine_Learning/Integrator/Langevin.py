@@ -108,7 +108,7 @@ class Langevin(Integration):
 
         '''
         #obtain all the constants
-        N = self._configuration['N'] # total number of particles
+        N = self._configuration['N'] # total number of samples
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
         total_samples = self._intSetting['iterations'] // self._intSetting['DumpFreq']
@@ -233,7 +233,7 @@ class Langevin(Integration):
 
             #split using multiprocessing for faster processing
             #for i in range(0,len(curr_q),1000):
-            step = len(curr_q) // 10
+            step = len(curr_q)
             #print('Langevin.py step', step)
             for i in range(0, len(curr_q), step):
                 #print('Langevin.py count', i)
