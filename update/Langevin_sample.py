@@ -5,11 +5,8 @@ import Langevin_Machine_Learning.utils as confStat # configuration statistics
 import numpy as np
 
 energy = Hamiltonian.Hamiltonian()
-print('1')
 energy.append(Hamiltonian.Lennard_Jones(epsilon =1, sigma =1))
-print('2')
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
-print('energy ',energy)
 
 configuration = {
     'kB' : 1.0, # put as a constant 
@@ -25,7 +22,7 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 3,
+    'iterations' : 500,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
     'time_step' : 0.1,
@@ -41,22 +38,19 @@ MD_integrator = Integrator.Langevin(**configuration)
 #only load for initial condition Temperature = 1.0
 print('-----------------')
 print('set_phase_space')
-print('\n')
-MD_integrator.set_phase_space(samples = 4) # command out when save a file
+MD_integrator.set_phase_space(samples = 100) # command out when save a file
 print('-----------------')
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
-print('\n')
 #print(configuration)
 print('-----------------')
 print('Run MD simulation')
-print('\n')
 q_hist, p_hist = MD_integrator.integrate()
 print('q_hist.shape',q_hist.shape)
 print('p_hist.shape',p_hist.shape)
 print('-----------------')
 #confStat.kinetic_energy(**configuration)
-confStat.plot_stat(q_hist, p_hist, 'all',**configuration)
+confStat.plot_stat(q_hist, p_hist, 'potential',**configuration)
 quit()
 #plot the statistic of q distribution based on current state configuration
 

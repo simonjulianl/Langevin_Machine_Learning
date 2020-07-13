@@ -98,9 +98,9 @@ class Integration(ABC) :
                 
         if vel is None :
             vel = []
-            print('base_simulation.py Temperature',self._configuration['Temperature'])
+            #print('base_simulation.py Temperature',self._configuration['Temperature'])
             sigma = np.sqrt(self._configuration['Temperature']) # sqrt(kT/m)
-            print('base_simulation.py sigma',sigma)
+            #print('base_simulation.py sigma',sigma)
             for i in range(self._configuration['N']):
                 vx = np.random.normal(0.0,sigma,self._configuration['particle'])
                 vy = np.random.normal(0.0,sigma,self._configuration['particle'])
@@ -123,27 +123,27 @@ class Integration(ABC) :
                         #print(vel[:,j,i])
 
 
-        print('base_simulation.py vel-centre ', vel)
-        print('base_simulation.py vel.shape',vel.shape)
+        #print('base_simulation.py vel-centre ', vel)
+        #print('base_simulation.py vel.shape',vel.shape)
         self._configuration['phase_space'] = phase_space()
-        print('base_simulation.py phase_space')
+        #print('base_simulation.py phase_space')
         self._configuration['phase_space'].set_q(pos)
-        print('base_simulation.py set_q')
-        print('base_simulation.py vel',vel)
+        #print('base_simulation.py set_q')
+        #print('base_simulation.py vel',vel)
         self._configuration['phase_space'].set_p(vel * kwargs['m'])
-        print('base_simulation.py set_p')
+        #print('base_simulation.py set_p')
         self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
-        print('base_simulation.py periodicity',self._configuration['periodicity'])
+        #print('base_simulation.py periodicity',self._configuration['periodicity'])
         self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
 
         Temp = confStat.temp(**self._configuration)
-        print('base_simulation.py Temp', Temp)
+        #print('base_simulation.py Temp', Temp)
         scalefactor = np.sqrt(self._configuration['Temperature']/Temp)
         scalefactor = scalefactor[:,np.newaxis,np.newaxis]
-        print('base_simulation.py scalefactor',scalefactor)
-        print('base_simulation.py before scalefactor',vel)
+        #print('base_simulation.py scalefactor',scalefactor)
+        #print('base_simulation.py before scalefactor',vel)
         vel = vel*scalefactor
-        print('base_simulation.py after scalefactor',vel)
+        #print('base_simulation.py after scalefactor',vel)
         self._configuration['phase_space'].set_p(vel)
 
     @abstractmethod
@@ -185,8 +185,8 @@ class Integration(ABC) :
 
         q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
 
-        print('base_simultion.py q_list',q_list)
-        print('base_simultion.py q_list',q_list.shape)
+        #print('base_simultion.py q_list',q_list)
+        #print('base_simultion.py q_list',q_list.shape)
         if samples > self._configuration['N']:
             raise Exception('samples exceed available particles')
             

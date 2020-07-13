@@ -31,13 +31,13 @@ class phase_space :
         #print('phase_space.py q_list copy', self._q_list[:4])
     
     def get_p(self):
-        print('phase_space.py _p_list', self._p_list)
+        #print('phase_space.py _p_list', self._p_list)
         #print('phase_space.py _p_list copy', copy.deepcopy(self._p_list))
         return copy.deepcopy(self._p_list) # N X particle X DIM array
 
 
     def get_q(self):
-        print('phase_space.py _q_list', self._q_list)
+        #print('phase_space.py _q_list', self._q_list)
         #print('phase_space.py _q_list copy' , copy.deepcopy(self._q_list))
         return copy.deepcopy(self._q_list) # N X particle X DIM array
 
