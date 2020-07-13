@@ -138,7 +138,7 @@ class Integration(ABC) :
 
         Temp = confStat.temp(**self._configuration)
         #print('base_simulation.py Temp', Temp)
-        scalefactor = np.sqrt(self._configuration['Temperature']/Temp)
+        scalefactor = np.sqrt(self._configuration['Temperature']/Temp) # To make sure that temperature is exactly wanted temperature
         scalefactor = scalefactor[:,np.newaxis,np.newaxis]
         #print('base_simulation.py scalefactor',scalefactor)
         #print('base_simulation.py before scalefactor',vel)
