@@ -211,7 +211,7 @@ class confStat:
             elif mode == 'all':
 
                 for i in range(energy.shape[1]):
-                    if i < 3:
+                    if i < 2:
                         plt.plot(energy.T[i], label = 'total energy')
                         plt.plot(kinetic.T[i], label='kinetic energy')
                         plt.plot(potential.T[i], label='potential energy')
@@ -222,11 +222,11 @@ class confStat:
 
             else :
                 if mode == 'energy' : # if energy , we use average on every dimension
-                    plt.plot(energy.T[0], color = color[mode], label = 'total energy')
+                    plt.plot(energy, color = color[mode], label = 'total energy')
                 elif mode =='kinetic' :
-                    plt.plot(kinetic.T[0], color = color[mode], label = 'kinetic energy')
+                    plt.plot(kinetic, color = color[mode], label = 'kinetic energy')
                 elif mode == 'potential' :
-                    plt.plot(potential.T[0], color = color[mode], label = 'potential energy')
+                    plt.plot(potential.T[0][100:], color = color[mode], label = 'potential energy')
 
                 plt.xlabel('sampled steps')
                 plt.ylabel(mode)

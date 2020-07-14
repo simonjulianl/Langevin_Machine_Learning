@@ -7,6 +7,7 @@ Created on Tue Jun  2 17:21:03 2020
 """
 import numpy as np
 from .Interaction import Interaction
+from .pb import periodic_bc
 
 class Lennard_Jones(Interaction):
     def __init__(self, epsilon : float, sigma : float):
@@ -59,31 +60,10 @@ class Lennard_Jones(Interaction):
         N, particle,DIM  = q_state.shape # ADD particle
         #print('Lennard_Jones.py energy', q_state)
         for k in range(N):
-            #term = 0
-            #print('Lennard_Jones.py energy term',term.shape)
-            for i in range(particle-1) : # loop for every pair of q1,q2
-                for j in range(i+1, particle) :
-                    q1 = q_state[k,i]
-                    #print('Lennard_Jones.py energy q1', q1)
-                    q2 = q_state[k,j]
-                    #print('Lennard_Jones.py energy q2', q2)
-                    delta_q = q2 - q1 # Reduced LJ units
-                    #print('Lennard_Jones.py energy dq_x ', delta_q[0])
-                    #print('Lennard_Jones.py energy dq_y ', delta_q[1])
-                    if periodicty : # PBC only
-                        for l in range(DIM):
-                            if np.abs(delta_q[l]) > 0.5:
-                                delta_q[l] = delta_q[l] - np.copysign(1.0, delta_q[l])
-                                #print('Lennard_Jones.py energy delta_q{} pbc'.format(l), delta_q[l])
-
-                    Rij = BoxSize * delta_q  # scale the box to the real units
-                    q = np.sqrt(np.dot(Rij, Rij))
-                    #print('Lennard_Jones.py energy q', q)
-                    #term += eval(self._expression) - truncated_potential
-                    #print('Lennard_Jones.py energy self._expression', self._expression)
-                    #print('Lennard_Jones.py energy eval(self._expression)', eval(self._expression))
-                    #term += eval
-                    term[k] += eval(self._expression)
+            pb = periodic_bc()
+            pb.adjust(q_state[k])
+            q = pb.paired_distance(q_state[k],BoxSize)
+            term[k] = np.nansum(eval(self._expression))*0.5
 
         return term
 
@@ -105,6 +85,13 @@ class Lennard_Jones(Interaction):
         #print('Lennard_Jones.py evaluate_derivative_q p_state', p_state)
         #print('Lennard_Jones.py evaluate_derivative_q q_state',q_state)
         for k in range(N):
+            pb = periodic_bc()
+            pb.adjust(q_state[k])
+            q = pb.paired_distance(q_state[k], BoxSize)
+
+            dHdq[k, i] -= eval(self._derivative_q) * delta_q / q
+            dHdq[k, j] += eval(self._derivative_q) * delta_q / q
+
             #print('Lennard_Jones.py evaluate_derivative_q dHdq',dHdq)
             for i in range(particle-1) : # loop for every pair of q1,q2
                 for j in range(i+1, particle) :

@@ -14,12 +14,12 @@ class periodic_bc:
 
     # returns pair distances between two particles
     # return a symmetric matrx
-    def paired_distance(self,q):
+    def paired_distance(self,q,BoxSize):
 
         qlen = q.shape[0]
         q0 = np.expand_dims(q,axis=0)
         qm = np.repeat(q0,qlen,axis=0)
-        qt = np.transpose(qm,axes=[1,0,2]) 
+        qt = np.transpose(qm,axes=[1,0,2])
         dq = qm - qt
         print('dq - raw ')
         print(dq)
@@ -29,6 +29,7 @@ class periodic_bc:
         print('dq - adjust ')
         print(dq)
 
+        dq = dq*BoxSize
         dd = np.sqrt(np.sum(dq*dq,axis=2))
         print('dd sum ')
         print(dd)
@@ -59,7 +60,22 @@ class pairwise_harmonic:
 
         paired_matrix = bc.paired_distance(q)
         k = 1.0/2.0
+        print(paired_matrix*paired_matrix)
+        print(np.sum(1/2*paired_matrix*paired_matrix))
         energy = np.sum(k*paired_matrix*paired_matrix)*0.5
+        return energy
+
+class pairwise_LJ:
+
+    def potential_energy(self,q,bc,BoxSize):
+
+        paired_matrix = bc.paired_distance(q,BoxSize)
+        print('paired_matrix',paired_matrix)
+        paired_matrix = eval('4 *  ((1/ paired_matrix) ** 12.0 - (1/paired_matrix) ** 6.0)')
+        print('paired_matrix', paired_matrix)
+
+        energy =np.nansum(paired_matrix)*0.5
+
         return energy
 #==============================================
 
@@ -67,15 +83,15 @@ if __name__=='__main__':
 
 
     np.random.seed(132)
-    #q = (2*np.random.random([3,2])-1)
-    q = np.asarray([ [-0.5,-0.5],[0.5,0.4] ])
+    #q = (2*np.random.random([4,2])-1)
+    q = np.asarray([ [0.0956096,  -0.05951607],[0.45601519, 0.07178795]])  # 2 particles in 2 dimension
     pb = periodic_bc()
     pb.adjust(q)
     #v = verlet()
     #v.move_particle(q,pb)
     print('initial q ',q)
-    pb.paired_distance(q)
-    h = pairwise_harmonic()
-    e = h.potential_energy(q,pb)
+    q=pb.paired_distance(q,BoxSize=3.16)
+    h = pairwise_LJ()
+    e = h.potential_energy(q,pb,BoxSize=3.16)
     print('e ',e)
     

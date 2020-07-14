@@ -108,7 +108,7 @@ class Langevin(Integration):
 
         '''
         #obtain all the constants
-        N = self._configuration['N'] # total number of samples
+        N = self._configuration['N'] # total number of particles
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
         total_samples = self._intSetting['iterations'] // self._intSetting['DumpFreq']
