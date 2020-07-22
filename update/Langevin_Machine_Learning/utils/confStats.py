@@ -178,7 +178,7 @@ class confStat:
                 temporary_phase_space.set_p(p_dummy_list)
 
                 #print('confStats.py temporary_phase_space ',temporary_phase_space)
-                potential.append(hamiltonian.total_energy(temporary_phase_space, BoxSize,periodicity=True)) # ADD periodicity=True
+                potential.append(hamiltonian.total_energy(temporary_phase_space,periodicity=True)) # ADD periodicity=True
                 #print('confStats.py potential',potential)
                 configuration['phase_space'].set_p(p_hist[i])
                 #print('confStats.py p_hist',p_hist[i])

@@ -90,11 +90,11 @@ class Integration(ABC) :
         print('base_simulation.py vel', vel)
         
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
-            pos = np.random.uniform(-1, 1, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
-            MassCentre = np.sum(pos,axis = 0) / self._configuration['N']
+            pos = np.random.uniform(-0.5, 0.5, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
+            MassCentre = np.sum(pos,axis = 1) / self._configuration['particle']
             for j in range(self._configuration['particle']):  ### ADD
                 for i in range(self._configuration['DIM']) :
-                    pos[:,j,i] = pos[:,j,i] - MassCentre[j,i]
+                    pos[:,j,i] = pos[:,j,i] - MassCentre[:,i]
                 
         if vel is None :
             vel = []

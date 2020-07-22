@@ -44,7 +44,7 @@ class Hamiltonian:
 
         self.hamiltonian_terms.append(term)
         
-    def total_energy(self, phase_space, BoxSize = 1,periodicity = False):
+    def total_energy(self, phase_space,periodicity = False):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -57,15 +57,15 @@ class Hamiltonian:
         H = 0
         #H = 0 # hamiltonian container
         for term in self.hamiltonian_terms :
-            #print('hamiltonian.py term',term)
+            print('hamiltonian.py term',term)
             #print('hamiltonian.py phase_space',phase_space)
-            H += term.energy(phase_space, BoxSize,periodicity)
+            H += term.energy(phase_space,periodicity)
             #print('hamiltonian.py H',H)
             #print('hamiltonian.py periodicity term', periodicity, term)
     
         return H
 
-    def dHdq(self,phase_space, BoxSize = 1, periodicity = False):
+    def dHdq(self,phase_space, periodicity = False):
         '''
         Function to get dHdq for every separable terms 
 
@@ -77,12 +77,12 @@ class Hamiltonian:
         q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
 
-        #print('Hamiltonian.py dHdq', dHdq.shape)
-        #print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
+        print('Hamiltonian.py dHdq', dHdq.shape)
+        print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
 
         for term in self.hamiltonian_terms :
-            #print('Hamiltonian.py for dHdq', dHdq)
-            dHdq += term.evaluate_derivative_q(phase_space, BoxSize, periodicity)
+            print('Hamiltonian.py for dHdq', dHdq)
+            dHdq += term.evaluate_derivative_q(phase_space, periodicity)
             #print('Hamiltonian.py dHdq+', dHdq)
 
         return dHdq 

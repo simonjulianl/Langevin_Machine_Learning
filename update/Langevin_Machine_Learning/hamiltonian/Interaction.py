@@ -55,7 +55,7 @@ class Interaction(ABC):
         #print('Interaction.py _derivative_q', self._derivative_q)
         #print('Interaction.py _derivative_p', self._derivative_p)
         
-    def energy(self, phase_space, BoxSize,periodicity = False):
+    def energy(self, phase_space,periodicity = False):
         '''
         function to calculate the term directly
         
@@ -79,7 +79,7 @@ class Interaction(ABC):
 
         return term
     
-    def evaluate_derivative_q(self, phase_space,BoxSize = 1, periodicty = False):
+    def evaluate_derivative_q(self, phase_space, periodicty = False):
         '''
         Function to calculate dHdq
         Returns

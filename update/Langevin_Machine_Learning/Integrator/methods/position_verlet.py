@@ -68,7 +68,7 @@ def position_verlet(**state) :
     #print('position_verlet.py p_list_dummy', p_list_dummy.shape)
 
     #print('position_verlet.py dHdq',-Hamiltonian.dHdq(state['phase_space'], BoxSize, periodicity))
-    p = p + time_step  * (-Hamiltonian.dHdq(state['phase_space'], BoxSize, periodicity)  ) #dp/dt
+    p = p + time_step  * (-Hamiltonian.dHdq(state['phase_space'], periodicity)  ) #dp/dt
     #print('position_verlet.py p', p)
 
     q = q + time_step / 2 * p #dq/dt

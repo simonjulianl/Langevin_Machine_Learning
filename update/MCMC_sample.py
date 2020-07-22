@@ -8,10 +8,10 @@ energy.append(Hamiltonian.Lennard_Jones(epsilon =1, sigma =1))
 
 configuration = {
     'kB' : 1.0, # put as a constant 
-    'Temperature' : 0.55,
+    'Temperature' : 0.95,
     'DIM' : 2,
     'm' : 1,
-    'N' : 2,
+    'particle' : 2,
     'BoxSize': 1,
     'periodicity': True,
     'hamiltonian' : energy,

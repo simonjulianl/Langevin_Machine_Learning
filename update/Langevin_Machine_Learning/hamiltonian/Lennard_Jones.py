@@ -22,6 +22,7 @@ class Lennard_Jones(Interaction):
         try:
             self._epsilon = float(epsilon)
             self._sigma = float(sigma)
+
             #self._cutoff_r = 2.5 * self._sigma
         except :
             raise Exception('sigma / epsilon rror')
@@ -31,18 +32,8 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential'
         #since interaction is a function of r or delta q instead of q, we need to modift the data
 
-    # def pos_pbc(self,q_state):
-    #
-    #     N, particle, DIM = q_state.shape
-    #     # Refold positions according to periodic boundary conditions
-    #     for i in range(DIM):
-    #         period = np.where(pos[:, i] > 0.5)
-    #         pos[period, i] = pos[period, i] - 1.0
-    #         period = np.where(pos[:, i] < -0.5)
-    #         pos[period, i] = pos[period, i] + 1.0
 
-
-    def energy(self, phase_space, BoxSize = 1,periodicty = False):
+    def energy(self, phase_space, pb):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -62,12 +53,14 @@ class Lennard_Jones(Interaction):
         for k in range(N):
             pb = periodic_bc()
             pb.adjust(q_state[k])
-            q = pb.paired_distance(q_state[k],BoxSize)
+            delta_q, q=pb.paired_distance(q_state[k])
+            print(q)
             term[k] = np.nansum(eval(self._expression))*0.5
+            print(term[k])
 
         return term
 
-    def evaluate_derivative_q(self, phase_space, BoxSize = 1,periodicty = False):
+    def evaluate_derivative_q(self, phase_space,periodicty = False):
         '''
         Function to calculate dHdq
         
@@ -83,46 +76,47 @@ class Lennard_Jones(Interaction):
         dHdq = np.zeros(q_state.shape) #derivative of separable term in N X DIM matrix
         N, particle,DIM  = q_state.shape
         #print('Lennard_Jones.py evaluate_derivative_q p_state', p_state)
-        #print('Lennard_Jones.py evaluate_derivative_q q_state',q_state)
+        print('Lennard_Jones.py evaluate_derivative_q q_state',q_state)
         for k in range(N):
             pb = periodic_bc()
             pb.adjust(q_state[k])
-            q = pb.paired_distance(q_state[k], BoxSize)
-
-            dHdq[k, i] -= eval(self._derivative_q) * delta_q / q
-            dHdq[k, j] += eval(self._derivative_q) * delta_q / q
-
-            #print('Lennard_Jones.py evaluate_derivative_q dHdq',dHdq)
-            for i in range(particle-1) : # loop for every pair of q1,q2
-                for j in range(i+1, particle) :
-                    q1 = q_state[k,i]
-                    #print('Lennard_Jones.py k {} q1'.format(k),q1)
-                    q2 = q_state[k,j]
-                    #print('Lennard_Jones.py k {} q2'.format(k),q2)
-                    delta_q  = q2 - q1  # Reduced LJ units
-                    #print('Lennard_Jones.py k {} dq_x '.format(k),delta_q[0])
-                    #print('Lennard_Jones.py k {} dq_y '.format(k), delta_q[1])
-                    if periodicty : # PBC only
-                        for l in range(DIM):
-                            #print('Lennard_Jones.py delta_q{}'.format(l),delta_q[l])
-                            if np.abs(delta_q[l]) > 0.5:
-                                delta_q[l] = delta_q[l] - np.copysign(1.0, delta_q[l])
-                                #print('Lennard_Jones.py delta_q{} pbc'.format(l),delta_q[l])
-
-                    #since dUdr = dUdx x/r
-                    Rij = BoxSize * delta_q  # scale the box to the real units
-                    #print('Lennard_Jones.py Rij',Rij)
-                    #print('Lennard_Jones.py dot(Rij,Rij)', np.dot(Rij,Rij))
-                    q = np.sqrt(np.dot(Rij, Rij))
-                    #print('Lennard_Jones.py q',q)
-                    #if q < self._cutoff_r :
-                    #print('Lennard_Jones.py derivative_q',self._derivative_q)
-                    #print('Lennard_Jones.py eval(derivative_q)', eval(self._derivative_q))
-                    #print(eval(self._derivative_q) * delta_q /q)
-                    dHdq[k,i] -= eval(self._derivative_q) * delta_q /q
-                    dHdq[k,j] += eval(self._derivative_q) * delta_q /q
-                    #print('Lennard_Jones.py dHdq[{},{}]'.format(k,i), dHdq[k,i])
-                    #print('Lennard_Jones.py dHdq[{},{}]'.format(k,j), dHdq[k,j])
+            delta_q, q = pb.paired_distance(q_state[k])
+            print('evaluate_derivative_q q',q)
+            print('evaluate_derivative_q delta_q', np.nan(delta_q))
+            print('evaluate_derivative_q eval',eval(self._derivative_q))
+            dHdq[k] += eval(self._derivative_q) * delta_q / q
+            #
+            # #print('Lennard_Jones.py evaluate_derivative_q dHdq',dHdq)
+            # for i in range(particle-1) : # loop for every pair of q1,q2
+            #     for j in range(i+1, particle) :
+            #         q1 = q_state[k,i]
+            #         #print('Lennard_Jones.py k {} q1'.format(k),q1)
+            #         q2 = q_state[k,j]
+            #         #print('Lennard_Jones.py k {} q2'.format(k),q2)
+            #         delta_q  = q2 - q1  # Reduced LJ units
+            #         #print('Lennard_Jones.py k {} dq_x '.format(k),delta_q[0])
+            #         #print('Lennard_Jones.py k {} dq_y '.format(k), delta_q[1])
+            #         if periodicty : # PBC only
+            #             for l in range(DIM):
+            #                 #print('Lennard_Jones.py delta_q{}'.format(l),delta_q[l])
+            #                 if np.abs(delta_q[l]) > 0.5:
+            #                     delta_q[l] = delta_q[l] - np.copysign(1.0, delta_q[l])
+            #                     #print('Lennard_Jones.py delta_q{} pbc'.format(l),delta_q[l])
+            #
+            #         #since dUdr = dUdx x/r
+            #         Rij = BoxSize * delta_q  # scale the box to the real units
+            #         #print('Lennard_Jones.py Rij',Rij)
+            #         #print('Lennard_Jones.py dot(Rij,Rij)', np.dot(Rij,Rij))
+            #         q = np.sqrt(np.dot(Rij, Rij))
+            #         #print('Lennard_Jones.py q',q)
+            #         #if q < self._cutoff_r :
+            #         #print('Lennard_Jones.py derivative_q',self._derivative_q)
+            #         #print('Lennard_Jones.py eval(derivative_q)', eval(self._derivative_q))
+            #         #print(eval(self._derivative_q) * delta_q /q)
+            #         dHdq[k,i] -= eval(self._derivative_q) * delta_q /q
+            #         dHdq[k,j] += eval(self._derivative_q) * delta_q /q
+            #         #print('Lennard_Jones.py dHdq[{},{}]'.format(k,i), dHdq[k,i])
+            #         #print('Lennard_Jones.py dHdq[{},{}]'.format(k,j), dHdq[k,j])
 
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq.shape)
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)

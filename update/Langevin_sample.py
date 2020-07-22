@@ -49,9 +49,10 @@ q_hist, p_hist = MD_integrator.integrate()
 print('q_hist.shape',q_hist.shape)
 print('p_hist.shape',p_hist.shape)
 print('-----------------')
+quit()
 #confStat.kinetic_energy(**configuration)
 confStat.plot_stat(q_hist, p_hist, 'all',**configuration)
-quit()
+
 #plot the statistic of q distribution based on current state configuration
 
 #to save the current phase space to continue as a checkpoint
