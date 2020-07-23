@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 import warnings 
 from ..hamiltonian.hamiltonian import Hamiltonian
 from ..phase_space.phase_space import phase_space
+from ..hamiltonian.pb import periodic_bc
 from ..utils import confStat
 import os
 
@@ -108,7 +109,7 @@ class Integration(ABC) :
                 vel.append(vel_xy)
 
             vel = np.array(vel)
-            #print('base_simulation.py vel ',vel)
+            #print('base_simulation.py vel ',vel.shape)
 
             if self._configuration['N'] == 1 :
                 warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
@@ -124,7 +125,7 @@ class Integration(ABC) :
 
 
         #print('base_simulation.py vel-centre ', vel)
-        #print('base_simulation.py vel.shape',vel.shape)
+        print('base_simulation.py vel.shape',vel.shape)
         self._configuration['phase_space'] = phase_space()
         #print('base_simulation.py phase_space')
         self._configuration['phase_space'].set_q(pos)
@@ -132,9 +133,10 @@ class Integration(ABC) :
         #print('base_simulation.py vel',vel)
         self._configuration['phase_space'].set_p(vel * kwargs['m'])
         #print('base_simulation.py set_p')
-        self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
+        #self._configuration['periodicity'] = bool(kwargs.get('periodicity', False)) # cast to boolean
         #print('base_simulation.py periodicity',self._configuration['periodicity'])
-        self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
+        #self._configuration['BoxSize'] = kwargs.get('BoxSize', 1) # get boxsize if possible , by default one
+        self._configuration['pb_q'] = periodic_bc()
 
         Temp = confStat.temp(**self._configuration)
         #print('base_simulation.py Temp', Temp)
@@ -185,7 +187,7 @@ class Integration(ABC) :
 
         q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
 
-        #print('base_simultion.py q_list',q_list)
+        print('base_simultion.py q_list',q_list)
         #print('base_simultion.py q_list',q_list.shape)
         if samples > self._configuration['N']:
             raise Exception('samples exceed available particles')

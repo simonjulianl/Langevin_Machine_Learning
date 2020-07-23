@@ -57,9 +57,9 @@ class phase_space :
         #print('phase_space.py phase_space',phase_space.shape)
         #print('phase',phase_space.shape)
         self._q_list = np.array(phase_space[:samples]) # cast to numpy just in case its pickled obj
-        #print(self._q_list.shape)
+        print('phase space.py q_list',self._q_list.shape)
         self._p_list = np.array(self._p_list[:samples])
-        #print(self._p_list.shape)
+        print('phase space.py p_list',self._p_list.shape)
         
         try : 
             assert self._q_list.shape == self._p_list.shape

@@ -10,6 +10,7 @@ import numpy as np
 import warnings
 import matplotlib.pyplot as plt 
 from ..phase_space import phase_space
+from ..hamiltonian.pb import periodic_bc
 
 class confStat:
     '''Helper Class to get the statistic of the configuration
@@ -48,7 +49,8 @@ class confStat:
             DIM = configuration['DIM']
             m = configuration['m']
             vel = configuration['phase_space'].get_p() / m # v = p/m
-        except : 
+            pb = configuration['pb_q']
+        except :
             raise Exception('N / Dimension / Mass / vel not supplied')
             
         try : 
@@ -162,7 +164,7 @@ class confStat:
         dim = {0 : 'x', 1 : 'y', 2 :'z'}
         hamiltonian = configuration['hamiltonian']
         BoxSize = configuration['BoxSize']
-        periodicity = configuration['periodicity']
+        #periodicity = configuration['periodicity']
 
         #print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot :      
@@ -178,7 +180,7 @@ class confStat:
                 temporary_phase_space.set_p(p_dummy_list)
 
                 #print('confStats.py temporary_phase_space ',temporary_phase_space)
-                potential.append(hamiltonian.total_energy(temporary_phase_space,periodicity=True)) # ADD periodicity=True
+                potential.append(hamiltonian.total_energy(temporary_phase_space,configuration['pb_q'])) # ADD periodicity=True
                 #print('confStats.py potential',potential)
                 configuration['phase_space'].set_p(p_hist[i])
                 #print('confStats.py p_hist',p_hist[i])

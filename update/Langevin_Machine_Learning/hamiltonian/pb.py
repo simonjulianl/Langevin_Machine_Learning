@@ -11,6 +11,13 @@ class periodic_bc:
          indices = np.where(q<-0.5)
          q[indices] = q[indices] + 1.0
 
+    def adjust_box(self,q,BoxSize):
+
+         indices = np.where(q>0.5*BoxSize)
+         q[indices] = q[indices] - 1.0*BoxSize
+         indices = np.where(q<-0.5*BoxSize)
+         q[indices] = q[indices] + 1.0*BoxSize
+
     # returns pair distances between two particles
     # return a symmetric matrx
     def paired_distance(self,q):
@@ -32,7 +39,7 @@ class periodic_bc:
         dq[indices] = dq[indices] - np.copysign(1.0, dq[indices])
         print('dq - adjust ')
         print(dq)
-        delta_q = np.subtract.reduce(dq,axis=2)
+        delta_q = np.sum(dq,axis=1)
         print('delta_q',delta_q)
         #print('dq*dq')
         #print(dq*dq)

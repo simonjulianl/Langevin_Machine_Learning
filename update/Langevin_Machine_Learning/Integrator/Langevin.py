@@ -136,13 +136,6 @@ class Langevin(Integration):
             print('Not multicpu')
             for i in trange(total_samples):
 
-                # if self._configuration['periodicity']:
-                #     # check pbc if activated
-                #     q = self._configuration['phase_space'].get_q()
-                #     q = np.where(q > 0.5, q - 1.0, q)  # if more than 0.5 since box is [-0.5,0.5], pbc applies
-                #     q = np.where(q < -0.5, q + 1.0, q)
-                #     self._configuration['phase_space'].set_q(q)
-
                 p = self._configuration['phase_space'].get_p()
                 p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * time_step))) * \
                     random_1[i]
@@ -194,14 +187,6 @@ class Langevin(Integration):
                 for i in trange(total_samples):
                     #print('Langevin.py total_samples {}'.format(i))
 
-                    # if self._configuration['periodicity'] :
-                    #     # check pbc if activated
-                    #     q = state['phase_space'].get_q()
-                    #     print('Langevin.py q',q.shape)
-                    #     q = np.where(q > 0.5, q - 1.0, q) # if more than 0.5 since box is [-0.5,0.5], pbc applies
-                    #     q = np.where(q < 0.5, q + 1.0, q)
-                    #     state['phase_space'].set_q(q)
-
                     p = state['phase_space'].get_p()
                     p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
                     state['phase_space'].set_p(p)
@@ -209,6 +194,7 @@ class Langevin(Integration):
                     for j in range(self._intSetting['DumpFreq']):
                         #print('Langevin.py DumpFreq {}'.format(j) )
                         state = integrator_method(**state)
+
 
                     p = state['phase_space'].get_p()
                     p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
@@ -233,12 +219,13 @@ class Langevin(Integration):
 
             #split using multiprocessing for faster processing
             #for i in range(0,len(curr_q),1000):
+            #step = len(curr_q) //10
             step = len(curr_q)
             #print('Langevin.py step', step)
             for i in range(0, len(curr_q), step):
                 #print('Langevin.py count', i)
                 split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
-                #print('Langevin.py split_state 1',split_state)
+                print('q',split_state)
                 #split_state['phase_space'].set_q(curr_q[i:i+1000])
                 split_state['phase_space'].set_q(curr_q[i:i + step])
                 #print('Langevin.py curr_q[i:i + step]',curr_q[i:i + step])

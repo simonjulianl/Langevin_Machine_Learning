@@ -32,32 +32,23 @@ def position_verlet(**state) :
     '''
 
     #get all the constants
-    #print('position_verlet.py state',state)
+    print('position_verlet.py state',state)
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
     #print('position_verlet.py init q', q)
     #print('position_verlet.py init p', p)
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
-    periodicity = state['periodicity']
+    #periodicity = state['periodicity']
     DIM = state['DIM']
     particle = state['particle']
-    BoxSize = state['BoxSize']
+    pb_q = state['pb_q']
 
-    #print('position_verlet.py q', q)
+    print('position_verlet.py q', q)
     q = q + time_step / 2 * p #dq/dt
-
-    if periodicity :
-        # check pbc if activated
-        #print('position_verlet.py periodicity',periodicity)
-        #print('position_verlet.py before pbc q',q)
-        for j in range(particle):
-            for i in range(DIM):
-                period = np.where(q[:,j,i] > 0.5)
-                q[period,j,i] = q[period,j,i] -1.0
-                period = np.where(q[:,j,i] < -0.5)
-                q[period,j,i] = q[period,j,i] + 1.0
-
+    print('position_verlet.py update q', q)
+    pb_q.adjust(q)
+    print('position_verlet.py adjust q', q)
     #print('position_verlet.py after pbc q', q)
     state['phase_space'].set_q(q)
 
@@ -68,22 +59,13 @@ def position_verlet(**state) :
     #print('position_verlet.py p_list_dummy', p_list_dummy.shape)
 
     #print('position_verlet.py dHdq',-Hamiltonian.dHdq(state['phase_space'], BoxSize, periodicity))
-    p = p + time_step  * (-Hamiltonian.dHdq(state['phase_space'], periodicity)  ) #dp/dt
+    p = p + time_step  * (-Hamiltonian.dHdq(state['phase_space'], state['pb_q'])  ) #dp/dt
     #print('position_verlet.py p', p)
 
     q = q + time_step / 2 * p #dq/dt
     #print('position_verlet.py q', q)
 
-    if periodicity :
-        # check pbc if activated
-        #print('position_verlet.py periodicity',periodicity)
-        #print('position_verlet.py before pbc q',q)
-        for j in range(particle):
-            for i in range(DIM):
-                period = np.where(q[:,j,i] > 0.5)
-                q[period,j,i] = q[period,j,i] -1.0
-                period = np.where(q[:,j,i] < -0.5)
-                q[period,j,i] = q[period,j,i] + 1.0
+    pb_q.adjust(q)
 
     #print('position_verlet.py after pbc q', q)
 
