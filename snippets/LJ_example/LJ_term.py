@@ -52,7 +52,9 @@ class LJ_term(Interaction):
         for k in range(N):
             pb.adjust(xi_state[k])
             _, q = pb.paired_distance(xi_state[k])
-            term[k] += np.nansum(eval(self._expression))*0.5
+            print('Lennard_Jones.py evaluate_xi', self._expression)
+            print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))
+            term[k] = np.nansum(eval(self._expression))*0.5
 
         term = term * (4*self._epsilon)*((self._sigma/self._boxsize)**self._exponent )
         return term
@@ -75,10 +77,17 @@ class LJ_term(Interaction):
 
         for k in range(N):
             pb.adjust(xi_state[k])
-            delta_xi, xi = pb.paired_distance(xi_state[k])
-            #dphidxi[k] = np.nansum(eval(self._derivative_xi),axis=1) * delta_q / np.sum(q,axis=1)
+            # delta_xi = [[x2-x1,y2-y1],[x1-x2,y1-y2]]
+            # q=dd=[[0, sqrt((dx)^2+(dy)^2)],[sqrt((dx)^2+(dy)^2),0]]
+            delta_xi, q = pb.paired_distance(xi_state[k])
+            print('Lennard_Jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
+            python_derivative_q = eval(self._derivative_q)
+            python_derivative_q[~np.isfinite(python_derivative_q)] = 0
+            print('Lennard_Jones.py evaluate_derivative_q python_derivative_q', python_derivative_q)
+            dphidxi[k] = np.sum(python_derivative_q,axis=1) * delta_xi / np.sum(q,axis=1)
 
-        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq.shape)
+        dphidxi = dphidxi * (4 * self._epsilon) * ((self._sigma / self._boxsize) ** self._exponent / self._boxsize )
+        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
-        return dHdq
+        return dphidxi
 

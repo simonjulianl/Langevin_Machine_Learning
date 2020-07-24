@@ -32,13 +32,13 @@ class periodic_bc:
         qt = np.transpose(qm,axes=[1,0,2])
         #print('qt',qt)
         dq = qm - qt
-        print('dq - raw ')
-        print(dq)
+        ##print('dq - raw ')
+        ##print(dq)
 
         indices = np.where(np.abs(dq)>0.5)
         dq[indices] = dq[indices] - np.copysign(1.0, dq[indices])
-        print('dq - adjust ')
-        print(dq)
+        ##print('dq - adjust ')
+        ##print(dq)
         delta_q = np.sum(dq,axis=1)
         print('delta_q',delta_q)
         #print('dq*dq')

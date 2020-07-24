@@ -21,7 +21,7 @@ if __name__=='__main__':
     LJ06 = LJ_term(eps,sig, 6,L)
     LJ12 = LJ_term(eps,sig,12,L)
 
-    energy = LJ6.energy(state,bc)
-    dq = LJ6.evaluate_derivative_q(state,bc)
+    energy = LJ06.energy(state,bc)
+    dq = LJ06.evaluate_derivative_q(state,bc)
 
 

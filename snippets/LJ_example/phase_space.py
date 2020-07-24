@@ -9,7 +9,7 @@ Created on Thu Jun 11 10:21:28 2020
 import numpy as np
 import copy
 
-class phase_space :
+class phase_space:
     '''phase space container class that have a 
     q and p configuration as well wrapper to read and write'
     q and p must be either numpy or torch 

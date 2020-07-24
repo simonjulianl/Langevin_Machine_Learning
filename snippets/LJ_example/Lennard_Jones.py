@@ -14,12 +14,10 @@ class Lennard_Jones:
         self.phi12 = phi12
 
     def energy(self, phase_space, pb):
-        return self.phi06.energy(phase_space,pb) + 
-               self.phi12.energy(phase_space,pb) 
+        return self.phi06.energy(phase_space,pb) + self.phi12.energy(phase_space,pb)
 
     def evaluate_derivative_q(self, phase_space,pb):
-        dphidq = self.phi06.evaluate_derivative_q(phase_space,pb)+
-                 self.phi12.evaluate_derivative_q(phase_space,pb)
+        dphidq = self.phi06.evaluate_derivative_q(phase_space,pb)+ self.phi12.evaluate_derivative_q(phase_space,pb)
         return dphidq
 
 
