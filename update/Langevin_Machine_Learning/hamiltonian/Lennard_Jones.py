@@ -50,13 +50,13 @@ class Lennard_Jones(Interaction):
         #print('Lennard_Jones.py energy q_state',q_state.shape)
         N, particle,DIM  = q_state.shape # ADD particle
         #print('Lennard_Jones.py energy', q_state)
-        #print('Lennard_Jones.py self._expression', self._expression)
+        print('Lennard_Jones.py self._expression', self._expression)
         for k in range(N):
             pb.adjust(q_state[k])
             delta_q, q=pb.paired_distance(q_state[k])
-            print(q)
-            term[k] += np.nansum(eval(self._expression))*0.5
-            print(term[k])
+            print('Lennard_Jones.py q',q)
+            term[k] = np.nansum(eval(self._expression))*0.5
+            print('Lennard_Jones.py term',term[k])
 
         return term
 
@@ -86,6 +86,7 @@ class Lennard_Jones(Interaction):
             print('evaluate_derivative_q eval', eval(self._derivative_q))
             #print('evaluate_derivative_q eval',eval(self._derivative_q)/self._BoxSize)
             print('evaluate_derivative_q eval',np.nansum(eval(self._derivative_q)/self._BoxSize,axis=1))
+            print('evaluate_derivative_q eval delta_q / q',delta_q / np.sum(q,axis=1))
             dHdq[k] = np.nansum(eval(self._derivative_q)/self._BoxSize,axis=1) * delta_q / np.sum(q,axis=1)
             print('evaluate_derivative_q dHdq',dHdq[k])
 
