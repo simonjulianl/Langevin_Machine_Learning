@@ -87,7 +87,7 @@ class LJ_term(Interaction):
             python_derivative_q = eval(self._derivative_q)   # -6.0*q**(-7.0) = -6.0*xi**(-7.0)
             python_derivative_q[~np.isfinite(python_derivative_q)] = 0
             print('Lennard_Jones.py evaluate_derivative_q python_derivative_q', python_derivative_q)  #[[0,eval(derivative_LJ)],[eval(derivative_LJ),0]]
-            dphidxi[k] = np.sum(python_derivative_q,axis=1) * delta_xi / np.sum(q,axis=1)
+            dphidxi[k] = np.sum(python_derivative_q,axis=1) * delta_xi / np.sum(q,axis=1)  # dphidxi = [[dphi/x1,dph/y1],[dphi/x2,dph/y2]]
 
         dphidxi = dphidxi * (4 * self._epsilon) * ((self._sigma / self._boxsize) ** self._exponent / self._boxsize )
         print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
