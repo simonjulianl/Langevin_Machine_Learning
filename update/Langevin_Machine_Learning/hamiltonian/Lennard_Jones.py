@@ -80,7 +80,7 @@ class Lennard_Jones(Interaction):
         for k in range(N):
             pb.adjust(q_state[k])
             delta_q, q = pb.paired_distance(q_state[k])
-            print('evaluate_derivative_q q',q)
+            print('evaluate_derivtak 2ative_q q',q)
             print('evaluate_derivative_q delta_q', delta_q)
             print('evaluate_derivative_q eval', self._derivative_q)
             print('evaluate_derivative_q eval', eval(self._derivative_q))

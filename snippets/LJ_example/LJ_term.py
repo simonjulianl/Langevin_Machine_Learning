@@ -51,10 +51,13 @@ class LJ_term(Interaction):
         N,n_particle,DIM  = xi_state.shape # ADD particle
         for k in range(N):
             pb.adjust(xi_state[k])
-            _, q = pb.paired_distance(xi_state[k])
-            print('Lennard_Jones.py evaluate_xi', self._expression)
-            print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))
-            term[k] = np.nansum(eval(self._expression))*0.5
+            _, q = pb.paired_distance(xi_state[k])  # q=dd=[[0, sqrt((dx)^2+(dy)^2)],[sqrt((dx)^2+(dy)^2),0]]
+            print('Lennard_Jones.py evaluate_xi', self._expression)   # 1.0 / q ** 6.0
+            print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))  #[[inf,eval(LJ)],[eval(LJ),inf]]
+            LJ = eval(self._expression)
+            LJ[~np.isfinite(LJ)] = 0
+            term[k] = np.sum(LJ)*0.5
+            print('Lennard_Jones.py term', term[k])
 
         term = term * (4*self._epsilon)*((self._sigma/self._boxsize)**self._exponent )
         return term
