@@ -84,9 +84,9 @@ class LJ_term(Interaction):
             # q=dd=[[0, sqrt((dx)^2+(dy)^2)],[sqrt((dx)^2+(dy)^2),0]]
             delta_xi, q = pb.paired_distance(xi_state[k])
             print('Lennard_Jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
-            python_derivative_q = eval(self._derivative_q)
+            python_derivative_q = eval(self._derivative_q)   # -6.0*q**(-7.0) = -6.0*xi**(-7.0)
             python_derivative_q[~np.isfinite(python_derivative_q)] = 0
-            print('Lennard_Jones.py evaluate_derivative_q python_derivative_q', python_derivative_q)
+            print('Lennard_Jones.py evaluate_derivative_q python_derivative_q', python_derivative_q)  #[[0,eval(derivative_LJ)],[eval(derivative_LJ),0]]
             dphidxi[k] = np.sum(python_derivative_q,axis=1) * delta_xi / np.sum(q,axis=1)
 
         dphidxi = dphidxi * (4 * self._epsilon) * ((self._sigma / self._boxsize) ** self._exponent / self._boxsize )
