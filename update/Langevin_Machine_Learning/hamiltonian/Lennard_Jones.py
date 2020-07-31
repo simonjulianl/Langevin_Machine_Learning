@@ -15,11 +15,14 @@ class Lennard_Jones(Interaction):
         self._name = 'Lennard Jones Potential'
         #super().__init__('1.0 / q ** {0} '.format(self._exponent))
 
-    def energy(self, phase_space, pb):
-        return self.phi06.energy(phase_space,pb) + self.phi12.energy(phase_space,pb)
+    def energy(self, phase_space, pb): # phase space is real-space-unit
+        xi_space = self.dimensionless(phase_space)
+        return self.phi06.energy(xi_space,pb) + self.phi12.energy(xi_space,pb)
 
     def evaluate_derivative_q(self, phase_space,pb):
-        dphidq = self.phi06.evaluate_derivative_q(phase_space,pb)+ self.phi12.evaluate_derivative_q(phase_space,pb)
+        xi_space = self.dimensionless(phase_space)
+        dphidq = self.phi06.evaluate_derivative_q(xi_space,pb)+
+self.phi12.evaluate_derivative_q(xi_space,pb)
         return dphidq
 
 
