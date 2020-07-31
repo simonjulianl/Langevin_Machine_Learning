@@ -83,13 +83,13 @@ class LJ_term(Interaction):
             pb.adjust(xi_state[z])
             delta_xi, q = pb.paired_distance(xi_state[z])
             print('Lennard_Jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
-            dphidq = eval(self._derivative_q)  
+            dphidq = eval(self._derivative_q)
             dphidq[~np.isfinite(dphidq)] = 0
             print('Lennard_Jones.py evaluate_derivative_q dphidq', dphidq)
             dphidxi[z] = np.sum(dphidq,axis=1) * delta_xi / np.sum(q,axis=1)
 
-        dphidxi = dphidxi * (self.parameter_term / self._boxsize )
+        dphidx = dphidxi * (self.parameter_term / self._boxsize )
         print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
-        return dphidxi
+        return dphidx
 
