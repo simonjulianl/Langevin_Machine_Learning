@@ -6,7 +6,7 @@ Created on Tue Jun  2 17:21:03 2020
 @author: simon
 """
 import numpy as np
-from Interaction import Interaction
+from .Interaction import Interaction
 
 class LJ_term(Interaction):
     def __init__(self, epsilon : float, sigma : float, exponent : float, boxsize : float):

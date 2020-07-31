@@ -5,7 +5,9 @@ import Langevin_Machine_Learning.utils as confStat # configuration statistics
 import numpy as np
 
 energy = Hamiltonian.Hamiltonian()
-energy.append(Hamiltonian.Lennard_Jones(epsilon =1, sigma =1,BoxSize=3.16))
+LJ06 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 6, boxsize=3.16)
+LJ12 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 12, boxsize=3.16)
+energy.append(Hamiltonian.Lennard_Jones(LJ06,LJ12))
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
 configuration = {
@@ -30,7 +32,7 @@ integration_setting = {
     }
 
 configuration.update(integration_setting)
-print(configuration)
+#print(configuration)
 print('\n')
 print('-----------------')
 print('MD_integrator')
@@ -52,8 +54,8 @@ print('-----------------')
 quit()
 #confStat.kinetic_energy(**configuration)
 confStat.plot_stat(q_hist, p_hist, 'all',**configuration)
-
-#plot the statistic of q distribution based on current state configuration
 quit()
+#plot the statistic of q distribution based on current state configuration
+
 #to save the current phase space to continue as a checkpoint
 MD_integrator.save_phase_space() # by default, it is in init file

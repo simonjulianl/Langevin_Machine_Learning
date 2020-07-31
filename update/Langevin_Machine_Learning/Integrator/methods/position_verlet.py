@@ -44,6 +44,7 @@ def position_verlet(**state) :
     particle = state['particle']
     pb_q = state['pb_q']
 
+
     print('position_verlet.py q', q)
     q = q + time_step / 2 * p #dq/dt
     print('position_verlet.py update q', q)

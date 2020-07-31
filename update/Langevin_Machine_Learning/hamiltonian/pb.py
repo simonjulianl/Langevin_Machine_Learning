@@ -11,6 +11,13 @@ class periodic_bc:
          indices = np.where(q<-0.5)
          q[indices] = q[indices] + 1.0
 
+    def adjust_real(self,q,boxsize):
+
+         indices = np.where(q>0.5*boxsize)
+         q[indices] = q[indices] - 1.0 *boxsize
+         indices = np.where(q<-0.5*boxsize)
+         q[indices] = q[indices] + 1.0*boxsize
+
     # returns pair distances between two particles
     # return a symmetric matrx
     def paired_distance(self,q):
