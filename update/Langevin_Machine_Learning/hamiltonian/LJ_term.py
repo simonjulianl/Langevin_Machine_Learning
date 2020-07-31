@@ -34,7 +34,7 @@ class LJ_term(Interaction):
         #since interaction is a function of r or delta q instead of q, we need to modift the data
 
 
-    def energy(self, phase_space, pb):
+    def energy(self, xi_space, pb):
         '''
         function to calculate the term directly for truncated lennard jones
         
@@ -44,7 +44,8 @@ class LJ_term(Interaction):
             Hamiltonian calculated
 
         '''
-        xi_state = phase_space.get_q()
+        xi_state = xi_space.get_q()
+        #p_state = xi_space.get_p()
         term = np.zeros(xi_state.shape[0])
         # N : number of data in batch
         # n_particle : number of particles
@@ -63,7 +64,7 @@ class LJ_term(Interaction):
         term = term * self.parameter_term
         return term
 
-    def evaluate_derivative_q(self, phase_space, pb):
+    def evaluate_derivative_q(self, xi, pb):
         '''
         Function to calculate dHdq
         
@@ -73,8 +74,8 @@ class LJ_term(Interaction):
             dphidxi calculated given the terms of N X DIM 
 
         '''
-        xi_state = phase_space.get_q()
-        p_state  = phase_space.get_p()
+        xi_state = xi_space.get_q()
+        p_state  = xi_space.get_p()
         dphidxi = np.zeros(xi_state.shape) #derivative of separable term in N X DIM matrix
         N, N_particle,DIM  = xi_state.shape
         print('Lennard_Jones.py evaluate_derivative_q xi_state',xi_state)
@@ -88,8 +89,8 @@ class LJ_term(Interaction):
             print('Lennard_Jones.py evaluate_derivative_q dphidq', dphidq)
             dphidxi[z] = np.sum(dphidq,axis=1) * delta_xi / np.sum(q,axis=1)
 
-        dphidxi = dphidxi * (self.parameter_term / self._boxsize )
+        dphidq_ = dphidxi * (self.parameter_term / self._boxsize )
         print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
-        return dphidxi
+        return dphidq_
 

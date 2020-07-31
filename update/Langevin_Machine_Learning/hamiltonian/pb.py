@@ -4,14 +4,10 @@ import numpy as np
 # range of q is always ([-0.5,0.5]x[-0.5,0.5]) - R^2
 class periodic_bc:
 
-    def adjust(self,q):
+    def adjust_reduced(self,q): # use in Lennard-Jones class
+         self.adjust_real(q,boxsize=1)
 
-         indices = np.where(q>0.5)
-         q[indices] = q[indices] - 1.0
-         indices = np.where(q<-0.5)
-         q[indices] = q[indices] + 1.0
-
-    def adjust_real(self,q,boxsize):
+    def adjust_real(self,q,boxsize): #use in verlet and other classes
 
          indices = np.where(q>0.5*boxsize)
          q[indices] = q[indices] - 1.0 *boxsize
@@ -20,7 +16,7 @@ class periodic_bc:
 
     # returns pair distances between two particles
     # return a symmetric matrx
-    def paired_distance(self,q):
+    def paired_distance_reduced(self,q):
 
         qlen = q.shape[0]
         q0 = np.expand_dims(q,axis=0)
