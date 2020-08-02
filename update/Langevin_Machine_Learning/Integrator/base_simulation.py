@@ -86,17 +86,20 @@ class Integration(ABC) :
 
         # just create container
         pos = kwargs.get('pos', None)
-        print('base_simulation.py pos', pos.shape)
+        print('base_simulation.py pos', pos)
         vel = kwargs.get('vel', None)
         print('base_simulation.py vel', vel)
         
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
-            pos = np.random.uniform(-0.5, 0.5, (self._configuration['N'], self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
-            MassCentre = np.sum(pos,axis = 1) / self._configuration['particle']
+            pos = np.random.uniform(-0.5, 0.5, ( self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
+            print('base_simulation.py pos',pos)
+            MassCentre = np.sum(pos,axis = 0) / self._configuration['particle']
+            print('base_simulation.py MassCentre', MassCentre)
             for j in range(self._configuration['particle']):  ### ADD
                 for i in range(self._configuration['DIM']) :
-                    pos[:,j,i] = pos[:,j,i] - MassCentre[:,i]
-                
+                    pos[j,i] = pos[j,i] - MassCentre[i]
+            print('base_simulation.py pos', pos)
+
         if vel is None :
             vel = []
             #print('base_simulation.py Temperature',self._configuration['Temperature'])
@@ -125,6 +128,7 @@ class Integration(ABC) :
 
 
         #print('base_simulation.py vel-centre ', vel)
+        print('base_simulation.py pos.shape', pos.shape)
         print('base_simulation.py vel.shape',vel.shape)
         self._configuration['phase_space'] = phase_space()
         #print('base_simulation.py phase_space')
@@ -139,7 +143,7 @@ class Integration(ABC) :
         self._configuration['pb_q'] = periodic_bc()
 
         Temp = confStat.temp(**self._configuration)
-        #print('base_simulation.py Temp', Temp)
+        print('base_simulation.py Temp', Temp)
         scalefactor = np.sqrt(self._configuration['Temperature']/Temp) # To make sure that temperature is exactly wanted temperature
         scalefactor = scalefactor[:,np.newaxis,np.newaxis]
         #print('base_simulation.py scalefactor',scalefactor)

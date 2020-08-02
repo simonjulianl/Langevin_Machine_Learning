@@ -43,12 +43,12 @@ def position_verlet(**state) :
     DIM = state['DIM']
     particle = state['particle']
     pb_q = state['pb_q']
-
+    boxsize = state['BoxSize']
 
     print('position_verlet.py q', q)
     q = q + time_step / 2 * p #dq/dt
     print('position_verlet.py update q', q)
-    pb_q.adjust(q)
+    pb_q.adjust_real(q,boxsize)
     print('position_verlet.py adjust q', q)
     #print('position_verlet.py after pbc q', q)
     state['phase_space'].set_q(q)
@@ -67,7 +67,7 @@ def position_verlet(**state) :
     q = q + time_step / 2 * p #dq/dt
     print('position_verlet.py update q', q)
 
-    pb_q.adjust(q)
+    pb_q.adjust_real(q,boxsize)
 
     print('position_verlet.py after pbc q', q)
 

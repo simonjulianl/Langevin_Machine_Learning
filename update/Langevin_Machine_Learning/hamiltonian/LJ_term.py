@@ -52,8 +52,8 @@ class LJ_term(Interaction):
         # DIM : dimension of xi
         N,N_particle,DIM  = xi_state.shape # ADD particle
         for z in range(N):
-            pb.adjust(xi_state[z])
-            _, q = pb.paired_distance(xi_state[z])
+            pb.adjust_reduced(xi_state[z])
+            _, q = pb.paired_distance_reduced(xi_state[z])
             print('Lennard_Jones.py evaluate_xi', self._expression)
             print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))
             LJ = eval(self._expression)
@@ -64,7 +64,7 @@ class LJ_term(Interaction):
         term = term * self.parameter_term
         return term
 
-    def evaluate_derivative_q(self, xi, pb):
+    def evaluate_derivative_q(self, xi_space, pb):
         '''
         Function to calculate dHdq
         
@@ -81,23 +81,15 @@ class LJ_term(Interaction):
         print('Lennard_Jones.py evaluate_derivative_q xi_state',xi_state)
 
         for z in range(N):
-            pb.adjust(xi_state[z])
-            delta_xi, q = pb.paired_distance(xi_state[z])
+            pb.adjust_reduced(xi_state[z])
+            delta_xi, q = pb.paired_distance_reduced(xi_state[z])
             print('Lennard_Jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
             dphidq = eval(self._derivative_q)
             dphidq[~np.isfinite(dphidq)] = 0
             print('Lennard_Jones.py evaluate_derivative_q dphidq', dphidq)
             dphidxi[z] = np.sum(dphidq,axis=1) * delta_xi / np.sum(q,axis=1)
 
-<<<<<<< HEAD
-        dphidx = dphidxi * (self.parameter_term / self._boxsize )
-        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
-        #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
-        return dphidx
-=======
         dphidq_ = dphidxi * (self.parameter_term / self._boxsize )
         print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
         #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
         return dphidq_
->>>>>>> a950a1a7822747baf69d59c650ae65659084c919
-

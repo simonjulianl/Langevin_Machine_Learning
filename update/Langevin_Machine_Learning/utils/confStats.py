@@ -60,23 +60,24 @@ class confStat:
             warnings.warn('BoxSize not supplied, set to 1')
             
 
-        #print('confStats.py temp vel',vel)
+        print('confStats.py temp vel',vel.shape)
         ene_kin = []
         for i in range(N):
             ene_kin_ = 0.0
             #print('confStats.py vel[i,:]',vel[i,:])
-            real_vel = BoxSize * vel[i,:] # rescale each velocity according to the box size
-            #print('confStats.py real_vel',real_vel)
+            #print('confStats.py BoxSize',BoxSize)
+            vel_ = vel[i,:] # rescale each velocity according to the box size
+            #print('confStats.py  vel',vel)
             #print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
 
             for j in range(particle):
-                #print('confStats.py sum real_vel[j, :]', real_vel[j, :] )
+                print('confStats.py sum vel[j, :]', vel_[j, :] )
                 #print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
-                ene_kin_ += 0.5 * m * np.sum(np.multiply(real_vel[j,:],real_vel[j,:]),axis=0) # 1/2 m v^2 for constant mass
-                #print('confStats.py ene_kin',ene_kin_)
+                ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j,:],vel_[j,:]),axis=0) # 1/2 m v^2 for constant mass
 
+            print('confStats.py ene_kin', ene_kin_)
             ene_kin.append(ene_kin_)
-
+            quit()
         ene_kin = np.array(ene_kin)
         #print('confStats.py temp ene_kin',ene_kin)
 

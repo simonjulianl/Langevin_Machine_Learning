@@ -7,7 +7,7 @@ import numpy as np
 energy = Hamiltonian.Hamiltonian()
 LJ06 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 6, boxsize=3.16)
 LJ12 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 12, boxsize=3.16)
-energy.append(Hamiltonian.Lennard_Jones(LJ06,LJ12))
+energy.append(Hamiltonian.Lennard_Jones(LJ06,LJ12, boxsize=3.16))
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
 configuration = {
@@ -17,7 +17,7 @@ configuration = {
     'm' : 1,
     'particle' : 2,
     'N' : 16000,   # Total number of samples
-    'BoxSize': 3.16,
+    'BoxSize': np.sqrt(2/0.2),
     'periodicity' : True,
     'hamiltonian' : energy,
     'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.95))
@@ -40,7 +40,7 @@ MD_integrator = Integrator.Langevin(**configuration)
 #only load for initial condition Temperature = 1.0
 print('-----------------')
 print('set_phase_space')
-MD_integrator.set_phase_space(samples = 3) # command out when save a file
+MD_integrator.set_phase_space(samples = 4) # command out when save a file
 print('-----------------')
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
