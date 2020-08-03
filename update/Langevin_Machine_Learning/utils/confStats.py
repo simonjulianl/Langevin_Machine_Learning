@@ -10,7 +10,7 @@ import numpy as np
 import warnings
 import matplotlib.pyplot as plt 
 from ..phase_space import phase_space
-from ..hamiltonian.pb import periodic_bc
+#from ..hamiltonian.pb import periodic_bc
 
 class confStat:
     '''Helper Class to get the statistic of the configuration
@@ -49,7 +49,7 @@ class confStat:
             DIM = configuration['DIM']
             m = configuration['m']
             vel = configuration['phase_space'].get_p() / m # v = p/m
-            pb = configuration['pb_q']
+            #pb = configuration['pb_q']
         except :
             raise Exception('N / Dimension / Mass / vel not supplied')
             
@@ -60,7 +60,7 @@ class confStat:
             warnings.warn('BoxSize not supplied, set to 1')
             
 
-        print('confStats.py temp vel',vel.shape)
+        #print('confStats.py temp vel',vel.shape)
         ene_kin = []
         for i in range(N):
             ene_kin_ = 0.0
@@ -71,13 +71,13 @@ class confStat:
             #print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
 
             for j in range(particle):
-                print('confStats.py sum vel[j, :]', vel_[j, :] )
+                #print('confStats.py sum vel[j, :]', vel_[j, :] )
                 #print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
                 ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j,:],vel_[j,:]),axis=0) # 1/2 m v^2 for constant mass
 
-            print('confStats.py ene_kin', ene_kin_)
+            #print('confStats.py ene_kin', ene_kin_)
             ene_kin.append(ene_kin_)
-            quit()
+
         ene_kin = np.array(ene_kin)
         #print('confStats.py temp ene_kin',ene_kin)
 
@@ -118,7 +118,7 @@ class confStat:
         return ene_kin_aver
     
     @staticmethod
-    def plot_stat(q_hist : list , p_hist : list , mode : str, **configuration):
+    def plot_stat(initial_q_hist : list, initial_p_hist: list,q_hist_ : list , p_hist_ : list , mode : str, **configuration):
         '''
         Static function to help plot various statistic according to the supplied
         trajectories of qlist and plist as well as p 
@@ -149,7 +149,7 @@ class confStat:
         if mode not in line_plot and mode not in hist_plot:
             raise Exception('Modes not available , check the mode')
             
-        assert q_hist.shape == p_hist.shape # q list and p list must have the same size
+        assert q_hist_.shape == p_hist_.shape # q list and p list must have the same size
         
         color = {
             'p' : 'blue',
@@ -164,15 +164,24 @@ class confStat:
         
         dim = {0 : 'x', 1 : 'y', 2 :'z'}
         hamiltonian = configuration['hamiltonian']
-        BoxSize = configuration['BoxSize']
-        #periodicity = configuration['periodicity']
+        time_step = configuration['time_step']
+        iterations = configuration['iterations']
 
-        #print('confStats.py hamiltonian',hamiltonian)
+
+        print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot :      
             potential = []
             kinetic = []
-            #print('confStats.py q_hist',q_hist.shape)
-            #print('confStats.py p_hist', p_hist.shape)
+
+            initial_q_hist = np.expand_dims(initial_q_hist, axis=0)
+            initial_p_hist = np.expand_dims(initial_p_hist, axis=0)
+            q_hist = np.concatenate((initial_q_hist,q_hist_),axis=0)
+            p_hist = np.concatenate((initial_p_hist, p_hist_), axis=0)
+            #print('confStats.py intial_q_hist',initial_q_hist)
+            #print('confStats.py intial_p_hist', initial_p_hist)
+            #print('confStats.py q_hist',q_hist)
+            #print('confStats.py p_hist', p_hist)
+
             for i in range(len(q_hist)):
                 p_dummy_list = np.zeros(q_hist[i].shape)
                 temporary_phase_space = phase_space()
@@ -187,17 +196,16 @@ class confStat:
                 #print('confStats.py p_hist',p_hist[i])
 
                 kinetic_ = confStat.kinetic_energy(**configuration)
-                #print('confStats.py kinetic_',kinetic_)
                 kinetic.append(kinetic_)
+                #print('confStats.py kinetic', kinetic)
 
-            kinetic = np.array(kinetic)
-            potential = np.array(potential)
+            kinetic = np.array(kinetic).transpose()
+            potential = np.array(potential).transpose()
             energy = kinetic + potential
 
             #print('confStats.py kinetic', kinetic)
             #print('confStats.py potential',potential)
             #print('confStats.py energy',energy)
-            #print(energy.shape[1])
             #print('confStats.py energy T',energy.T)
 
             if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
@@ -213,31 +221,35 @@ class confStat:
 
             elif mode == 'all':
 
-                for i in range(energy.shape[1]):
+                for i in range(energy.shape[0]):
                     if i < 2:
-                        plt.plot(energy.T[i], label = 'total energy')
-                        plt.plot(kinetic.T[i], label='kinetic energy')
-                        plt.plot(potential.T[i], label='potential energy')
+                            t = np.arange(0., iterations * time_step + time_step, time_step)
+                            plt.plot(t,energy[i], label = 'total energy')
+                            plt.plot(t,kinetic[i], label='kinetic energy')
+                            plt.plot(t,potential[i], label='potential energy')
 
-                        plt.xlabel('sampled steps')
+                            plt.xlabel('time_step')
+                            plt.legend(loc = 'best')
+                            plt.show()
+
+            else :
+
+                for i in range(energy.shape[0]):
+
+                    if i < 2:
+                        t = np.arange(0., iterations*time_step, time_step)
+                        if mode == 'energy' : # if energy , we use average on every dimension
+                            plt.plot(t,energy[i], color = color[mode], label = 'total energy')
+                        elif mode =='kinetic' :
+                            plt.plot(t,kinetic[i], color = color[mode], label = 'kinetic energy')
+                        elif mode == 'potential' :
+                            plt.plot(t,potential[i], color = color[mode], label = 'potential energy')
+
+                        plt.xlabel('time_step')
+                        plt.ylabel(mode)
                         plt.legend(loc = 'best')
                         plt.show()
 
-            else :
-                if mode == 'energy' : # if energy , we use average on every dimension
-                    plt.plot(energy, color = color[mode], label = 'total energy')
-                elif mode =='kinetic' :
-                    plt.plot(kinetic, color = color[mode], label = 'kinetic energy')
-                elif mode == 'potential' :
-                    plt.plot(potential.T[0][100:], color = color[mode], label = 'potential energy')
-
-                plt.xlabel('sampled steps')
-                plt.ylabel(mode)
-                plt.legend(loc = 'best')
-                plt.show()
-
-
-                    
         else : 
             try : 
                 _beta = 1 / (configuration['kB'] * configuration['Temperature'])

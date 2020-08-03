@@ -32,11 +32,9 @@ def position_verlet(**state) :
     '''
 
     #get all the constants
-    print('position_verlet.py state',state)
+    #print('position_verlet.py state',state)
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
-    #print('position_verlet.py init q', q)
-    #print('position_verlet.py init p', p)
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
     #periodicity = state['periodicity']
@@ -45,11 +43,10 @@ def position_verlet(**state) :
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 
-    print('position_verlet.py q', q)
+    #print('position_verlet.py q', q)
     q = q + time_step / 2 * p #dq/dt
-    print('position_verlet.py update q', q)
+    #print('position_verlet.py update q', q)
     pb_q.adjust_real(q,boxsize)
-    print('position_verlet.py adjust q', q)
     #print('position_verlet.py after pbc q', q)
     state['phase_space'].set_q(q)
 
@@ -59,17 +56,17 @@ def position_verlet(**state) :
     state['phase_space'].set_p(p_list_dummy)
     #print('position_verlet.py p_list_dummy', p_list_dummy.shape)
 
-    print('position_verlet.py p', p)
+    #print('position_verlet.py p', p)
     p = p + time_step  * (-Hamiltonian.dHdq(state['phase_space'], state['pb_q'])  ) #dp/dt
-    print('position_verlet.py update p', p)
+    #print('position_verlet.py update p', p)
 
-    print('position_verlet.py q', q)
+    #print('position_verlet.py q', q)
     q = q + time_step / 2 * p #dq/dt
-    print('position_verlet.py update q', q)
+    #print('position_verlet.py update q', q)
 
     pb_q.adjust_real(q,boxsize)
 
-    print('position_verlet.py after pbc q', q)
+    #print('position_verlet.py after pbc q', q)
 
     state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state
 

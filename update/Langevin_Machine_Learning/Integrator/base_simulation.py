@@ -55,8 +55,8 @@ class Integration(ABC) :
 
         if not isinstance(hamiltonian, Hamiltonian):
             raise Exception('not a Hamiltonian class ')
-            
-        try : 
+
+        try :
             self._configuration = {
                 'N' : kwargs['N'],
                 'DIM' : kwargs['DIM'],
@@ -65,7 +65,7 @@ class Integration(ABC) :
                 'hamiltonian' : hamiltonian,
                 'BoxSize' : kwargs['BoxSize']  ### Add
             }
-        except : 
+        except :
             raise ValueError('N / DIM / m / hamiltonian / Boxsize unset or error')
 
         #Constants
@@ -86,7 +86,7 @@ class Integration(ABC) :
 
         # just create container
         pos = kwargs.get('pos', None)
-        print('base_simulation.py pos', pos)
+        print('base_simulation.py pos', pos.shape)
         vel = kwargs.get('vel', None)
         print('base_simulation.py vel', vel)
         
@@ -102,6 +102,7 @@ class Integration(ABC) :
 
         if vel is None :
             vel = []
+            #'generate': 'maxwell'
             #print('base_simulation.py Temperature',self._configuration['Temperature'])
             sigma = np.sqrt(self._configuration['Temperature']) # sqrt(kT/m)
             #print('base_simulation.py sigma',sigma)
@@ -143,7 +144,7 @@ class Integration(ABC) :
         self._configuration['pb_q'] = periodic_bc()
 
         Temp = confStat.temp(**self._configuration)
-        print('base_simulation.py Temp', Temp)
+        #print('base_simulation.py Temp', Temp)
         scalefactor = np.sqrt(self._configuration['Temperature']/Temp) # To make sure that temperature is exactly wanted temperature
         scalefactor = scalefactor[:,np.newaxis,np.newaxis]
         #print('base_simulation.py scalefactor',scalefactor)
@@ -151,6 +152,7 @@ class Integration(ABC) :
         vel = vel*scalefactor
         #print('base_simulation.py after scalefactor',vel)
         self._configuration['phase_space'].set_p(vel)
+        #print('base_simulation.py temp after scalefactor',confStat.temp(**self._configuration)) # check temp 0.95
 
     @abstractmethod
     def integrate(self):
@@ -189,15 +191,16 @@ class Integration(ABC) :
         #print('base_simultion.py read', self._configuration['phase_space'].read(file_path, samples))
         self._configuration['phase_space'].read(file_path, samples)
 
-        q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
+        inital_q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
+        inital_p_list = self._configuration['phase_space'].get_p()  # sample the shape and DIM
 
-        print('base_simultion.py q_list',q_list)
-        #print('base_simultion.py q_list',q_list.shape)
+        print('base_simultion.py inital_q_list',inital_q_list)
+        print('base_simultion.py inital_p_list',inital_p_list)
         if samples > self._configuration['N']:
             raise Exception('samples exceed available particles')
             
         # the loaded file must contain N X particle x DIM matrix of p and q
-        _new_N, _new_particle, _new_DIM = q_list.shape
+        _new_N, _new_particle, _new_DIM = inital_q_list.shape
        
         if self._configuration['N'] != _new_N : 
             warnings.warn('N is chanpged to the new value of  {}'.format(_new_N))
@@ -210,6 +213,8 @@ class Integration(ABC) :
         if self._configuration['DIM'] != _new_DIM : 
             warnings.warn('DIM is changed to the new value of  {}'.format(_new_DIM))
             self._configuration['DIM'] = _new_DIM
+
+        return (inital_q_list, inital_p_list)
                 
     def save_phase_space(self, filename = None): 
         '''if None, by default its save in init Langevin_Machine_Learning/init

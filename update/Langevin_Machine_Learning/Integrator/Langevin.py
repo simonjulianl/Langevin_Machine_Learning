@@ -192,7 +192,7 @@ class Langevin(Integration):
                     state['phase_space'].set_p(p)
 
                     for j in range(self._intSetting['DumpFreq']):
-                        #print('Langevin.py DumpFreq {}'.format(j) )
+                        #print('Langevin.py **state',state )
                         state = integrator_method(**state)
 
 
@@ -225,7 +225,7 @@ class Langevin(Integration):
             for i in range(0, len(curr_q), step):
                 #print('Langevin.py count', i)
                 split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
-                print('q',split_state)
+                #print('Langevin.py split_state',split_state)
                 #split_state['phase_space'].set_q(curr_q[i:i+1000])
                 split_state['phase_space'].set_q(curr_q[i:i + step])
                 #print('Langevin.py curr_q[i:i + step]',curr_q[i:i + step])

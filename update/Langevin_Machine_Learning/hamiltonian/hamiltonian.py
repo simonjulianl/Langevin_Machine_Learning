@@ -57,7 +57,7 @@ class Hamiltonian:
         H = 0
         #H = 0 # hamiltonian container
         for term in self.hamiltonian_terms :
-            print('hamiltonian.py term',term)
+            #print('hamiltonian.py term',term)
             #print('hamiltonian.py phase_space',phase_space)
             H += term.energy(phase_space,pb)
             #print('hamiltonian.py H',H)
@@ -77,11 +77,11 @@ class Hamiltonian:
         q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
 
-        print('Hamiltonian.py dHdq', dHdq.shape)
-        print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
+        #print('Hamiltonian.py dHdq', dHdq.shape)
+        #print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
 
         for term in self.hamiltonian_terms :
-            print('Hamiltonian.py for dHdq', dHdq)
+            #print('Hamiltonian.py for dHdq', dHdq)
             dHdq += term.evaluate_derivative_q(phase_space, pb)
             #print('Hamiltonian.py dHdq+', dHdq)
 
