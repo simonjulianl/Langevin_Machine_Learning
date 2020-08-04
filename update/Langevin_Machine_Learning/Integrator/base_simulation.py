@@ -86,19 +86,23 @@ class Integration(ABC) :
 
         # just create container
         pos = kwargs.get('pos', None)
-        print('base_simulation.py pos', pos.shape)
+        print('base_simulation.py pos', pos)
         vel = kwargs.get('vel', None)
         print('base_simulation.py vel', vel)
         
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
             pos = np.random.uniform(-0.5, 0.5, ( self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
-            print('base_simulation.py pos',pos)
+            #print('base_simulation.py pos',pos)
             MassCentre = np.sum(pos,axis = 0) / self._configuration['particle']
             print('base_simulation.py MassCentre', MassCentre)
             for j in range(self._configuration['particle']):  ### ADD
                 for i in range(self._configuration['DIM']) :
                     pos[j,i] = pos[j,i] - MassCentre[i]
+
             print('base_simulation.py pos', pos)
+            pos = pos * self._configuration['BoxSize']
+            pos = np.expand_dims(pos, axis=0)
+            print('base_simulation.py pos',pos)
 
         if vel is None :
             vel = []

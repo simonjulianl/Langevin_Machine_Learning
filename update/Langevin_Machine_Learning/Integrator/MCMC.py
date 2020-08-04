@@ -104,17 +104,17 @@ class MCMC(Integration):
             directly change the current configuration setting
 
         '''
+        print('MCMC.py _configuration',self._configuration)
         curr_q = self._configuration['phase_space'].get_q()
         print('MCMC.py curr_q', curr_q)
-        eno_q = self._configuration['hamiltonian'].total_energy(phase_space,self._configuration['pb_q'])
-
+        eno_q = self._configuration['hamiltonian'].total_energy(self._configuration['phase_space'],self._configuration['pb_q'])
+        # eno is the old potential energy configuration
         print('MCMC.py eno_q', eno_q)
         trial = random.randint(0, len(curr_q) - 1) # randomly pick one particle from the state
         print('MCMC.py trial', trial)
-        #eno is the old potential energy configuration
+
         q_list = self._configuration['phase_space'].get_q()
         print('MCMC.py q_list.shape', q_list)
-        print('MCMC.py curr_q[trial]',np.array(curr_q[trial]))
 
         #perform random step with proposed uniform distribution
         qn = np.array(curr_q[trial]) + (np.random.uniform(0,1, np.array(curr_q[trial]).shape) - 0.5) * self._intSetting['dq']

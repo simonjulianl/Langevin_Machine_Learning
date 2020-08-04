@@ -203,10 +203,9 @@ class confStat:
             potential = np.array(potential).transpose()
             energy = kinetic + potential
 
-            #print('confStats.py kinetic', kinetic)
-            #print('confStats.py potential',potential)
+            print('confStats.py kinetic', kinetic)
+            print('confStats.py potential',potential)
             #print('confStats.py energy',energy)
-            #print('confStats.py energy T',energy.T)
 
             if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
                 for n in range(configuration['DIM']):
@@ -222,7 +221,7 @@ class confStat:
             elif mode == 'all':
 
                 for i in range(energy.shape[0]):
-                    if i < 2:
+                    if i < 8:
                             t = np.arange(0., iterations * time_step + time_step, time_step)
                             plt.plot(t,energy[i], label = 'total energy')
                             plt.plot(t,kinetic[i], label='kinetic energy')

@@ -12,22 +12,22 @@ energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
 configuration = {
     'kB' : 1.0, # put as a constant 
-    'Temperature' : 0.95, # desired temperature for NVE Ensemble
+    'Temperature' : 0.35, # desired temperature for NVE Ensemble
     'DIM' : 2,
     'm' : 1,
     'particle' : 2,
     'N' : 64000,   # Total number of samples
-    'BoxSize': np.sqrt(2/0.2),  #'density': 0.2
+    'BoxSize': np.sqrt(2/0.2),  #'density' =particle/volume : 0.2 ; Boxsize : sqrt(particle/density)
     'periodicity' : True,
     'hamiltonian' : energy,
-    'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.95))
+    'pos' : np.load('Langevin_Machine_Learning/init/N{}_T{}_pos_sampled.npy'.format(2,0.35))
     }
 
 integration_setting = {
     'iterations' : 100,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
-    'time_step' : 0.002,
+    'time_step' : 0.001,
     'integrator_method' : methods.position_verlet, #method class to be passed
     }
 

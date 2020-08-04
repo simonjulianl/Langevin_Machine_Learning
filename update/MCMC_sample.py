@@ -2,11 +2,12 @@ import Langevin_Machine_Learning.hamiltonian as Hamiltonian
 import Langevin_Machine_Learning.Integrator as Integrator
 import Langevin_Machine_Learning.utils as confStat
 import Langevin_Machine_Learning.phase_space as phase_space 
+import numpy as np
 
 energy = Hamiltonian.Hamiltonian() # energy model container
-LJ06 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 6, boxsize=3.16)
-LJ12 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 12, boxsize=3.16)
-energy.append(Hamiltonian.Lennard_Jones(LJ06,LJ12))
+LJ06 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 6, boxsize=np.sqrt(2/0.2))
+LJ12 = Hamiltonian.LJ_term(epsilon =1, sigma =1, exponent= 12, boxsize=np.sqrt(2/0.2))
+energy.append(Hamiltonian.Lennard_Jones(LJ06,LJ12, boxsize=np.sqrt(2/0.2)))
 
 configuration = {
     'kB' : 1.0, # put as a constant 
@@ -15,7 +16,7 @@ configuration = {
     'm' : 1,
     'particle' : 2,
     'N' : 5,
-    'BoxSize': 3.16,
+    'BoxSize': np.sqrt(2/0.2),
     'periodicity': True,
     'hamiltonian' : energy,
     }
