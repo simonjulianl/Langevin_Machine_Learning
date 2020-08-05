@@ -204,7 +204,8 @@ class Langevin(Integration):
                     p_list_temp[i] = state['phase_space'].get_p()  # sample
 
                 return_dict[num] = (q_list_temp, p_list_temp) # stored in q,p order
-                #print('Langevin.py return',return_dict[num])
+                #print('Langevin.py return',np.array(return_dict[num]).shape)
+                #print('Langevin.py return', np.array(return_dict[num]))
 
             processes = [] # list of processes to be processed
             # every process creates own 'manager' and 'return_dict'
@@ -215,15 +216,16 @@ class Langevin(Integration):
             #print('Langevin.py curr_q',curr_q)
             curr_p = self._configuration['phase_space'].get_p()
             #print('Langevin.py curr_p', curr_p)
-            assert curr_q.shape == curr_p.shape
+            assert curr_q.shape == curr_p.shape # N x particle x DIM
 
             #split using multiprocessing for faster processing
             #for i in range(0,len(curr_q),1000):
             #step = len(curr_q) //10
             step = len(curr_q)
+            #step = 2
             #print('Langevin.py step', step)
             for i in range(0, len(curr_q), step):
-                #print('Langevin.py count', i)
+                print('Langevin.py count', i)
                 split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
                 #print('Langevin.py split_state',split_state)
                 #split_state['phase_space'].set_q(curr_q[i:i+1000])
@@ -231,7 +233,7 @@ class Langevin(Integration):
                 #print('Langevin.py curr_q[i:i + step]',curr_q[i:i + step])
                 #split_state['phase_space'].set_p(curr_p[i:i+1000])
                 split_state['phase_space'].set_p(curr_p[i:i+step])
-                #print('Langevin.py curr_p[i:i + step]', curr_p[i:i + step])
+                print('Langevin.py curr_p[i:i + step]', curr_p[i:i + step])
                 split_state['time_step'] = time_step
                 split_state['N_split'] = len(split_state['phase_space'].get_q())
                 #print('Langevin.py split_state 2',split_state)
@@ -257,9 +259,9 @@ class Langevin(Integration):
             for i in return_dict.keys(): #skip every 1000
                 #q_list[:,i:i+1000] = return_dict[i][0] # q
                 #p_list[:,i:i+1000] = return_dict[i][1] # p
-                #print('Langevin.py return_dict[i][0]', return_dict[i][0].shape)
-                #print('Langevin.py return_dict[i][1]', return_dict[i][1].shape)
-                q_list[:,i:i+step] = return_dict[i][0] # q
+                #print('Langevin.py return_dict[i][0]', return_dict[i][0])
+                #print('Langevin.py return_dict[i][1]', return_dict[i][1])
+                q_list[:,i:i+step] = return_dict[i][0] # q #[interations,samples]
                 #print('Langevin.py q_list[:,{0}:{0}+{1}]'.format(i,step) ,q_list[:,i:i+step])
                 p_list[:,i:i+step] = return_dict[i][1] # p
                 #print('Langevin.py p_list[:,{0}:{0}+{1}]'.format(i,step) ,p_list[:,i:i+step])

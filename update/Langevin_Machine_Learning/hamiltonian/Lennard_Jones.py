@@ -33,7 +33,7 @@ class Lennard_Jones(Interaction):
     def evaluate_derivative_q(self, phase_space,pb):
         xi_space = self.dimensionless(phase_space)
         #print('Lennard_Jones.py xi_space', xi_space)
-        dphidq = -self.phi06.evaluate_derivative_q(xi_space,pb)+ self.phi12.evaluate_derivative_q(xi_space,pb)
+        dphidq = +self.phi06.evaluate_derivative_q(xi_space,pb) - self.phi12.evaluate_derivative_q(xi_space,pb)
         return dphidq
 
 

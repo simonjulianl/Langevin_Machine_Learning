@@ -108,12 +108,38 @@ class confStat:
     
         '''
         try : 
+            N = configuration['N']
+            particle = configuration['particle']
             DIM = configuration['DIM']
+            m = configuration['m']
+            time_step = configuration['time_step']
+            vel = configuration['phase_space'].get_p() / m # v = p/m
         except : 
             raise Exception('particle / DIM ot supplied')
 
         #print('confStats.py **configuration',configuration)
-        ene_kin_aver = confStat.temp(**configuration) * DIM / 2 
+        ##ene_kin_aver = confStat.temp(**configuration) * DIM / 2
+        ene_kin = []
+        for i in range(N):
+            ene_kin_ = 0.0
+            #print('confStats.py vel[i,:]',vel[i,:])
+            #print('confStats.py BoxSize',BoxSize)
+            vel_ = vel[i,:] # rescale each velocity according to the box size
+            #print('confStats.py  vel_',vel_)
+            #print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
+
+            for j in range(particle):
+                #print('confStats.py sum vel[j, :]', vel_[j, :] )
+                #print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
+                ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j,:],vel_[j,:]),axis=0) # 1/2 m v^2 for constant mass
+
+            #print('confStats.py ene_kin', ene_kin_)
+            ene_kin.append(ene_kin_)
+
+        ene_kin = np.array(ene_kin)
+        #print('confStats.py temp ene_kin',ene_kin)
+
+        ene_kin_aver = 1.0 * ene_kin / particle
         #print('confStats.py kinetic_energy',ene_kin_aver)
         return ene_kin_aver
     
@@ -166,7 +192,7 @@ class confStat:
         hamiltonian = configuration['hamiltonian']
         time_step = configuration['time_step']
         iterations = configuration['iterations']
-
+        Temperature = configuration['Temperature']
 
         print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot :      
@@ -205,7 +231,7 @@ class confStat:
 
             print('confStats.py kinetic', kinetic)
             print('confStats.py potential',potential)
-            #print('confStats.py energy',energy)
+            print('confStats.py energy',energy)
 
             if mode == 'p' or mode == 'q' : # for p and q we plot dimension per dimension
                 for n in range(configuration['DIM']):
@@ -227,6 +253,7 @@ class confStat:
                             plt.plot(t,kinetic[i], label='kinetic energy')
                             plt.plot(t,potential[i], label='potential energy')
 
+                            plt.title('sample {}; Temp {}; iterations {}; time step {}'.format(i,Temperature,iterations,time_step))
                             plt.xlabel('time_step')
                             plt.legend(loc = 'best')
                             plt.show()
@@ -235,8 +262,8 @@ class confStat:
 
                 for i in range(energy.shape[0]):
 
-                    if i < 2:
-                        t = np.arange(0., iterations*time_step, time_step)
+                    if i < 4:
+                        t = np.arange(0., iterations*time_step + time_step, time_step)
                         if mode == 'energy' : # if energy , we use average on every dimension
                             plt.plot(t,energy[i], color = color[mode], label = 'total energy')
                         elif mode =='kinetic' :
