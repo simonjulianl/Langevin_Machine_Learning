@@ -119,17 +119,17 @@ class Integration(ABC) :
             vel = np.array(vel)
             #print('base_simulation.py vel ',vel.shape)
 
-            if self._configuration['N'] == 1 :
-                warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
-            else :
-                VelCentre = np.sum(vel, axis = 1) / self._configuration['particle']
-                #print('VelCentre:',VelCentre)
-                #print('VelCentre.shape:',VelCentre.shape)
-                for j in range(self._configuration['particle']): ### ADD
-                    for i in range(self._configuration['DIM']):
-                        #print(vel[:,j,i],VelCentre[:,i])
-                        vel[:,j,i] = vel[:,j,i] - VelCentre[:,i]  ### change
-                        #print(vel[:,j,i])
+            # if self._configuration['N'] == 1 :
+            #     warnings.warn('Initial velocity and pos is not adjusted to COM and external force')
+            # else :
+            #     VelCentre = np.sum(vel, axis = 1) / self._configuration['particle']
+            #     #print('VelCentre:',VelCentre)
+            #     #print('VelCentre.shape:',VelCentre.shape)
+            #     for j in range(self._configuration['particle']): ### ADD
+            #         for i in range(self._configuration['DIM']):
+            #             #print(vel[:,j,i],VelCentre[:,i])
+            #             vel[:,j,i] = vel[:,j,i] - VelCentre[:,i]  ### change
+            #             #print(vel[:,j,i])
 
 
         #print('base_simulation.py vel-centre ', vel)
@@ -167,16 +167,11 @@ class Integration(ABC) :
         
         base_library = os.path.abspath('Langevin_Machine_Learning/init')
 
-        temp = self._configuration['Temperature']
-        particle = self._configuration['particle']
-        
-        import math #check whether temperature is fractional
-        fraction = math.modf(temp)[0] != 0 # boolean
+
         ###temp = str(temp).replace('.','-') if fraction else str(int(temp)) # tokenizer, change . to -
 
-        ###filename = '/phase_space_N{}_T{}_DIM{}.npy'.format(N, temp, DIM)
-        filename = '/N{}_T{}_pos_sampled.npy'.format(particle, temp)
-        return base_library + filename
+        #filename = '/N{}_T{}_pos_sampled.npy'.format(particle, temp)
+        return base_library
     
     def set_phase_space(self, samples : int = -1) :
         '''
@@ -190,7 +185,13 @@ class Integration(ABC) :
             by default -1, meaning take everything in the init
 
         '''
-        file_path = self._filename_creator()
+        temp = self._configuration['Temperature']
+        particle = self._configuration['particle']
+
+        import math  # check whether temperature is fractional
+        fraction = math.modf(temp)[0] != 0  # boolean
+        filename = '/N{}_T{}_pos_sampled.npy'.format(particle, temp)
+        file_path = self._filename_creator() + filename
         #print('base_simultion.py file_path',file_path )
         #print('base_simultion.py read', self._configuration['phase_space'].read(file_path, samples))
         self._configuration['phase_space'].read(file_path, samples)
@@ -220,7 +221,7 @@ class Integration(ABC) :
 
         return (inital_q_list, inital_p_list)
                 
-    def save_phase_space(self, filename = None): 
+    def save_phase_space(self, initial_q_hist : list, initial_p_hist: list,q_hist_ : list , p_hist_ : list ,filename = None):
         '''if None, by default its save in init Langevin_Machine_Learning/init
         wrapper function to save the phase space onto the init file
         
@@ -229,16 +230,14 @@ class Integration(ABC) :
         filename : str, optional
             default is None. Meaning save in init folder, can be modified to other folders 
         '''
-        phase_space = self._configuration['phase_space']
-        
-        if self._configuration['periodicity'] :
-            scaled_q = phase_space.get_q() * self._configuration['BoxSize']
-            scaled_p = phase_space.get_p() * self._configuration['BoxSize']
-            phase_space.set_q(scaled_q)
-            phase_space.set_p(scaled_p)
-            
-        file_path  = self._filename_creator()
-        phase_space.write(filename = file_path)
+        initial_q_hist = np.expand_dims(initial_q_hist, axis=0)
+        initial_p_hist = np.expand_dims(initial_p_hist, axis=0)
+        q_hist = np.concatenate((initial_q_hist, q_hist_), axis=0)
+        p_hist = np.concatenate((initial_p_hist, p_hist_), axis=0)
+
+        phase_space_ = np.array((q_hist, p_hist))
+        file_path  = self._filename_creator() + filename
+        np.save(file_path, phase_space_)
         
     def get_configuration(self):
         '''getter function for configuration'''

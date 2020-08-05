@@ -66,20 +66,6 @@ class phase_space :
         except : 
             raise Exception('does not have shape method or shape differs')
          # assert they have the same 
-    
-    def write(self, filename):
-        '''
-        function to write the phase space in a numpy file
 
-        Parameters
-        ----------
-        filename : str
-            path to be saved 
-        '''
-        phase_space = np.array((self._q_list, self._p_list))
-        try : 
-            assert self._q_list.shape == self._p_list.shape
-        except : 
-            raise Exception('does not have shape method or shape differs')
             
-        np.save(filename, phase_space)
+
