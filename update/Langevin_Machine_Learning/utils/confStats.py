@@ -118,28 +118,29 @@ class confStat:
             raise Exception('particle / DIM ot supplied')
 
         #print('confStats.py **configuration',configuration)
-        ##ene_kin_aver = confStat.temp(**configuration) * DIM / 2
-        ene_kin = []
-        for i in range(N):
-            ene_kin_ = 0.0
-            #print('confStats.py vel[i,:]',vel[i,:])
-            #print('confStats.py BoxSize',BoxSize)
-            vel_ = vel[i,:] # rescale each velocity according to the box size
-            #print('confStats.py  vel_',vel_)
-            #print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
+        ene_kin_aver = confStat.temp(**configuration) * DIM / 2
 
-            for j in range(particle):
-                #print('confStats.py sum vel[j, :]', vel_[j, :] )
-                #print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
-                ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j,:],vel_[j,:]),axis=0) # 1/2 m v^2 for constant mass
-
-            #print('confStats.py ene_kin', ene_kin_)
-            ene_kin.append(ene_kin_)
-
-        ene_kin = np.array(ene_kin)
-        #print('confStats.py temp ene_kin',ene_kin)
-
-        ene_kin_aver = 1.0 * ene_kin / particle
+        # ene_kin = []
+        # for i in range(N):
+        #     ene_kin_ = 0.0
+        #     #print('confStats.py vel[i,:]',vel[i,:])
+        #     #print('confStats.py BoxSize',BoxSize)
+        #     vel_ = vel[i,:] # rescale each velocity according to the box size
+        #     #print('confStats.py  vel_',vel_)
+        #     #print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
+        #
+        #     for j in range(particle):
+        #         #print('confStats.py sum vel[j, :]', vel_[j, :] )
+        #         #print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
+        #         ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j,:],vel_[j,:]),axis=0) # 1/2 m v^2 for constant mass
+        #
+        #     #print('confStats.py ene_kin', ene_kin_)
+        #     ene_kin.append(ene_kin_)
+        #
+        # ene_kin = np.array(ene_kin)
+        # #print('confStats.py temp ene_kin',ene_kin)
+        #
+        # ene_kin_aver = 1.0 * ene_kin / particle
         #print('confStats.py kinetic_energy',ene_kin_aver)
         return ene_kin_aver
     

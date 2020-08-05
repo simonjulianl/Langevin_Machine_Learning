@@ -220,8 +220,8 @@ class Langevin(Integration):
 
             #split using multiprocessing for faster processing
             #for i in range(0,len(curr_q),1000):
-            #step = len(curr_q) //10
-            step = len(curr_q)
+            step = len(curr_q) //10
+            #step = len(curr_q)
             #step = 2
             #print('Langevin.py step', step)
             for i in range(0, len(curr_q), step):
@@ -233,7 +233,7 @@ class Langevin(Integration):
                 #print('Langevin.py curr_q[i:i + step]',curr_q[i:i + step])
                 #split_state['phase_space'].set_p(curr_p[i:i+1000])
                 split_state['phase_space'].set_p(curr_p[i:i+step])
-                print('Langevin.py curr_p[i:i + step]', curr_p[i:i + step])
+                #print('Langevin.py curr_p[i:i + step]', curr_p[i:i + step])
                 split_state['time_step'] = time_step
                 split_state['N_split'] = len(split_state['phase_space'].get_q())
                 #print('Langevin.py split_state 2',split_state)

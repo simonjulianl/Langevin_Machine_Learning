@@ -57,12 +57,13 @@ class LJ_term(Interaction):
             #print('Lennard_Jones.py evaluate_xi', self._expression)
             #print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))
             LJ = eval(self._expression)
+            #print('Lennard_Jones.py LJ', LJ)
             LJ[~np.isfinite(LJ)] = 0
             term[z] = np.sum(LJ)*0.5
             #print('Lennard_Jones.py term', term[z])
 
         term = term * self.parameter_term
-        return term
+        return term / N_particle
 
     def evaluate_derivative_q(self, xi_space, pb):
         '''
