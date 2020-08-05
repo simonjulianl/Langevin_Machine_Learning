@@ -24,7 +24,7 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 100,
+    'iterations' : 1000,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
     'time_step' : 0.001,
