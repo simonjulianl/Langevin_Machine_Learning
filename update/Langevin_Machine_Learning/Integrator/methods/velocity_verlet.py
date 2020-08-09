@@ -34,19 +34,33 @@ def velocity_verlet(**state) :
     #get all the constants
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
-    
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
-    periodicity = state['periodicity']
-    
+    pb_q = state['pb_q']
+    boxsize = state['BoxSize']
+
+    #print('position_verlet.py input q', q)
+    #print('position_verlet.py input p', p)
+
     p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
-    
-    p = p + time_step / 2 * ( -Hamiltonian.dHdq(q, p_list_dummy, periodicity) ) #dp/dt
- 
+    state['phase_space'].set_p(p_list_dummy)
+
+    #print('velocity_verlet.py before update p', p)
+    p = p + time_step / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
+    #print('velocity_verlet.py update p', p)
+
+    #print('velocity_verlet.py before update q', q)
     q = q + time_step * p #dq/dt
-        
-    p = p + time_step / 2 * ( -Hamiltonian.dHdq(q, p_list_dummy, periodicity) ) #dp/dt
-    
+    #print('velocity_verlet.py update q', q)
+
+    pb_q.adjust_real(q, boxsize)
+    #print('velocity_verlet.py after pbc q', q)
+    state['phase_space'].set_q(q)
+
+    #print('velocity_verlet.py before update p', p)
+    p = p + time_step / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
+    #print('velocity_verlet.py update p', p)
+
     state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state after 1 step 
     
     return state 

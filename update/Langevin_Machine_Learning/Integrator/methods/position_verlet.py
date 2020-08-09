@@ -37,9 +37,6 @@ def position_verlet(**state) :
     p = state['phase_space'].get_p()
     Hamiltonian = state['hamiltonian']
     time_step = state['time_step']
-    #periodicity = state['periodicity']
-    DIM = state['DIM']
-    particle = state['particle']
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 

@@ -195,7 +195,8 @@ class confStat:
         iterations = configuration['iterations']
         Temperature = configuration['Temperature']
 
-        print('confStats.py hamiltonian',hamiltonian)
+        #print('confStats.py configuration',configuration)
+        #print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot :      
             potential = []
             kinetic = []
@@ -257,7 +258,9 @@ class confStat:
                             plt.title('sample {}; Temp {}; iterations {}; time step {}'.format(i,Temperature,iterations,time_step))
                             plt.xlabel('time_step')
                             plt.legend(loc = 'best')
-                            plt.show()
+                            #plt.show()
+                            plt.savefig('Method_pv/s{}_T{}_ts{}_E.png'.format(i,Temperature,time_step))
+                            plt.close()
 
             else :
 

@@ -95,5 +95,4 @@ class LJ_term(Interaction):
 
         dphidq_ = dphidxi * (self.parameter_term / self._boxsize )
         #print('Lennard_Jones.py evaluate_derivative_q dHdq_ end', dphidq_)
-        #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
         return dphidq_

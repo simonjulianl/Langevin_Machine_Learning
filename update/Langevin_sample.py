@@ -12,7 +12,7 @@ energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
 configuration = {
     'kB' : 1.0, # put as a constant 
-    'Temperature' : 0.35, # desired temperature for NVE Ensemble
+    'Temperature' : 0.95, # desired temperature for NVE Ensemble
     'DIM' : 2,
     'm' : 1,
     'particle' : 2,
@@ -23,10 +23,10 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 10000,
+    'iterations' : 500000,
     'DumpFreq' : 1,
     'gamma' : 0, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
-    'time_step' : 0.001,
+    'time_step' : 0.0005,
     'integrator_method' : methods.position_verlet, #method class to be passed
     }
 
@@ -60,4 +60,4 @@ confStat.plot_stat(inital_q_hist, inital_p_hist,q_hist, p_hist, 'all',**configur
 #plot the statistic of q distribution based on current state configuration
 
 #to save the current phase space to continue as a checkpoint
-MD_integrator.save_phase_space(inital_q_hist, inital_p_hist,q_hist, p_hist,'/N{}_T{}_ts{}_md_sampled.npy'.format(configuration["particle"],configuration["Temperature"],integration_setting['time_step'])) # by default, it is in init file
+MD_integrator.save_phase_space(inital_q_hist, inital_p_hist,q_hist, p_hist,'/N{}_T{}_ts{}_pv_sampled.npy'.format(configuration["particle"],configuration["Temperature"],integration_setting['time_step'])) # by default, it is in init file
