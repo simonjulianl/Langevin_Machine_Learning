@@ -199,8 +199,8 @@ class Integration(ABC) :
         inital_q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
         inital_p_list = self._configuration['phase_space'].get_p()  # sample the shape and DIM
 
-        print('base_simultion.py inital_q_list',inital_q_list)
-        print('base_simultion.py inital_p_list',inital_p_list)
+        #print('base_simultion.py inital_q_list',inital_q_list)
+        #print('base_simultion.py inital_p_list',inital_p_list)
         if samples > self._configuration['N']:
             raise Exception('samples exceed available particles')
             
