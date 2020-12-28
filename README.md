@@ -1,4 +1,4 @@
-***Harmonic\_approximation***
+****Harmonic\_approximation***
 
 Approximate the Hamiltonian function of the system by a local expansion of the potential up to second order.
 
@@ -8,7 +8,7 @@ In code,
 
 ***Integrator/analytic\_method.py*** for calculation of next state q,p using analytical solution of SHO with LJ potential (U0, V and G) that is code in ***/integrator/methods/application\_vv.py***
 
-***VV\_LJ\_potential***
+****VV\_LJ\_potential***
 
 Velocity Verlet algorithm are used to integrate Hamilton's equations of motion.
 
