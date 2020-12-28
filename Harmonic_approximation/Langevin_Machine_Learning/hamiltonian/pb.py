@@ -10,12 +10,8 @@ class periodic_bc:
     def adjust_real(self,q,boxsize): #use in verlet and other classes
 
          indices = np.where(np.abs(q)>0.5*boxsize)
-         #q[indices] = q[indices] - 1.0 *boxsize
          q[indices] = q[indices] - np.round(q[indices] / boxsize) * boxsize
 
-         # indices = np.where(q<-0.5*boxsize)
-         # #q[indices] = q[indices] + 1.0 * boxsize
-         # q[indices] = q[indices] - np.round(q[indices] / boxsize) * boxsize
 
 
     def debug_pbc(self,q,boxsize):
@@ -23,7 +19,6 @@ class periodic_bc:
         index = np.where(np.abs(q)>0.5*boxsize)
         debug = q[index]
         if debug.any():
-            print('q',q)
             print('debug_pbc',debug)
             raise ValueError('pbc not applied')
 
@@ -45,27 +40,19 @@ class periodic_bc:
             print('debug_pbc_max_distance',q)
             raise ValueError('pbc reduced max distnace not applied')
 
-    # returns pair distances between two particles
-    # return a symmetric matrx
-    def paired_distance_reduced(self,q):
+    def paired_distance_reduced(self,q,q_adj):
 
         qlen = q.shape[0]
-
         q0 = np.expand_dims(q,axis=0)
-
         qm = np.repeat(q0,qlen,axis=0)
-
         qt = np.transpose(qm,axes=[1,0,2])
-
         dq = qt - qm
 
         indices = np.where(np.abs(dq)>0.5)
         dq[indices] = dq[indices] - np.copysign(1.0, dq[indices])
-
         dd = np.sqrt(np.sum(dq*dq,axis=2))
-
         nonzero = np.nonzero(dd)
-        dd[nonzero] = dd[nonzero] + 0
+        dd[nonzero] = dd[nonzero] + q_adj
 
         return dq, dd
 

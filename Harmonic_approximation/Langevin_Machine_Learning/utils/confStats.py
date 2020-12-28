@@ -67,27 +67,17 @@ class confStat:
         ene_kin = []
         for i in range(N):
             ene_kin_ = 0.0
-            # print('confStats.py vel[i,:]',vel[i,:])
-            # print('confStats.py BoxSize',BoxSize)
             vel_ = vel[i, :]  # rescale each velocity according to the box size
-            # print('confStats.py  vel',vel)
-            # print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
 
             for j in range(particle):
-                # print('confStats.py sum vel[j, :]', vel_[j, :] )
-                # print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
                 ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j, :], vel_[j, :]), axis=0)  # 1/2 m v^2 for constant mass
 
-            # print('confStats.py ene_kin', ene_kin_)
             ene_kin.append(ene_kin_)
 
         ene_kin = np.array(ene_kin)
-        # print('confStats.py temp ene_kin',ene_kin)
 
         ene_kin_aver = 1.0 * ene_kin / particle
-        # print('confStats.py temp ene_kin_aver',ene_kin_aver)
         temperature = 2.0 / DIM * ene_kin_aver  # by equipartition theorem
-        # print('confStats.py temp temperature',temperature)
 
         return temperature
 
@@ -120,23 +110,15 @@ class confStat:
         except:
             raise Exception('particle / DIM ot supplied')
 
-        # print('confStats.py **configuration',configuration)
         # ene_kin_aver = confStat.temp(**configuration) * DIM / 2
         ene_kin = []
         for i in range(N):
             ene_kin_ = 0.0
-            # print('confStats.py vel[i,:]',vel[i,:])
-            # print('confStats.py BoxSize',BoxSize)
             vel_ = vel[i, :]  # rescale each velocity according to the box size
-            #print('confStats.py  vel',vel_.shape)
-            # print('confStats.py real_vel*real_vel',np.multiply(real_vel,real_vel))
 
             for j in range(particle):
-                #print('confStats.py sum vel[j, :]', vel_[j, :] )
-                # print('confStats.py sum', np.sum(np.multiply(real_vel[j,:], real_vel[j,:]), axis=0))
                 ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j, :], vel_[j, :]), axis=0)  # 1/2 m v^2 for constant mass
 
-            #print('confStats.py ene_kin', ene_kin_)
             ene_kin.append(ene_kin_)
 
         ene_kin = np.array(ene_kin)
@@ -145,30 +127,7 @@ class confStat:
 
     @staticmethod
     def plot_stat(q_hist: list, p_hist: list, mode: str, **configuration):
-        '''
-        Static function to help plot various statistic according to the supplied
-        trajectories of qlist and plist as well as p
 
-        Parameters
-        ----------
-        qlist : np.array
-            qlist must be in shape of samples x N X DIM, if not please resize
-        plist : np.array
-            plist must be in shape of samples x N X DIM, if not please resize
-        mode : str
-            various modes available : energy, p, potential, kinetic ,q , v_dist, q_dist, speed_dist
-        **configuration : configuration of the state
-            kB : float
-                boltzmann constant
-            Temperature : float
-                temperature of the state
-
-        Raises
-        ------
-        Exception
-            Error in Modes supplied or kB/ Temperature not supplied in configuration
-
-        '''
         line_plot = ['energy', 'p', 'potential', 'kinetic', 'q', 'all', 'instantaneous_temp','energy_dist']
         hist_plot = ['v_dist', 'q_dist', 'speed_dist']
 
@@ -197,41 +156,26 @@ class confStat:
         DIM = configuration['DIM']
         gamma = configuration['gamma']
 
-        # print('confStats.py configuration',configuration)
-        # print('confStats.py hamiltonian',hamiltonian)
         if mode in line_plot:
             potential = []
             kinetic = []
 
-            # print('confStats.py q_hist',q_hist)
-            #print('confStats.py p_hist.shape', p_hist.shape)
             for i in range(len(q_hist)):
                 p_dummy_list = np.zeros(q_hist[i].shape)
                 temporary_phase_space = phase_space()
                 temporary_phase_space.set_q(q_hist[i])
-                # print('confStats.py q_hist', q_hist[i])
                 temporary_phase_space.set_p(p_dummy_list)
 
-                # print('confStats.py temporary_phase_space ',temporary_phase_space)
                 potential.append(
                     hamiltonian.total_energy(temporary_phase_space, configuration['pb_q']))  # ADD periodicity=True
-                # print('confStats.py potential',potential)
-                #print('p_hist[i]',p_hist[i].shape)
                 configuration['phase_space'].set_p(p_hist[i])
-                # print('confStats.py p_hist',p_hist[i])
 
                 kinetic_ = confStat.kinetic_energy(**configuration)
-                #print('kinetic_',kinetic_)
                 kinetic.append(kinetic_)
-                #print('confStats.py kinetic', kinetic)
 
             kinetic = np.array(kinetic).transpose()
             potential = np.array(potential).transpose()
             energy = kinetic + potential
-
-            print('confStats.py kinetic', kinetic)
-            print('confStats.py potential', potential)
-            print('confStats.py energy', energy)
 
             if mode == 'p' or mode == 'q':  # for p and q we plot dimension per dimension
                 for n in range(configuration['DIM']):
@@ -268,25 +212,19 @@ class confStat:
 
             elif mode == 'instantaneous_temp':
                 T_t = []
-                #p_hist = p_hist[:,0]
-                #print(p_hist.shape)
-                #quit()
+
                 for i in range(p_hist.shape[0]):  # iteration
                     m = 1
                     ene_kin_ = 0.0
                     vel_ = p_hist[i, 0, :]
-                    #print('vel', vel_.shape)
                     for j in range(p_hist.shape[2]):  # N_particle
-                        #print('particle_{}'.format(j))
                         ene_kin_ += 0.5 * m * np.sum(np.multiply(vel_[j, :], vel_[j, :]), axis=0)
 
                     ene_kin_aver = 1.0 * ene_kin_ / particle
                     temperature = 2.0 / DIM * ene_kin_aver
                     T_t.append(temperature)
 
-                print(np.array(T_t).shape)
                 avg_temp = np.sum(np.array(T_t))/p_hist.shape[0]
-                print(avg_temp)
                 t = np.arange(0., iterations * time_step + time_step, time_step)
                 plt.plot(t, T_t, color='red', label=mode)
                 plt.axhline(avg_temp, color='black',label='avg_temp={:.3f}'.format(avg_temp))

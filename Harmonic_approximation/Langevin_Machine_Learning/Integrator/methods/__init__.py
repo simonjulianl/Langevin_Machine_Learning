@@ -9,6 +9,7 @@ Created on Mon Jun  8 12:20:25 2020
 from .velocity_verlet import velocity_verlet
 from .position_verlet import position_verlet
 from .leap_frog import leap_frog
+from .application_vv import application_vv
 # from .ML_integrator import velocity_verlet_ML, position_verlet_ML, leap_frog_ML 
 
 # =============================================================================

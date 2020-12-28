@@ -111,7 +111,7 @@ class Interaction(ABC):
 
         '''
         q_state = phase_space.get_q()
-        print(q_state.shape)
+        #print(q_state.shape)
         p_state = phase_space.get_p()
         assert q_state.shape == p_state.shape and len(q_state.shape) == 3
         #print('interation.py evaluate_derivative_q',q_state.shape)

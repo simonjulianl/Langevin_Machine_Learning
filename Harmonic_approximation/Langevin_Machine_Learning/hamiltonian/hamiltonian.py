@@ -101,10 +101,10 @@ class Hamiltonian:
 
         N, N_particle,DIM  = q_list.shape
         d2Hdq2 = np.zeros((N,2*N_particle,2*N_particle))
-        print(d2Hdq2.shape)
+        #print(d2Hdq2.shape)
         #print('Hamiltonian.py dHdp',dHdp.shape)
         for term in self.hamiltonian_terms :
-            print('Hamiltonian.py hamiltonian term ', term)
+            #print('Hamiltonian.py hamiltonian term ', term)
             d2Hdq2 += term.evaluate_second_derivative_q(phase_space, pb)
             
         return d2Hdq2

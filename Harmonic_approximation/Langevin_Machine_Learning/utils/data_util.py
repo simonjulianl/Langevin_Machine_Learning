@@ -73,15 +73,10 @@ class data_loader:
         q_list = None 
         p_list = None
        
-        for i, temp in enumerate(temperature) : 
-            import math # check whether temperature is fractional
-            #fraction = math.modf(temp)[0] != 0 # boolean
-            #temp = str(temp).replace('.','-') if fraction else str(int(temp))
-            #for fractional temp, use - instead of . when saving
+        for i, temp in enumerate(temperature) :
+
             phase_space = np.load(file_format.format(rho,temp))
             curr_q, curr_p = phase_space[0][:samples], phase_space[1][:samples]
-            #print('temp:',temp)
-            #print(curr_q,curr_p)
 
             # truncate according to samples
             if i == 0 : # first iteration, copy the data 
@@ -92,8 +87,6 @@ class data_loader:
                 p_list = np.concatenate((p_list, curr_p))
             
             assert q_list.shape == p_list.shape # shape of p and q must be the same
-        #print("=====")
-        #print(q_list.shape,p_list.shape)
 
         return (q_list, p_list)
     
@@ -104,27 +97,19 @@ class data_loader:
         np.random.seed(seed)
 
         assert q_list.shape == p_list.shape
-        #print("before shuffle")
-        #print(q_list,p_list)
 
         shuffled_indices = np.array(range(q_list.shape[0]),dtype=int)
-        #print(shuffled_indices)
         np.random.shuffle(shuffled_indices)
 
         q_list = q_list[shuffled_indices]
         p_list = p_list[shuffled_indices]
-        #print("after shufle")
-        #print(shuffled_indices)
-        #print(q_list,p_list)
 
         init_pos = np.expand_dims(q_list, axis=1)
         init_vel = np.expand_dims(p_list, axis=1)  # N X 1 X  DIM
         init = np.concatenate((init_pos, init_vel), axis=1)  # N X 2 XDIM
-        #print('data_util.py',init.shape)
+
         train_data = init[:int(ratio*init.shape[0])]
         valid_data = init[int(ratio*init.shape[0]):]
-        #print('data',train_data.shape, valid_data.shape)
-        #print(train_data, valid_data)
 
         return train_data, valid_data
 
@@ -143,10 +128,8 @@ class data_loader:
 
         phase_space = np.load(file_format.format(rho, temperature))
         q_list, p_list = phase_space[0][:samples], phase_space[1][:samples]
-        #print('before flatten',q_list,p_list)
         q_list = q_list.reshape(-1, q_list.shape[1] * q_list.shape[2])
         p_list = p_list.reshape(-1, p_list.shape[1] * p_list.shape[2])
-        #print('after flatten',q_list,p_list)
         init_pos = np.expand_dims(q_list, axis=1)
         init_vel = np.expand_dims(p_list, axis=1)  # N X 1 X  DIM
         data = np.concatenate((init_pos, init_vel), axis=1)  # N X 2 XDIM

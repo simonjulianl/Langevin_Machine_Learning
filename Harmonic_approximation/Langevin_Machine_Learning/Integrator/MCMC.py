@@ -82,15 +82,6 @@ class MCMC(Integration):
         except :
             warnings.warn('Seed not set, start using default numpy/random/torch seed')
             
-        # # temperature scaling
-        #
-        # Temp = confStat.temp(**self._configuration) # get current temperature
-        # scalefactor = np.sqrt(self._configuration['Temperature']/Temp)
-        #
-        # #lambda constant of (Tn / T0) ^0.5 by adjusting KE where Tn is target temp, T0 is initial temp
-        #
-        # curr_vel = self._configuration['phase_space'].get_p() / kwargs['m']
-        # self._configuration['phase_space'].set_p(np.multiply(curr_vel , scalefactor))
     
     def mcmove(self) :
         '''
@@ -105,39 +96,23 @@ class MCMC(Integration):
             directly change the current configuration setting
 
         '''
-        #print('MCMC.py _configuration',self._configuration)
         curr_q = self._configuration['phase_space'].get_q()
-        #print('MCMC.py curr_q', curr_q)
-        #print('MCMC.py curr_q.shape', curr_q.shape)
         self.eno_q = self._configuration['hamiltonian'].total_energy(self._configuration['phase_space'],self._configuration['pb_q'])
 
-        #print('MCMC.py eno_q', eno_q)
-        #print('MCMC.py curr_q.shape',curr_q.shape)
-        #print('MCMC.py len(curr_q)',curr_q.shape[1])
         trial = random.randint(0, curr_q.shape[1]-1) # randomly pick one particle from the state
-        #print('MCMC.py trial', trial)
-
-        #print('MCMC.py curr_q', curr_q)
-        #print('MCMC.py curr_q[0]', curr_q[:,0])
-        #print('MCMC.py curr_q[1]', curr_q[:,1])
-        #print('MCMC.py curr_q[trial]', curr_q[:,trial])
 
         old_q = np.copy(curr_q[:,trial])
         #perform random step with proposed uniform distribution
         curr_q[:,trial] = old_q + (np.random.rand(1,self._configuration['DIM'])-0.5)* self._intSetting['dq']
 
-        #print('MCMC.py curr_q ', curr_q)
         self._configuration['pb_q'].adjust_real(curr_q,self._configuration['BoxSize'])
-        #print('MCMC.py curr_q pbc', curr_q)
         self._configuration['phase_space'].set_q(curr_q)
 
         self.enn_q = self._configuration['hamiltonian'].total_energy(self._configuration['phase_space'],self._configuration['pb_q'])
-        #print('MCMC.py enn_q', enn_q)
 
         dU = self.enn_q - self.eno_q
-        #print('dU',dU)
-        #print('accept curr_q',curr_q)
         self._configuration['phase_space'].set_q(curr_q)
+
         #accept with probability proportional di e ^ -beta * delta E
         self.ACCsum += 1.0
         self.ACCNsum += 1.0
@@ -145,7 +120,6 @@ class MCMC(Integration):
             if (np.random.rand() > np.exp(-self._configuration['beta'] * dU)):
                 self.ACCsum -= 1.0 # rejected
                 curr_q[:,trial] = old_q # restore the old position
-                #print('reject curr_q',curr_q)
                 self.enn_q = self.eno_q
                 self._configuration['phase_space'].set_q(curr_q)
         
@@ -177,10 +151,8 @@ class MCMC(Integration):
 
         #print('MCMC.py integrate q_list',q_list)
         for i in trange(0, self._intSetting['iterations'], desc = "simulating"):
-            #print('iteration',i)
             for _ in range(self._configuration['DIM']):
                 self.mcmove()
-            #print('ACC each mcs' , self.ACCsum)
             if(i >= self._intSetting['DISCARD']):
                 q_list[i-self._intSetting['DISCARD']] = copy.deepcopy(self._configuration['phase_space'].get_q())
                 U[i-self._intSetting['DISCARD']] = self.enn_q
@@ -189,8 +161,7 @@ class MCMC(Integration):
                 Nsum += 1.0
 
         spec = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / self._configuration['Temperature'] / self._configuration['Temperature']  / self._configuration['particle']
-        print('ACC Rate : {}%'.format(self.ACCsum/ self.ACCNsum))
-        print('spec',spec)
+
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
         
         return q_list, U, self.ACCsum/ self.ACCNsum, spec
