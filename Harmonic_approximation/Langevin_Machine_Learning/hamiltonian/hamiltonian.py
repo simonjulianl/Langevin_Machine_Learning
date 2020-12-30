@@ -99,8 +99,9 @@ class Hamiltonian:
         '''
         q_list = phase_space.get_q()
 
-        N, N_particle,DIM  = q_list.shape
-        d2Hdq2 = np.zeros((N,2*N_particle,2*N_particle))
+        N, N_particle,DIM  = q_list.shape # HK consistent format, 'space'
+        # HK d2Hdq2 = np.zeros((N,2*N_particle,2*N_particle))
+        d2Hdq2 = np.zeros((N,DIM*N_particle,DIM*N_particle))
         #print(d2Hdq2.shape)
         #print('Hamiltonian.py dHdp',dHdp.shape)
         for term in self.hamiltonian_terms :
