@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  2 12:47:47 2020
-
-@author: simon
-
-# no more symbolic computing
-"""
 
 import numpy as np
 
