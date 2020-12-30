@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri May 29 10:23:21 2020
-
-@author: simon
-"""
 
 import numpy as np
 import warnings 
@@ -32,51 +27,9 @@ class momentum_sampler(Integration):
         '''
         super().__init__(**kwargs) 
 
-
-        #Seed Setting
-        try :
-            seed = kwargs['seed']
-            np.random.seed(int(seed))
-        except :
-            warnings.warn('Seed not seed, start using default numpy/random/torch seed')
-        # temperature scaling 
             
         
     def integrate(self) -> list :
-        '''
-        Static method to generate momentum sample that satisfies boltzmann distribution 
-        of the state
-        
-        Parameters
-        ----------        
-        **configuration : state setting
-
-            kB : float
-                Boltzmann constant of the state
-                
-            Temperature : float
-                Temperature of the state
-                
-            DIM : int
-                Dimension of the configuration state 
-                
-            m : float
-                mass of the particles 
-
-        Returns
-        -------
-        p_list : np.array ( Total Sample X DIM )
-            List of momentum sampled 
-
-        '''
-        
-        # try : 
-        DIM = self._configuration['DIM']
-        N = self._configuration['N']
-        beta = 1 / (self._configuration['kB'] * self._configuration['Temperature'])
-        m = self._configuration['m']
-        # except : 
-            # raise Exception('DIM/ temp / mass / kB not found')
 
         p_list = self._configuration['phase_space'].get_p()
                 

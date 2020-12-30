@@ -72,7 +72,7 @@ class MCMC(Integration):
                 raise ValueError('DumpFreq must be smaller than iterations')
 
         except : 
-            raise TypeError('Integration setting error ( iterations / DumpFreq / dq  )')
+            raise TypeError('Integration setting error ( iterations / dq  )')
             
         # seed setting
         try :

@@ -22,7 +22,7 @@ class momentum_sampler(Integration):
         ----------
         **kwargs : integration Setting
             samples : int
-                number of samples to be sampled
+                number of samples to be sampeld
 
         Raises
         ------
@@ -30,43 +30,11 @@ class momentum_sampler(Integration):
             missing samples in the kwargs
 
         '''
+        super().__init__(**kwargs) 
 
-        #Seed Setting
-        try :
-            seed = kwargs['seed']
-            np.random.seed(int(seed))
-        except :
-            warnings.warn('Seed not seed, start using default numpy/random/torch seed')
-        # temperature scaling 
             
         
     def integrate(self) -> list :
-        '''
-        Static method to generate momentum sample that satisfies boltzmann distribution 
-        of the state
-        
-        Parameters
-        ----------        
-        **configuration : state setting
-
-            kB : float
-                Boltzmann constant of the state
-                
-            Temperature : float
-                Temperature of the state
-                
-            DIM : int
-                Dimension of the configuration state 
-                
-            m : float
-                mass of the particles 
-
-        Returns
-        -------
-        p_list : np.array ( Total Sample X DIM )
-            List of momentum sampled 
-
-        '''
 
         p_list = self._configuration['phase_space'].get_p()
                 

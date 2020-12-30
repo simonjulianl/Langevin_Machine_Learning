@@ -12,7 +12,8 @@ import random
 random.seed(23645) # for test
 
 text=''
-N_particle = 32
+N_particle = 4
+nsamples = 2
 rho= 0.1
 T = 0.04
 dq = 1
@@ -24,7 +25,7 @@ print("T:",T)
 print("dq",dq)
 
 energy = Hamiltonian.Hamiltonian()
-LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho), q_adj=q_adj)
+LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho))
 energy.append(Hamiltonian.Lennard_Jones(LJ , boxsize=np.sqrt(N_particle/rho))) #'density': 0.2
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
@@ -34,14 +35,14 @@ configuration = {
     'DIM' : 2,
     'm' : 1,
     'particle' : N_particle,
-    'N' : 5, # for train 50000 for test 5000 each temp
+    'N' : nsamples, # for train 50000 for test 5000 each temp
     'BoxSize': np.sqrt(N_particle/rho),
     'hamiltonian' : energy,
     }
 
 integration_setting = {
-    'iterations' : 82400,  #for test 44000 #for train 224000 624000
-    'DISCARD' : 82200,  #for test 24000 #for train 24000  622000
+    'iterations' : 624000,  #for test 44000 #for train 224000 624000
+    'DISCARD' : 622000,  #for test 24000 #for train 24000  622000
     'dq' : dq,
     }
 
