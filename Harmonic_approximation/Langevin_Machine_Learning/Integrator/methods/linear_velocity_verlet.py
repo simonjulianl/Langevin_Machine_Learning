@@ -7,7 +7,7 @@ Created on Mon Jun  8 11:34:53 2020
 """
 import numpy as np 
 
-def velocity_verlet(**state) :
+def linear_velocity_verlet(**state) :
     
     '''
     velocity verlet integrator method 
