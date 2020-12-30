@@ -3,7 +3,8 @@ from tqdm import trange
 from numpy import newaxis
 from .base_simulation import Integration
 
-class analytic_method(Integration):
+# HK class analytic_method(Integration):
+class harmonic_integrator(Integration):
 
 	def helper(self=None):
 		'''print the common parameters helper'''
