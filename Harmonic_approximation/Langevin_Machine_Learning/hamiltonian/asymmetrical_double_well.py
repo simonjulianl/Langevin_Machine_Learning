@@ -6,6 +6,8 @@ Created on Tue Jun  2 12:48:21 2020
 @author: simon
 """
 
+# HK : put in a new folder call "unused"
+
 from .Interaction import Interaction
 
 class asymmetrical_double_well(Interaction):
