@@ -6,12 +6,12 @@ import numpy as np
 import argparse
 import time
 
-N_particle = 32
+N_particle = 32 # HK: make consistent formatting of code 'space' or 'no space'?
 rho=0.1
 T = 0.04
 samples =1
 iterations= 1000
-ts =0.1
+ts =0.1 # HK use tau = 0.1
 gamma = 0
 q_adj = 0.0
 
@@ -20,7 +20,7 @@ print("rho:",rho)
 print("T:",T)
 print("N_samples",samples)
 print("iterations",iterations)
-print("ts",ts)
+print("ts",ts) # HK tau
 print("gamma",gamma)
 
 
@@ -45,7 +45,7 @@ integration_setting = {
     'iterations' : iterations,
     'DumpFreq' : 1,
     'gamma' : gamma, # gamma 0 turns off the Langevin heat bath, setting it to NVE Ensemble
-    'time_step' : ts,
+    'time_step' : ts, # HK use 'tau' = tau
     'integrator_method': methods.application_vv
     }
 
@@ -57,6 +57,7 @@ MD_integrator = Integrator.analytic_method(**configuration)
 #load for initial condition for each temperature
 #change filename when test
 #change filename when train
+# HK: samples -> nsamples
 initial_q_hist, initial_p_hist = MD_integrator.set_phase_space(samples = samples) # command out when save a file
 #update configuration after loading
 configuration = MD_integrator.get_configuration()
