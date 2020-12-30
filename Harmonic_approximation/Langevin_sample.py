@@ -14,13 +14,13 @@ iterations = 10
 tau = 0.1
 gamma = 0
 
-print("N_particle",N_particle)
-print("rho:",rho)
-print("T:",T)
-print("N_samples",nsamples)
-print("iterations",iterations)
-print("tau",tau)
-print("gamma",gamma)
+print("N_particle", N_particle)
+print("rho:", rho)
+print("T:", T)
+print("N_samples", nsamples)
+print("iterations", iterations)
+print("tau", tau)
+print("gamma", gamma)
 
 energy = Hamiltonian.Hamiltonian()
 LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho))

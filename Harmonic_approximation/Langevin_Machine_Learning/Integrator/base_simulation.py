@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu May 28 17:30:43 2020
 
-@author: simon
-"""
 from typing import Dict, Any, Union
 
 import numpy as np
@@ -41,11 +37,7 @@ class Integration(ABC) :
                 default : 1 unit
             -hamiltonian : Hamiltonian
                 Hamiltonian class consisting all the interactions
-                
-            the potential is assumed to be symmetrical around x, y and z axis
-                
-        Position and Velocity Matrix : N x DIM matrix 
-        
+
         Returns
         -------
         Abstract Base Class, cannot be instantiated
@@ -58,10 +50,10 @@ class Integration(ABC) :
 
         try :
             self._configuration = {
-                'N' : kwargs['N'],
+                'N' : kwargs['N'], #nsamples
                 'DIM' : kwargs['DIM'],
                 'm' : kwargs['m'],
-                'particle' : kwargs['particle'], ### Add
+                'particle' : kwargs['particle'],
                 'hamiltonian' : hamiltonian,
                 'BoxSize': kwargs['BoxSize']
             }
@@ -136,7 +128,7 @@ class Integration(ABC) :
         Parameters
         ----------
         samples : int, optional
-            how many sampels per temperature stated in the configuration 
+            how many samples per temperature stated in the configuration
             by default -1, meaning take everything in the init
 
         '''

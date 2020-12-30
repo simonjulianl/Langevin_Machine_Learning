@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu May 28 17:30:43 2020
 
-@author: simon
-"""
 from typing import Dict, Any, Union
 
 import numpy as np
@@ -41,11 +37,7 @@ class Integration(ABC) :
                 default : 1 unit
             -hamiltonian : Hamiltonian
                 Hamiltonian class consisting all the interactions
-                
-            the potential is assumed to be symmetrical around x, y and z axis
-                
-        Position and Velocity Matrix : N x DIM matrix 
-        
+
         Returns
         -------
         Abstract Base Class, cannot be instantiated
@@ -58,10 +50,10 @@ class Integration(ABC) :
 
         try :
             self._configuration = {
-                'N' : kwargs['N'],
+                'N' : kwargs['N'], #nsamples
                 'DIM' : kwargs['DIM'],
                 'm' : kwargs['m'],
-                'particle' : kwargs['particle'], ### Add
+                'particle' : kwargs['particle'],
                 'hamiltonian' : hamiltonian,
                 'BoxSize': kwargs['BoxSize']
             }
@@ -128,7 +120,7 @@ class Integration(ABC) :
 
         return base_library
     
-    def set_phase_space(self, samples : int = -1) :
+    def set_phase_space(self, nsamples : int = -1) :
         '''
         Base Loader function for load p and q given MCMC initialization
         all the numpy file must be saved in the init folder 
@@ -136,7 +128,7 @@ class Integration(ABC) :
         Parameters
         ----------
         samples : int, optional
-            how many sampels per temperature stated in the configuration 
+            how many samples per temperature stated in the configuration
             by default -1, meaning take everything in the init
 
         '''
@@ -145,14 +137,14 @@ class Integration(ABC) :
 
         import math  # check whether temperature is fractional
         fraction = math.modf(temp)[0] != 0  # boolean
-        filename = '/N_particle{}_samples5_rho0.1_T{}_pos_sampled.npy'.format(particle, temp)
+        filename = '/N_particle{}_samples{}_rho0.1_T{}_pos_sampled.npy'.format(particle,nsamples,temp)
         file_path = self._filename_creator() + filename
-        self._configuration['phase_space'].read(file_path, samples)
+        self._configuration['phase_space'].read(file_path, nsamples)
 
         inital_q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
         inital_p_list = self._configuration['phase_space'].get_p()  # sample the shape and DIM
 
-        if samples > self._configuration['N']:
+        if nsamples > self._configuration['N']:
             raise Exception('samples exceed available particles')
             
         # the loaded file must contain N X particle x DIM matrix of p and q

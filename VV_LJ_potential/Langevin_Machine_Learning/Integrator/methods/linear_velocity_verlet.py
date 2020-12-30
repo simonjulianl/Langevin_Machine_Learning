@@ -7,7 +7,7 @@ Created on Mon Jun  8 11:34:53 2020
 """
 import numpy as np 
 
-def velocity_verlet(**state) :
+def linear_velocity_verlet(**state) :
     
     '''
     velocity verlet integrator method 
@@ -30,42 +30,29 @@ def velocity_verlet(**state) :
         updated configuration state after 1 integration method 
 
     '''
-    #print("vv")
-    #print(state)
     #get all the constants
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
     Hamiltonian = state['hamiltonian']
-    time_step = state['time_step']
+    tau = state['tau']
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
-
-    #print('velocity_verlet.py input q', q)
-    #print('velocity_verlet.py input p', p)
 
     p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
     state['phase_space'].set_p(p_list_dummy)
 
-    #print('velocity_verlet.py before update p', p)
-    p = p + time_step / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
-    #print('velocity_verlet.py update p', p)
-
-    #print('velocity_verlet.py before update q', q)
-    q = q + time_step * p # dq/dt = dK/dp = p
-    #print('velocity_verlet.py update q', q)
+    p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
+    q = q + tau * p # dq/dt = dK/dp = p
 
     pb_q.adjust_real(q, boxsize)
-    #print('velocity_verlet.py after pbc q', q)
     state['phase_space'].set_q(q)
 
     pb_q.debug_pbc(q, boxsize)
 
-    #print('velocity_verlet.py before update p', p)
-    p = p + time_step / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
-    #print('velocity_verlet.py update p', p)
+    p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
 
     state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state after 1 step 
     
     return state 
 
-velocity_verlet.name = 'velocity_verlet' # add attribute to the function for marker
+linear_velocity_verlet.name = 'linear_velocity_verlet' # add attribute to the function for marker

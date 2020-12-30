@@ -8,7 +8,7 @@ def harmonic_velocity_verlet(tau,**state) :
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
 
-    N, N_particle,DIM = q.shape # nsample x N particle x DIM
+    N, N_particle,DIM = q.shape # N (nsample) x N particle x DIM
 
     Hamiltonian = state['hamiltonian']
 

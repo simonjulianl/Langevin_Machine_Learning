@@ -22,7 +22,7 @@ class momentum_sampler(Integration):
         ----------
         **kwargs : integration Setting
             samples : int
-                number of samples to be sampeld
+                number of samples to be sampled
 
         Raises
         ------
@@ -30,8 +30,6 @@ class momentum_sampler(Integration):
             missing samples in the kwargs
 
         '''
-        super().__init__(**kwargs) 
-
 
         #Seed Setting
         try :
@@ -69,14 +67,6 @@ class momentum_sampler(Integration):
             List of momentum sampled 
 
         '''
-        
-        # try : 
-        DIM = self._configuration['DIM']
-        N = self._configuration['N']
-        beta = 1 / (self._configuration['kB'] * self._configuration['Temperature'])
-        m = self._configuration['m']
-        # except : 
-            # raise Exception('DIM/ temp / mass / kB not found')
 
         p_list = self._configuration['phase_space'].get_p()
                 
