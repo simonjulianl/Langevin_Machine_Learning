@@ -42,7 +42,7 @@ class Langevin(Integration):
         gamma : float 
             Dampling constant of the langevin differential equation
             
-        time_step : float 
+        tau : float
             discrete time step of the integration 
             
         seed : float, optional.
@@ -62,17 +62,13 @@ class Langevin(Integration):
         try : 
             self._intSetting = {
                 'iterations' : kwargs['iterations'],
-                'DumpFreq' : kwargs['DumpFreq'],
                 'gamma' : kwargs['gamma'],
-                'time_step' : kwargs['time_step'],
-                'integrator_method' : kwargs['integrator_method'],
+                'tau' : kwargs['tau'],
+                'integrator_method' : kwargs['integrator_method']
                 }
-            
-            if not self._intSetting['iterations'] >= self._intSetting['DumpFreq'] :
-                raise ValueError('DumpFreq must be smaller than iterations')
 
         except : 
-            raise TypeError('Integration setting error ( iterations / DumpFreq / gamma / time_step /integrator_method )')
+            raise TypeError('Integration setting error ( iterations / gamma / tau /integrator_method )')
             
         #Seed Setting
         seed = kwargs.get('seed', 937162211)
@@ -111,28 +107,28 @@ class Langevin(Integration):
         N = self._configuration['N'] # total number of samples
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
-        total_samples = self._intSetting['iterations'] // self._intSetting['DumpFreq']
+        iterations = self._intSetting['iterations']
         gamma = self._intSetting['gamma']
         kB = self._configuration['kB']
         m = self._configuration['m']
         Temp = self._configuration['Temperature']
-        time_step = self._intSetting['time_step']
+        tau = self._intSetting['tau']
         integrator_method = self._intSetting['integrator_method']
         
         #for langevin sampling, there 2 random terms
         #be careful of the memory size here
-        random_1 = np.random.normal(loc = 0.0, scale = 1.0, size = N * total_samples *particle* DIM).reshape(-1,N,particle, DIM) # ADD *particle
-        random_2 = np.random.normal(loc = 0.0, scale = 1.0, size = N * total_samples *particle* DIM).reshape(-1,N,particle, DIM) # ADD *particle
+        random_1 = np.random.normal(loc = 0.0, scale = 1.0, size = N * iterations *particle* DIM).reshape(-1,N,particle, DIM) # ADD *particle
+        random_2 = np.random.normal(loc = 0.0, scale = 1.0, size = N * iterations *particle* DIM).reshape(-1,N,particle, DIM) # ADD *particle
 
-        q_list = np.zeros((total_samples, N,particle, DIM))
-        p_list = np.zeros((total_samples, N,particle, DIM))
+        q_list = np.zeros((iterations, N,particle, DIM))
+        p_list = np.zeros((iterations, N,particle, DIM))
 
         if not multicpu:
             print('Not multicpu')
-            for i in trange(total_samples):
+            for i in trange(iterations):
 
                 p = self._configuration['phase_space'].get_p()
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * time_step))) * \
+                p = np.exp(-gamma * tau / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * tau))) * \
                     random_1[i]
                 self._configuration['phase_space'].set_p(p)
 
@@ -140,7 +136,7 @@ class Langevin(Integration):
                     self._configuration = integrator_method(**self._configuration)
 
                 p = self._configuration['phase_space'].get_p()
-                p = np.exp(-gamma * time_step / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * time_step))) * \
+                p = np.exp(-gamma * tau / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * tau))) * \
                     random_2[i]
                 self._configuration['phase_space'].set_p(p)
 
@@ -170,22 +166,21 @@ class Langevin(Integration):
 
                 total_particle = state['N_split']
 
-                q_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
-                p_list_temp = np.zeros((total_samples, total_particle,particle,  DIM))
+                q_list_temp = np.zeros((iterations, total_particle,particle,  DIM))
+                p_list_temp = np.zeros((iterations, total_particle,particle,  DIM))
 
                 state['N'] = total_particle # update total_particle
 
-                for i in trange(total_samples):
+                for i in trange(iterations):
 
                     p = state['phase_space'].get_p()
-                    p = np.exp(-gamma * time_step / 2) * p + np.sqrt(  kB * Temp / m * ( 1 - np.exp( -gamma * time_step))) * random_1[i][num:num+total_particle]
+                    p = np.exp(-gamma * tau / 2) * p + np.sqrt(  kB * Temp / m * ( 1 - np.exp( -gamma * tau))) * random_1[i][num:num+total_particle]
                     state['phase_space'].set_p(p)
 
-                    for j in range(self._intSetting['DumpFreq']):
-                        state = integrator_method(**state)
+                    state = integrator_method(**state)
 
                     p = state['phase_space'].get_p()
-                    p = np.exp(-gamma * time_step / 2) * p + np.sqrt(  kB * Temp / m   * ( 1 - np.exp( -gamma * time_step))) * random_2[i][num:num+total_particle]
+                    p = np.exp(-gamma * tau / 2) * p + np.sqrt(  kB * Temp / m   * ( 1 - np.exp( -gamma * tau))) * random_2[i][num:num+total_particle]
                     state['phase_space'].set_p(p)
 
                     q_list_temp[i] = state['phase_space'].get_q()
@@ -209,7 +204,7 @@ class Langevin(Integration):
                 split_state = copy.deepcopy(self._configuration) # prevent shallow copying reference of phase space obj
                 split_state['phase_space'].set_q(curr_q[i:i + step])
                 split_state['phase_space'].set_p(curr_p[i:i+step])
-                split_state['time_step'] = time_step
+                split_state['tau'] = tau
                 split_state['N_split'] = len(split_state['phase_space'].get_q())
 
                 p  = multiprocessing.Process(target = integrate_helper, args = (i, return_dict), kwargs = split_state)
