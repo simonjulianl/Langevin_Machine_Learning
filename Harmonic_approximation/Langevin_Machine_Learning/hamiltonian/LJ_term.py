@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from .Interaction import Interaction
+# HK from .Interaction import Interaction
 
-class LJ_term(Interaction):
+# HK class LJ_term(Interaction):
+class LJ_term:
     def __init__(self, epsilon : float, sigma : float, boxsize : float, q_adj: float):
         '''
         Parameters
@@ -22,7 +23,7 @@ class LJ_term(Interaction):
         except :
             raise Exception('sigma / epsilon rror')
 
-        super().__init__('1.0 / q ** 6 ')
+        # HK super().__init__('1.0 / q ** 6 ')
         print('Lennard_Jones.py call LJ potential')
         self._name = 'Lennard Jones Potential'
         #since interaction is a function of r or delta q instead of q, we need to modift the data
@@ -50,9 +51,11 @@ class LJ_term(Interaction):
 
         for z in range(N):
 
-            _, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            # HK _, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            _, d = pb.paired_distance_reduced(xi_state[z])# remove q_adj
 
-            s12 = 1 /np.power(d+self._q_adj,12)
+            # HK s12 = 1 /np.power(d+self._q_adj,12)
+            s12 = 1 /np.power(d,12) # remove _q_adj
             s12[~np.isfinite(s12)] = 0
             s6  = 1 /np.power(d+self._q_adj,6)
             s6[~np.isfinite(s6)] = 0
