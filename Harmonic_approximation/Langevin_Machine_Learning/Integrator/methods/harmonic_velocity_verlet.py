@@ -3,7 +3,8 @@
 import numpy as np
 from numpy import newaxis
 
-def application_vv(time_step,**state) :
+# HK : change class name
+def harmonic_velocity_verlet(time_step,**state) :
 
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
