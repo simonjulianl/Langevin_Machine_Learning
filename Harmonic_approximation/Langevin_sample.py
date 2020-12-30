@@ -13,7 +13,7 @@ samples =1
 iterations= 1000
 ts =0.1 # HK use tau = 0.1
 gamma = 0
-q_adj = 0.0
+# HK remove q_adj q_adj = 0.0
 
 print("N_particle",N_particle)
 print("rho:",rho)
@@ -25,7 +25,8 @@ print("gamma",gamma)
 
 
 energy = Hamiltonian.Hamiltonian()
-LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho),q_adj=q_adj) #'density': 0.2
+# HK LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho),q_adj=q_adj) #'density': 0.2
+LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho)) #'density': 0.2
 energy.append(Hamiltonian.Lennard_Jones(LJ, boxsize=np.sqrt(N_particle/rho))) #'density': 0.2  np.sqrt(N_particle/rho)
 energy.append(Hamiltonian.kinetic_energy(mass = 1))
 
@@ -38,7 +39,7 @@ configuration = {
     'N' : samples,   # Total number of samples for train 50000 for test 5000
     'BoxSize': np.sqrt(N_particle/rho),  #'density' =particle/volume : 0.2 ; Boxsize : sqrt(particle/density)
     'hamiltonian' : energy,
-    'R_adj' :q_adj
+    # HK 'R_adj' :q_adj
     }
 
 integration_setting = {
