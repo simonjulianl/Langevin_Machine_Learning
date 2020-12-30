@@ -14,7 +14,7 @@ def application_vv(time_step,**state) :
     p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
     state['phase_space'].set_p(p_list_dummy)
 
-    U = Hamiltonian.total_energy(state['phase_space'], state['pb_q'])
+    # HK for code checking only U = Hamiltonian.total_energy(state['phase_space'], state['pb_q'])
 
     state['phase_space'].set_q(q)
     state['phase_space'].set_p(p_list_dummy)
