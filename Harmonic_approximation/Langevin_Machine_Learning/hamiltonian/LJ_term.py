@@ -5,7 +5,8 @@ import numpy as np
 
 # HK class LJ_term(Interaction):
 class LJ_term:
-    def __init__(self, epsilon : float, sigma : float, boxsize : float, q_adj: float):
+    # HK remove q_adj def __init__(self, epsilon : float, sigma : float, boxsize : float, q_adj: float):
+    def __init__(self, epsilon : float, sigma : float, boxsize : float):
         '''
         Parameters
         ----------
@@ -18,7 +19,7 @@ class LJ_term:
             self._epsilon  = float(epsilon)
             self._sigma    = float(sigma)
             self._boxsize  = float(boxsize)
-            self._q_adj = float(q_adj)
+            # HK self._q_adj = float(q_adj)
 
         except :
             raise Exception('sigma / epsilon rror')
@@ -57,7 +58,8 @@ class LJ_term:
             # HK s12 = 1 /np.power(d+self._q_adj,12)
             s12 = 1 /np.power(d,12) # remove _q_adj
             s12[~np.isfinite(s12)] = 0
-            s6  = 1 /np.power(d+self._q_adj,6)
+            # HK s6  = 1 /np.power(d+self._q_adj,6)
+            s6  = 1 /np.power(d,6)
             s6[~np.isfinite(s6)] = 0
 
             term[z] = np.sum(a12* s12 - a6* s6) * 0.5
@@ -77,12 +79,15 @@ class LJ_term:
 
         for z in range(N):
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            # HHK delta_xi, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            delta_xi, d = pb.paired_distance_reduced(xi_state[z])
             d = np.expand_dims(d,axis=2)
 
-            s12 = -12*(delta_xi)/np.power(d+self._q_adj,14)
+            # HK s12 = -12*(delta_xi)/np.power(d+self._q_adj,14)
+            s12 = -12*(delta_xi)/np.power(d,14)
             s12[~np.isfinite(s12)] = 0
-            s6  = -6*(delta_xi)/np.power(d+self._q_adj,8)
+            # HK s6  = -6*(delta_xi)/np.power(d+self._q_adj,8)
+            s6  = -6*(delta_xi)/np.power(d,8)
             s6[~np.isfinite(s6)] = 0
             dphidxi[z] = a12*np.sum(s12,axis=1) - a6*np.sum(s6,axis=1) # np.sum axis=1 j != k
 
@@ -105,21 +110,28 @@ class LJ_term:
 
             d2phidxi2_ = np.empty((0, DIM * N_particle))
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            # HK delta_xi, d = pb.paired_distance_reduced(xi_state[z],self._q_adj)
+            delta_xi, d = pb.paired_distance_reduced(xi_state[z])
             d = np.expand_dims(d,axis=2)
 
-            s12_same_term = 1. / np.power(d+self._q_adj,14)
+            # HK s12_same_term = 1. / np.power(d+self._q_adj,14)
+            s12_same_term = 1. / np.power(d,14)
             s12_same_term[~np.isfinite(s12_same_term)] = 0
-            s12_lxkx_lyky = (-14) * np.power(delta_xi,2)/np.power(d+self._q_adj,2)
+            # HK s12_lxkx_lyky = (-14) * np.power(delta_xi,2)/np.power(d+self._q_adj,2)
+            s12_lxkx_lyky = (-14) * np.power(delta_xi,2)/np.power(d,2)
             s12_lxkx_lyky[~np.isfinite(s12_lxkx_lyky)] = 0
-            s12_lxky_lykx = 1. /np.power(d+self._q_adj,16)
+            # HK s12_lxky_lykx = 1. /np.power(d+self._q_adj,16)
+            s12_lxky_lykx = 1. /np.power(d,16)
             s12_lxky_lykx[~np.isfinite(s12_lxky_lykx)] = 0
 
-            s6_same_term  = 1. / np.power(d+self._q_adj,8)
+            # HK s6_same_term  = 1. / np.power(d+self._q_adj,8)
+            s6_same_term  = 1. / np.power(d,8)
             s6_same_term[~np.isfinite(s6_same_term)] = 0
-            s6_lxkx_lyky  = (-8) * np.power(delta_xi,2)/np.power(d+self._q_adj,2)
+            # HK s6_lxkx_lyky  = (-8) * np.power(delta_xi,2)/np.power(d+self._q_adj,2)
+            s6_lxkx_lyky  = (-8) * np.power(delta_xi,2)/np.power(d,2)
             s6_lxkx_lyky[~np.isfinite(s6_lxkx_lyky)] = 0
-            s6_lxky_lykx = 1. /np.power(d+self._q_adj,10)
+            # HK s6_lxky_lykx = 1. /np.power(d+self._q_adj,10)
+            s6_lxky_lykx = 1. /np.power(d,10)
             s6_lxky_lykx[~np.isfinite(s6_lxky_lykx)] = 0
 
             for l in range(N_particle):
