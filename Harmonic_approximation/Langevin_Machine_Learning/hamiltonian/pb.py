@@ -40,7 +40,8 @@ class periodic_bc:
             print('debug_pbc_max_distance',q)
             raise ValueError('pbc reduced max distnace not applied')
 
-    def paired_distance_reduced(self,q,q_adj):
+    # HK def paired_distance_reduced(self,q,q_adj):
+    def paired_distance_reduced(self,q):
 
         qlen = q.shape[0]
         q0 = np.expand_dims(q,axis=0)
@@ -51,8 +52,8 @@ class periodic_bc:
         indices = np.where(np.abs(dq)>0.5)
         dq[indices] = dq[indices] - np.copysign(1.0, dq[indices])
         dd = np.sqrt(np.sum(dq*dq,axis=2))
-        nonzero = np.nonzero(dd)
-        dd[nonzero] = dd[nonzero] + q_adj
+        #nonzero = np.nonzero(dd)
+        #dd[nonzero] = dd[nonzero] + q_adj
 
         return dq, dd
 
