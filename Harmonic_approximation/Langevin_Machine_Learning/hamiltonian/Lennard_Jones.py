@@ -6,7 +6,7 @@ Created on Tue Jun  2 17:21:03 2020
 @author: simon
 """
 import numpy as np
-from .Interaction import Interaction
+# HK not used: from .Interaction import Interaction
 
 class Lennard_Jones(Interaction):
     def __init__(self, phi, boxsize):
@@ -16,7 +16,7 @@ class Lennard_Jones(Interaction):
 
     def dimensionless(self,phase_space):
         q_state = phase_space.get_q()
-        p_state = phase_space.get_p()
+        # HK no use: p_state = phase_space.get_p() -- check code
         q_state = q_state / self.boxsize
         phase_space.set_q(q_state)
         return phase_space
