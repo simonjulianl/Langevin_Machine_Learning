@@ -6,6 +6,10 @@ Created on Tue Jun  2 12:18:24 2020
 @author: simon
 """
 
+"""
+defunct class, do not use
+"""
+
 import numpy as np
 from abc import ABC
 import sympy as sym
@@ -34,10 +38,15 @@ class Interaction(ABC):
             which represents position and momentum respectively 
             otherwise, eval would return error
         '''
+        # HK: disable the class
+        print('class is defunct, do not use, exiting')
+        quit()
+        
         #print('Interaction.py expression',expression)
         self._expression = expression
 
-        
+    """
+    # HK begin comment out code
     def energy(self, phase_space,pb):
         '''
         function to calculate the term directly
@@ -139,7 +148,8 @@ class Interaction(ABC):
         #print('interation.py evaluate_derivative_q dHdq',dHdq.shape)
         
         return d2Hdq2
-
-                    
+        
+        # HK : end comment out code
+        """           
 
 
