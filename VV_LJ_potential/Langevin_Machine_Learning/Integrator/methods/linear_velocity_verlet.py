@@ -31,6 +31,7 @@ def linear_velocity_verlet(**state) :
 
     '''
     #get all the constants
+
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
     Hamiltonian = state['hamiltonian']

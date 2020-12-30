@@ -55,7 +55,7 @@ MD_integrator = Integrator.Langevin(**configuration)
 # #change filename when train
 initial_q_hist, initial_p_hist = MD_integrator.set_phase_space(nsamples = nsamples) # command out when save a file
 #update configuration after loading
-configuration = MD_integrator.get_configuration()
+#configuration = MD_integrator.get_configuration()
 print('Run MD simulation')
 start = time.time()
 q_hist_, p_hist_ = MD_integrator.integrate()
@@ -66,7 +66,7 @@ initial_p_hist = np.expand_dims(initial_p_hist, axis=0)
 q_hist = np.concatenate((initial_q_hist, q_hist_), axis=0)
 p_hist = np.concatenate((initial_p_hist, p_hist_), axis=0)
 #
-# ## to save the current phase space to continue as a checkpoint
-# MD_integrator.save_phase_space(q_hist, p_hist,'/N{}_T{}_ts{}_iter{}_vv_gm{}_eps{}_{}sampled.npy'.format(N_particle,T,ts,iterations,gamma,q_adj,samples)) # by default, it is in init file
+## to save the current phase space to continue as a checkpoint
+MD_integrator.save_phase_space(q_hist, p_hist,'/N{}_T{}_ts{}_iter{}_vv_gm{}_eps{}_{}sampled.npy'.format(N_particle,T,tau,iterations,gamma,q_adj,samples)) # by default, it is in init file
 
 

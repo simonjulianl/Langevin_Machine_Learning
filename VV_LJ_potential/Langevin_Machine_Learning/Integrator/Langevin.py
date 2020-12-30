@@ -125,6 +125,8 @@ class Langevin(Integration):
 
         if not multicpu:
             print('Not multicpu')
+            self._configuration.update(self._intSetting)
+
             for i in trange(iterations):
 
                 p = self._configuration['phase_space'].get_p()
@@ -132,8 +134,7 @@ class Langevin(Integration):
                     random_1[i]
                 self._configuration['phase_space'].set_p(p)
 
-                for j in range(self._intSetting['DumpFreq']):
-                    self._configuration = integrator_method(**self._configuration)
+                self._configuration = integrator_method(**self._configuration)
 
                 p = self._configuration['phase_space'].get_p()
                 p = np.exp(-gamma * tau / 2) * p + np.sqrt(kB * Temp / m * (1 - np.exp(-gamma * tau))) * \

@@ -34,11 +34,7 @@ class Langevin(Integration):
         
         iterations : int
             total number of Monte Carlo Steps
-            
-        DumpFreq : int
-            Sampling frequency 
-            default : 1 step ( Sample every step )
-            
+
         gamma : float 
             Dampling constant of the langevin differential equation
             
