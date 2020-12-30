@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 11 10:21:28 2020
-
-@author: simon
-"""
 
 import numpy as np
 import copy
@@ -27,10 +22,10 @@ class phase_space :
         self._q_list = copy.deepcopy(q_list)
     
     def get_p(self):
-        return copy.deepcopy(self._p_list) # N X particle X DIM array
+        return copy.deepcopy(self._p_list) # nsamples N X particle X DIM array
 
     def get_q(self):
-        return copy.deepcopy(self._q_list) # N X particle X DIM array
+        return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
 
     def read(self, filename, nsamples = -1):
         '''function to read the phase space file, 
@@ -40,12 +35,12 @@ class phase_space :
         ----------
         filename : str 
             file to be read for phase space
-        samples : int
-            samples per file , default everything (-1)
+        nsamples : int
+            nsamples per file , default everything (-1)
         '''
         phase_space = np.load(filename)
 
-        self._q_list = np.array(phase_space[0][:nsamples]) # cast to numpy just in case its pickled obj
+        self._q_list = np.array(phase_space[0][:nsamples])
         self._p_list = np.array(phase_space[1][:nsamples])
         
         try : 
