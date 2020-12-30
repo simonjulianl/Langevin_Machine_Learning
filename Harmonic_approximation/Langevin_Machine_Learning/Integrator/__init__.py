@@ -10,7 +10,7 @@ from .Finite_difference_second_derivative_4particle import Finite_difference_sec
 from .Langevin import Langevin
 from .MCMC import MCMC 
 from .momentum_sampler import momentum_sampler
-from .analytic_method import analytic_method
+from .harmonic_integrator import harmonic_integrator
 
 # =============================================================================
 # Not tested yet 

@@ -128,7 +128,7 @@ class Integration(ABC) :
 
         return base_library
     
-    def set_phase_space(self, samples : int = -1) :
+    def set_phase_space(self, nsamples : int = -1) :
         '''
         Base Loader function for load p and q given MCMC initialization
         all the numpy file must be saved in the init folder 
@@ -145,14 +145,14 @@ class Integration(ABC) :
 
         import math  # check whether temperature is fractional
         fraction = math.modf(temp)[0] != 0  # boolean
-        filename = '/N_particle{}_samples5_rho0.1_T{}_pos_sampled.npy'.format(particle, temp)
+        filename = '/N_particle{}_samples{}_rho0.1_T{}_pos_sampled.npy'.format(particle,nsamples,temp)
         file_path = self._filename_creator() + filename
-        self._configuration['phase_space'].read(file_path, samples)
+        self._configuration['phase_space'].read(file_path, nsamples)
 
         inital_q_list = self._configuration['phase_space'].get_q() #sample the shape and DIM
         inital_p_list = self._configuration['phase_space'].get_p()  # sample the shape and DIM
 
-        if samples > self._configuration['N']:
+        if nsamples > self._configuration['N']:
             raise Exception('samples exceed available particles')
             
         # the loaded file must contain N X particle x DIM matrix of p and q

@@ -8,7 +8,6 @@ Created on Tue Jun  2 12:10:44 2020
 
 
 import numpy as np
-from .Interaction import Interaction
 
 class Hamiltonian:
     '''Class container for Hamiltonian
@@ -31,16 +30,8 @@ class Hamiltonian:
         
     def append(self, term):
         '''
-        helper function to add into the hamiltonian terms 
-
-        Parameters
-        ----------
-        term : Interaction
-            the interaction term as defined per each hamiltonian term of class Interaction
-
+        helper function to add into the hamiltonian terms
         '''
-        if not isinstance(term, Interaction) :
-            raise Exception('Interaction term is not derived from Interaction class')
 
         self.hamiltonian_terms.append(term)
         
@@ -52,16 +43,12 @@ class Hamiltonian:
         -------
         H : float
             H is the hamiltonian of the states with separable terms
-
         '''
         H = 0
-        #H = 0 # hamiltonian container
+
         for term in self.hamiltonian_terms :
-            #print('hamiltonian.py term',term)
-            #print('hamiltonian.py phase_space',phase_space)
+
             H += term.energy(phase_space,pb)
-            #print('hamiltonian.py H',H)
-            #print('hamiltonian.py periodicity term', periodicity, term)
     
         return H
 
@@ -77,14 +64,9 @@ class Hamiltonian:
         q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
 
-        #print('Hamiltonian.py dHdq', dHdq.shape)
-        #print('Hamiltonian.py hamiltonian_terms', self.hamiltonian_terms)
-
         for term in self.hamiltonian_terms :
-            #print('Hamiltonian.py for dHdq', dHdq)
-            #print('Hamiltonian.py hamiltonian term ', term)
+
             dHdq += term.evaluate_derivative_q(phase_space, pb)
-            #print('Hamiltonian.py dHdq+', dHdq)
 
         return dHdq 
     
@@ -99,13 +81,10 @@ class Hamiltonian:
         '''
         q_list = phase_space.get_q()
 
-        N, N_particle,DIM  = q_list.shape # HK consistent format, 'space'
-        # HK d2Hdq2 = np.zeros((N,2*N_particle,2*N_particle))
-        d2Hdq2 = np.zeros((N,DIM*N_particle,DIM*N_particle))
-        #print(d2Hdq2.shape)
-        #print('Hamiltonian.py dHdp',dHdp.shape)
+        N, N_particle, DIM  = q_list.shape
+        d2Hdq2 = np.zeros((N, DIM * N_particle, DIM * N_particle))
+
         for term in self.hamiltonian_terms :
-            #print('Hamiltonian.py hamiltonian term ', term)
             d2Hdq2 += term.evaluate_second_derivative_q(phase_space, pb)
             
         return d2Hdq2

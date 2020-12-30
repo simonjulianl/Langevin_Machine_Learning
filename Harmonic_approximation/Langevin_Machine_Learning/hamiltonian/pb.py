@@ -12,8 +12,6 @@ class periodic_bc:
          indices = np.where(np.abs(q)>0.5*boxsize)
          q[indices] = q[indices] - np.round(q[indices] / boxsize) * boxsize
 
-
-
     def debug_pbc(self,q,boxsize):
 
         index = np.where(np.abs(q)>0.5*boxsize)
@@ -52,8 +50,6 @@ class periodic_bc:
         indices = np.where(np.abs(dq)>0.5)
         dq[indices] = dq[indices] - np.copysign(1.0, dq[indices])
         dd = np.sqrt(np.sum(dq*dq,axis=2))
-        #nonzero = np.nonzero(dd)
-        #dd[nonzero] = dd[nonzero] + q_adj
 
         return dq, dd
 

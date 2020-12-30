@@ -21,27 +21,18 @@ class phase_space :
         self._p_list = None
 
     def set_p(self, p_list):
-        #print('phase_space.py p_list', p_list[:4])
         self._p_list = copy.deepcopy(p_list)
-        #print('phase_space.py p_list copy', self._p_list[:4])
 
     def set_q(self, q_list):
-        #print('phase_space.py q_list',q_list[:4])
         self._q_list = copy.deepcopy(q_list)
-        #print('phase_space.py q_list copy', self._q_list[:4])
     
     def get_p(self):
-        #print('phase_space.py _p_list', self._p_list)
-        #print('phase_space.py _p_list copy', copy.deepcopy(self._p_list))
         return copy.deepcopy(self._p_list) # N X particle X DIM array
 
-
     def get_q(self):
-        #print('phase_space.py _q_list', self._q_list)
-        #print('phase_space.py _q_list copy' , copy.deepcopy(self._q_list))
         return copy.deepcopy(self._q_list) # N X particle X DIM array
 
-    def read(self, filename, samples = -1):
+    def read(self, filename, nsamples = -1):
         '''function to read the phase space file, 
         the phase space numpy is arranged in q_list ,p_list 
         
@@ -52,15 +43,10 @@ class phase_space :
         samples : int
             samples per file , default everything (-1)
         '''
-        #print('phase_space.py filename',filename)
         phase_space = np.load(filename)
-        #print('phase_space.py phase_space',phase_space.shape)
-        #print('phase',phase_space.shape)
-        test = 0  #94
-        self._q_list = np.array(phase_space[0][test:test+samples]) # cast to numpy just in case its pickled obj
-        print('phase space.py q_list',self._q_list.shape)
-        self._p_list = np.array(phase_space[1][test:test+samples])
-        print('phase space.py p_list',self._p_list.shape)
+
+        self._q_list = np.array(phase_space[0][:nsamples]) # cast to numpy just in case its pickled obj
+        self._p_list = np.array(phase_space[1][:nsamples])
         
         try : 
             assert self._q_list.shape == self._p_list.shape

@@ -3,115 +3,117 @@
 import numpy as np
 from numpy import newaxis
 
-# HK : change class name
-def harmonic_velocity_verlet(time_step,**state) :
+def harmonic_velocity_verlet(tau,**state) :
 
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
-    N, N_particle,DIM = q.shape
+
+    N, N_particle,DIM = q.shape # nsample x N particle x DIM
 
     Hamiltonian = state['hamiltonian']
 
     p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
-    state['phase_space'].set_p(p_list_dummy)
 
+    # state['phase_space'].set_p(p_list_dummy)
     # HK for code checking only U = Hamiltonian.total_energy(state['phase_space'], state['pb_q'])
 
+    # derivative of potential V
     state['phase_space'].set_q(q)
     state['phase_space'].set_p(p_list_dummy)
     V = Hamiltonian.dHdq(state['phase_space'], state['pb_q'])
 
+    # second derivative of potential G
     state['phase_space'].set_q(q)
     state['phase_space'].set_p(p_list_dummy)
     G = Hamiltonian.d2Hdq2(state['phase_space'], state['pb_q'])
 
-    vecs_ = np.zeros([N,N_particle*DIM,N_particle*DIM])
-    y_ = np.zeros([N,N_particle*DIM,1])
-    y_diff_ = np.zeros([N,N_particle*DIM,1])
+    u_ = np.zeros([N, N_particle * DIM, N_particle * DIM]) #eigenvectors of G terms of nsamples
+    y_ = np.zeros([N, N_particle * DIM, 1])  # y terms of nsamples
+    ydot_ = np.zeros([N, N_particle * DIM, 1]) # ydot terms of nsamples
 
     for z in range(N):
 
-        vals, vecs = np.linalg.eigh(G[z])
+        vals, u = np.linalg.eigh(G[z])  # vals = each eigenvalue of G, that are mutually orthogonal
 
-        vals_matrix = np.diag(vals)
+        vals_matrix = np.diag(vals) # eigenvalues of diagonal matrix
 
-        inv_vecs = np.linalg.inv(vecs)
+        inv_u = np.linalg.inv(u) # inverse of eigenvectors
 
         vals = np.expand_dims(vals, axis=1)
 
-        epsilon = 1e-6
+        kappa = 1e-6 # To avoid big numerical errors when eigenvalue is small
+
         # divide index for positive eigenvalue and negative eigenvalue
-        index_zero = np.where(vals == 0)[0]
-        index_positive_ae = np.where(vals > epsilon)[0] #above positive epsilon
-        index_positive_be = np.where( (vals > 0) & (vals <= epsilon))[0] #below positive epsilon
-        index_negative_be = np.where(vals < -epsilon)[0]  #below negative epsilon
-        index_negative_ae = np.where( (vals < 0) & (vals >= -epsilon))[0] #above negative epsilon
+        index_zero = np.where(vals == 0)[0] # index when eigenavlue = 0
+        index_positive_ae = np.where(vals > kappa)[0] # index when positive eigenvalue > kappa
+        index_positive_be = np.where( (vals > 0) & (vals <= kappa))[0] # index when 0 < positive eigenvalue < kappa
+        index_negative_be = np.where(vals < -kappa)[0]  # index when negative eigenvalue < -kappa
+        index_negative_ae = np.where( (vals < 0) & (vals >= -kappa))[0] # index when -kappa < negative eigenvalue < 0
 
-        vals_zero = vals[index_zero]
-        vals_positive_ae = vals[index_positive_ae]
-        vals_positive_be = vals[index_positive_be]
-        vals_negative_be = vals[index_negative_be]
-        vals_negative_ae = vals[index_negative_ae]
+        vals_zero = vals[index_zero]  #  eigenavlue = 0
+        vals_positive_ae = vals[index_positive_ae] # positive eigenvalue > kappa
+        vals_positive_be = vals[index_positive_be] # 0 < positive eigenvalue < kappa
+        vals_negative_be = vals[index_negative_be] # negative eigenvalue < -kappa
+        vals_negative_ae = vals[index_negative_ae]  # -kappa < negative eigenvalue < 0
 
-        grad_potential = V[z].reshape(-1, 1)
+        grad_U = V[z].reshape(-1, 1)
 
         q0 = q[z].reshape(-1, 1)
-        q0_diff = p[z].reshape(-1, 1)  # q'(0) = p
+        qdot0 = p[z].reshape(-1, 1)  # qdot0 = p0
 
         # initial condition
-        y0 = np.dot(inv_vecs, q0)
+        y0 = np.dot(inv_u, q0) # y0 = u^T q0
 
         # initial condition
-        y0_diff = np.dot(inv_vecs, q0_diff)
+        ydot0 = np.dot(inv_u, qdot0) # ydot0 = u^T qdot0
 
-        s = -np.dot(inv_vecs,grad_potential) + np.dot(vals_matrix,np.dot(inv_vecs,q0))
-        s_lambda_zero = -np.dot(inv_vecs,grad_potential)
-        t = time_step
+        s = -np.dot(inv_u,grad_U) + np.dot(vals_matrix,np.dot(inv_u,q0)) # s = u^T( -V(q0)+G(q0) q0 )
+        s_eigen_zero = -np.dot(inv_u,grad_U) # # s = u^T( -V(q0) ) when eigenvalue = 0
 
-        y = np.zeros((y0[:newaxis] + t).shape)
-        y_diff = np.zeros((y0[:newaxis] + t).shape)
+        y = np.zeros((y0[:newaxis] + tau).shape) # y = u^T q
+        ydot = np.zeros((y0[:newaxis] + tau).shape)  # ydot = u^T qdot
 
         if (vals_zero == 0).all():
-            y[index_zero] = 1./2. * s_lambda_zero[index_zero] * t * t + y0_diff[index_zero] * t + y0[index_zero]
-            y_diff[index_zero] = s_lambda_zero[index_zero] * t + y0_diff[index_zero]
+            y[index_zero] = 1./2. * s_eigen_zero[index_zero] * tau * tau + ydot0[index_zero] * tau + y0[index_zero]
+            ydot[index_zero] = s_eigen_zero[index_zero] * tau + ydot0[index_zero]
 
 
         if vals_positive_ae.all():
-            y[index_positive_ae] = (y0[index_positive_ae]-(s[index_positive_ae] / vals[index_positive_ae])) * np.cos(np.sqrt(vals[index_positive_ae]) * t) + 1. / np.sqrt(
-                vals[index_positive_ae]) * y0_diff[index_positive_ae] * np.sin(np.sqrt(vals[index_positive_ae]) * t) + (s[index_positive_ae] / vals[index_positive_ae])
+            y[index_positive_ae] = (y0[index_positive_ae]-(s[index_positive_ae] / vals[index_positive_ae])) * np.cos(np.sqrt(vals[index_positive_ae]) * tau) + 1. / np.sqrt(
+                vals[index_positive_ae]) * ydot0[index_positive_ae] * np.sin(np.sqrt(vals[index_positive_ae]) * tau) + (s[index_positive_ae] / vals[index_positive_ae])
 
-            y_diff[index_positive_ae] = -(y0[index_positive_ae]-(s[index_positive_ae] / vals[index_positive_ae])) * np.sqrt(vals[index_positive_ae]) * np.sin(
-                np.sqrt(vals[index_positive_ae]) * t) + y0_diff[index_positive_ae] * np.cos(np.sqrt(vals[index_positive_ae]) * t)
+            ydot[index_positive_ae] = -(y0[index_positive_ae]-(s[index_positive_ae] / vals[index_positive_ae])) * np.sqrt(vals[index_positive_ae]) * np.sin(
+                np.sqrt(vals[index_positive_ae]) * tau) + ydot0[index_positive_ae] * np.cos(np.sqrt(vals[index_positive_ae]) * tau)
 
 
         if vals_positive_be.all():
-            y[index_positive_be] = 1./2.* s_lambda_zero[index_positive_be] * t * t + y0_diff[index_positive_be] * t + y0[index_positive_be]
+            y[index_positive_be] = 1./2.* s_eigen_zero[index_positive_be] * tau * tau + ydot0[index_positive_be] * tau + y0[index_positive_be]
 
-            y_diff[index_positive_be] = s_lambda_zero[index_positive_be] * t + y0_diff[index_positive_be]
+            ydot[index_positive_be] = s_eigen_zero[index_positive_be] * tau + ydot0[index_positive_be]
 
 
         if vals_negative_be.all():
 
-            y[index_negative_be] = (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) + y0_diff[index_negative_be] + (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / (
-                        2 * np.sqrt(np.abs(vals[index_negative_be]))) * np.exp(np.sqrt(np.abs(vals[index_negative_be])) * t) + (
-                                            y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) - y0_diff[index_negative_be] + (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / (
-                                            2 * np.sqrt(np.abs(vals[index_negative_be]))) * np.exp(-np.sqrt(np.abs(vals[index_negative_be])) * t) - (s[index_negative_be]/np.abs(vals[index_negative_be]) )
+            y[index_negative_be] = (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) + ydot0[index_negative_be] + (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / (
+                        2 * np.sqrt(np.abs(vals[index_negative_be]))) * np.exp(np.sqrt(np.abs(vals[index_negative_be])) * tau) + (
+                                            y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) - ydot0[index_negative_be] + (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / (
+                                            2 * np.sqrt(np.abs(vals[index_negative_be]))) * np.exp(-np.sqrt(np.abs(vals[index_negative_be])) * tau) - (s[index_negative_be]/np.abs(vals[index_negative_be]) )
 
-            y_diff[index_negative_be] = (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) + y0_diff[index_negative_be]+ (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / 2 * np.exp(
-                np.sqrt(np.abs(vals[index_negative_be])) * t) - (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) - y0_diff[index_negative_be]+ (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / 2 * np.exp(
-                -np.sqrt(np.abs(vals[index_negative_be])) * t)
+            ydot[index_negative_be] = (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) + ydot0[index_negative_be]+ (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / 2 * np.exp(
+                np.sqrt(np.abs(vals[index_negative_be])) * tau) - (y0[index_negative_be] * np.sqrt(np.abs(vals[index_negative_be])) - ydot0[index_negative_be]+ (s[index_negative_be] / np.sqrt(np.abs(vals[index_negative_be])))) / 2 * np.exp(
+                -np.sqrt(np.abs(vals[index_negative_be])) * tau)
 
 
         if vals_negative_ae.all():
-            y[index_negative_ae] = 1. / 2. * s_lambda_zero[index_negative_ae] * t * t + y0_diff[index_negative_ae] * t + y0[
+            y[index_negative_ae] = 1. / 2. * s_eigen_zero[index_negative_ae] * tau * tau + ydot0[index_negative_ae] * tau + y0[
                 index_negative_ae]
 
-            y_diff[index_negative_ae] = s_lambda_zero[index_negative_ae] * t + y0_diff[index_negative_ae]
+            ydot[index_negative_ae] = s_eigen_zero[index_negative_ae] * tau + ydot0[index_negative_ae]
 
-        vecs_[z] = vecs
+        u_[z] = u
         y_[z] = y
-        y_diff_[z] = y_diff
+        ydot_[z] = ydot
 
-    return vecs_, y_, y_diff_
+    return u_, y_, ydot_
 
-application_vv.name = 'applied_to_velocity_verlet' # add attribute to the function for marker
+harmonic_velocity_verlet.name = 'harmonic_velocity_verlet' # add attribute to the function for marker
