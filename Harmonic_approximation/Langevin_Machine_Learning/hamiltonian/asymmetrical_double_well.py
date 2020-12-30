@@ -13,5 +13,7 @@ from .Interaction import Interaction
 class asymmetrical_double_well(Interaction):
     def __init__(self):
         self._name = 'asymmetrical double well of (q**2.0 - 1)**2.0 + q' 
-        super().__init__('(q**2.0 - 1)**2.0 + q') 
+        super().__init__('(q**2.0 - 1)**2.0 + q')
+        print('defunct class, exiting')
+        quit()
 
