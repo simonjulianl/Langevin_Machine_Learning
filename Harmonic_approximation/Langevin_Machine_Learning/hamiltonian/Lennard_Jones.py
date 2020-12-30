@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  2 17:21:03 2020
-
-@author: simon
-# HK not used: from .Interaction import Interaction
-"""
 
 class Lennard_Jones():
     def __init__(self, phi, boxsize):

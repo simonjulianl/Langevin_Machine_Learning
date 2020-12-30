@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  2 12:10:44 2020
-
-@author: simon
-"""
-
 
 import numpy as np
 
@@ -15,16 +9,14 @@ class Hamiltonian:
     Common Parameters 
     -----------------
     q_list : np.array
-            q_list np.array of N X DIM matrix which is the position of the states
+            q_list np.array of N (nsamples) x N_particle x DIM matrix which is the position of the states
     p_list : np.array
-        p_list np.array of N X DIM matrix which is the momentum of the states 
+        p_list np.array of N (nsamples) x N_particle x DIM matrix which is the momentum of the states
     '''
     
     def __init__(self):
         '''
-        Hamiltonian class for all potential and kinetic interactions 
-
-
+        Hamiltonian class for all potential and kinetic interactions
         '''
         self.hamiltonian_terms = [] # for every separable terms possible
         
@@ -32,7 +24,6 @@ class Hamiltonian:
         '''
         helper function to add into the hamiltonian terms
         '''
-
         self.hamiltonian_terms.append(term)
         
     def total_energy(self, phase_space,pb):
@@ -59,7 +50,7 @@ class Hamiltonian:
         Returns
         -------
         dHdq : float 
-            dHdq is the derivative of H with respect to q for N X DIM dimension 
+            dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
         dHdq = np.zeros(q_list.shape)
@@ -72,16 +63,16 @@ class Hamiltonian:
     
     def d2Hdq2(self,phase_space, pb):
         '''
-        Function to get dHdp for every separable terms 
+        Function to get d2Hdq2 for every separable terms
 
         Returns
         -------
-        dHdp : float 
-            dHdqp is the derivative of H with respect to p for N X DIM dimension 
+        d2Hdq2 : float
+            d2Hdq2 is the second derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
 
-        N, N_particle, DIM  = q_list.shape
+        N, N_particle, DIM = q_list.shape
         d2Hdq2 = np.zeros((N, DIM * N_particle, DIM * N_particle))
 
         for term in self.hamiltonian_terms :
