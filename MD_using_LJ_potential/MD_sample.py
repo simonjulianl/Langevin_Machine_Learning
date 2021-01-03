@@ -9,7 +9,7 @@ import time
 N_particle = 2
 rho = 0.1
 T = 0.04
-nsamples = 5
+nsamples = 1
 iterations = 10
 tau = 0.1
 gamma = 0
@@ -58,7 +58,7 @@ initial_q_hist, initial_p_hist = MD_integrator.set_phase_space(nsamples = nsampl
 #update configuration after loading
 print('Run MD simulation')
 start = time.time()
-q_hist_, p_hist_ = MD_integrator.integrate()
+q_hist_, p_hist_ = MD_integrator.integrate(multicpu=False)
 end = time.time()
 print('time',end-start)
 print('q_hist',q_hist_)
@@ -69,5 +69,5 @@ q_hist = np.concatenate((initial_q_hist, q_hist_), axis=0)
 p_hist = np.concatenate((initial_p_hist, p_hist_), axis=0)
 
 # to save the current phase space to continue as a checkpoint
-# MD_integrator.save_phase_space(q_hist, p_hist,'/SHO_N{}_T{}_ts{}_iter{}_vv_gm{}_{}sampled.npy'.format(N_particle,T,tau,iterations,gamma,nsamples)) # by default, it is in init file
+MD_integrator.save_phase_space(q_hist, p_hist,'/SHO_N{}_T{}_ts{}_iter{}_vv_gm{}_{}sampled.npy'.format(N_particle,T,tau,iterations,gamma,nsamples)) # by default, it is in init file
 

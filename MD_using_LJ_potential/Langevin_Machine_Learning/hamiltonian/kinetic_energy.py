@@ -21,9 +21,10 @@ class kinetic_energy:
         print('kinetic_energy.py call kinetic')
         self._name = 'Kinetic Energy'
 
-    # def energy(self, phase_space, pb): # phase space is real-space-unit
-    #     p = phase_space.get_p()
-    #     e = np.sum(p*p / (2*self.mass))
+    def energy(self, phase_space, pb): # phase space is real-space-unit
+        #p = phase_space.get_p()
+        #e = np.sum(p*p / (2*self.mass))
+        return np.zeros([]) # make zero for Monte-carlo
 
     def evaluate_derivative_q(self, phase_space,pb):
         return np.zeros(phase_space.get_q().shape)

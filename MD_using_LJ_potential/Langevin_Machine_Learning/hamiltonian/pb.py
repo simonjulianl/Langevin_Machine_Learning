@@ -41,6 +41,8 @@ class periodic_bc:
     # HK def paired_distance_reduced(self,q,q_adj):
     def paired_distance_reduced(self,q):
 
+        # print("==pb==")
+        # print('dimensionless', q)
         qlen = q.shape[0]
         q0 = np.expand_dims(q,axis=0)
         qm = np.repeat(q0,qlen,axis=0)

@@ -145,9 +145,9 @@ class MCMC(Integration):
         TE1sum = 0.0
         TE2sum = 0.0
         Nsum = 0.0
-        total_samples = self._intSetting['iterations'] - self._intSetting['DISCARD']
-        q_list = np.zeros((total_samples,self._configuration['particle'],self._configuration['DIM']))
-        U = np.zeros(total_samples)
+        iterations = self._intSetting['iterations'] - self._intSetting['DISCARD']
+        q_list = np.zeros((iterations,self._configuration['particle'],self._configuration['DIM']))
+        U = np.zeros(iterations)
 
         #print('MCMC.py integrate q_list',q_list)
         for i in trange(0, self._intSetting['iterations'], desc = "simulating"):

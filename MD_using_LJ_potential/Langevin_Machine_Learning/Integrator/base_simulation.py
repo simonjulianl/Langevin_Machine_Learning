@@ -16,27 +16,7 @@ class Integration(ABC) :
 
     @abstractmethod
     def __init__(self, *args, **kwargs) -> object:           
-        ''' initialize a configuration state 
-        Parameters
-        ----------            
-        **kwargs : 
-            - N : int
-                total number of particles
-                default : 1
-            - DIM : int
-                Dimension of the particles 
-                default : 1 Dimension
-            - m : float 
-                mass of the particle 
-                default : 1
-            - kB : float
-                boltzmann constant
-                default : 1 unit
-            - Temperature : float
-                Temperature at which the MC Steps are conducted
-                default : 1 unit
-            -hamiltonian : Hamiltonian
-                Hamiltonian class consisting all the interactions
+        ''' initialize a configuration state
 
         Returns
         -------
@@ -79,7 +59,7 @@ class Integration(ABC) :
         # just create container
         pos = kwargs.get('pos', None)
         vel = kwargs.get('vel', None)
-        
+
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
             pos = np.random.uniform(-0.5, 0.5, ( self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
             pos = pos * self._configuration['BoxSize']

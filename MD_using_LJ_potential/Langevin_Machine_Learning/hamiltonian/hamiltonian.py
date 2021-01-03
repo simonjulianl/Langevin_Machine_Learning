@@ -40,7 +40,7 @@ class Hamiltonian:
         for term in self.hamiltonian_terms :
 
             H += term.energy(phase_space,pb)
-    
+
         return H
 
     def dHdq(self,phase_space, pb):

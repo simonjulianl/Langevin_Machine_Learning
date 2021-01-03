@@ -12,7 +12,7 @@ from .MCMC import MCMC
 from .momentum_sampler import momentum_sampler
 from .harmonic_integrator import harmonic_integrator
 from .linear_integrator import linear_integrator
-
+from .ML_linear_integrator import ML_linear_integrator
 
 # =============================================================================
 # Not tested yet 

@@ -7,16 +7,16 @@ from .base_simulation import Integration
 import multiprocessing
 import copy 
 
-class linear_integrator(Integration):
+class ML_linear_integrator(Integration):
     
     def helper(self = None): 
         '''print the common parameters helper'''
-        for parent in linear_integrator.__bases__:
+        for parent in ML_linear_integrator.__bases__:
             print(help(parent))
         
     def __init__(self, *args, **kwargs) -> object:
 
-        super(linear_integrator, self).__init__(*args, **kwargs)
+        super(ML_linear_integrator, self).__init__(*args, **kwargs)
                 
         #Configuration settings 
         try : 
@@ -24,8 +24,8 @@ class linear_integrator(Integration):
                 'iterations' : kwargs['iterations'],
                 'gamma' : kwargs['gamma'],
                 'tau' : kwargs['tau'],
-                'integrator_method': kwargs['integrator_method']
-
+                'ML_integrator_method': kwargs['ML_integrator_method'],
+                'pair_wise_HNN' : kwargs['pair_wise_HNN']
                 }
 
         except : 
@@ -41,9 +41,9 @@ class linear_integrator(Integration):
         N = self._configuration['N'] # total number of samples
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
-        iterations = self._intSetting['iterations']
+        iterations = 1
         tau = self._intSetting['tau']
-        integrator_method = self._intSetting['integrator_method']
+        ML_integrator_method = self._intSetting['ML_integrator_method']
 
         q_list = np.zeros((iterations, N, particle, DIM))
         p_list = np.zeros((iterations, N, particle, DIM))
@@ -55,7 +55,7 @@ class linear_integrator(Integration):
 
             for i in trange(iterations):
 
-                self._configuration = integrator_method(**self._configuration)
+                self._configuration = ML_integrator_method(**self._configuration)
 
                 q_list[i] = self._configuration['phase_space'].get_q()
                 p_list[i] = self._configuration['phase_space'].get_p()  # sample
@@ -90,7 +90,7 @@ class linear_integrator(Integration):
 
                 for i in trange(iterations):
 
-                    state = integrator_method(**state)
+                    state = ML_integrator_method(**state)
 
                     q_list_temp[i] = state['phase_space'].get_q()
                     p_list_temp[i] = state['phase_space'].get_p()  # sample

@@ -12,8 +12,8 @@ import random
 random.seed(23645) # for test
 
 text=''
-N_particle = 2
-nsamples = 5
+N_particle = 3
+nsamples = 1
 rho= 0.1
 T = 0.04
 dq = 0.1
@@ -40,8 +40,8 @@ configuration = {
     }
 
 integration_setting = {
-    'iterations' : 62400,  #for test 44000 #for train 224000 624000
-    'DISCARD' : 62200,  #for test 24000 #for train 24000  622000
+    'iterations' : 62440,  #for test 44000 #for train 224000 624000 62440
+    'DISCARD' :  62400,  #for test 24000 #for train 24000  622000 62400
     'dq' : dq,
     }
 
@@ -56,6 +56,8 @@ base_library = os.path.abspath('Langevin_Machine_Learning/init_config')
 Momentum_sampler = Integrator.momentum_sampler(**configuration)
 p_hist = Momentum_sampler.integrate()
 
-phase_space = np.array((q_hist[0::40],p_hist))
-np.save(base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.npy".format(N_particle,q_hist[0::40].shape[0],rho,T),phase_space)
+interval = 40
+
+phase_space = np.array((q_hist[0::interval],p_hist))
+np.save(base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.npy".format(N_particle,q_hist[0::interval].shape[0],rho,T),phase_space)
 
