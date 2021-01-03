@@ -73,45 +73,57 @@ class HNN_trainer:
 
         self.q_label, self.p_label = self._train_dataset.data_label()
 
-    def _MLdHdq(self):
+    # def _MLdHdq(self):
+    #
+    #     model = self._model.train() # fetch the model
+    #     MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
+    #     print(MLdHdq.shape)
+    #
+    #     for batch_idx, data in enumerate(self._train_loader):
+    #
+    #         print('batch_idx',batch_idx)
+    #         print(data)     # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+    #         print(data.shape)
+    #
+    #         self._optimizer.zero_grad()
+    #
+    #         MLdHdq[batch_idx] = model(data)
+    #
+    #         print('MLdHdq{}'.format(batch_idx),MLdHdq[batch_idx])
+    #
+    #     print('MLdHdq',MLdHdq)
+    #     print('MLdHdq', MLdHdq.shape)
+    #     return MLdHdq
+
+    def train_epoch(self):
 
         model = self._model.train() # fetch the model
         MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
         print(MLdHdq.shape)
+        criterion = self._loss  # fetch the loss
 
         for batch_idx, data in enumerate(self._train_loader):
 
             print('batch_idx',batch_idx)
             print(data)     # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
             print(data.shape)
-
             self._optimizer.zero_grad()
 
             MLdHdq[batch_idx] = model(data)
 
-            print('MLdHdq{}'.format(batch_idx),MLdHdq[batch_idx])
-
-        print('MLdHdq',MLdHdq)
-        print('MLdHdq', MLdHdq.shape)
-        return MLdHdq  # return the average
-
-    def train_epoch(self):
-
-        criterion = self._loss  # fetch the loss
-
         label = (self.q_label, self.p_label)  # rebrand the label
 
-        _dHdq = pair_wise_HNN(self._setting['hamiltonian'], self._MLdHdq())
+        _dHdq = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
         self._setting['pair_wise_HNN'] = _dHdq
-        print(self._setting)
 
         q_data, p_data = ML_linear_integrator(**self._setting).integrate(multicpu=False)
         q_data = q_data.reshape(-1,q_data.shape[2],q_data.shape[3])
         p_data = p_data.reshape(-1, p_data.shape[2], p_data.shape[3])
 
-        data = (q_data,p_data)
-
-        loss = criterion(torch.Tensor(data), torch.Tensor(label))
+        data_ = (q_data,p_data)
+        data_ = torch.tensor(data_,requires_grad=True)
+        label = torch.tensor(label,requires_grad=True)
+        loss = criterion(data_, label)
 
         loss.backward()
 
