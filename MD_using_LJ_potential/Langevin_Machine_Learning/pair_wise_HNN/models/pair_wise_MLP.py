@@ -19,8 +19,9 @@ class pair_wise_MLP(nn.Module):
 
     def forward(self, data): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
 
-        MLdHdq = self.correction_term(data)
+        MLdHdq_ = self.correction_term(data)
+        MLdHdq_ = MLdHdq_.reshape(3,2,2)  # N_particle, N_particle-1, DIM
 
-        MLdHdq = MLdHdq.sum(0)  # ex) a,b,c three particles;  sum Fa = Fab + Fac
+        MLdHdq = torch.sum(MLdHdq_,axis=1) # ex) a,b,c three particles;  sum Fa = Fab + Fac
 
         return MLdHdq

@@ -16,7 +16,8 @@ T = 0.04
 iterations= 10
 tau = 0.01
 lr= 3e-3
-batch_size= N_particle-1
+#batch_size= N_particle-1
+batch_size= N_particle * (N_particle-1)
 nsamples = 1 # not use when ML
 
 print("iterations",iterations)
@@ -49,7 +50,9 @@ integration_setting = {
     'integrator_method' : methods.linear_velocity_verlet
     }
 
-model = Pair_wise_HNN.pair_wise_MLP(batch_size*configuration['DIM'] + 1, 20) # qx, qy, px, py, tau
+#model = Pair_wise_HNN.pair_wise_MLP(batch_size*configuration['DIM'] + 1, 20) # qx, qy, px, py, tau
+model = Pair_wise_HNN.pair_wise_MLP((N_particle-1)*configuration['DIM'] + 1, 20) # qx, qy, px, py, tau
+
 loss = qp_MSE_loss
 
 NN_trainer_setting = {

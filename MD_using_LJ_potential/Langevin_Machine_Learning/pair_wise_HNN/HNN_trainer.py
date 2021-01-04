@@ -73,54 +73,59 @@ class HNN_trainer:
 
         self.q_label, self.p_label = self._train_dataset.data_label()
 
+    @property
     def train_epoch(self):
 
+        global train_loss
         model = self._model.train() # fetch the model
-        MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
-        print('MLdHdq shape',MLdHdq.shape)
         criterion = self._loss  # fetch the loss
+
+        #MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
+        #print('MLdHdq shape',MLdHdq.shape)
 
         for batch_idx, data in enumerate(self._train_loader):
 
             print('batch_idx : {}, batch size : {}'.format(batch_idx,self._batch_size))
             print('=== input data ===')
-            print(data)     # (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-            print('shape : (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )')
+            print(data)
+            print('shape : ( N_particle x (N_particle-1) ) x  (del_qx, del_qy, del_px, del_py, tau )')
             print(data.shape)
             print('==================')
-            self._optimizer.zero_grad()
 
-            MLdHdq[batch_idx] = model(data)
+            MLdHdq = model(data)  # shape :  N_particle x DIM
 
-        print('predict MLdHdq')
-        print(MLdHdq)
-        print('==================')
+            print('predict MLdHdq')
+            print(MLdHdq)
+            print('==================')
 
-        label = (self.q_label, self.p_label)
-        label = torch.tensor(label,requires_grad=True)
+            label = (self.q_label, self.p_label)
+            label = torch.tensor(label,requires_grad=True)
 
-        _pair_wise_HNN = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
-        self._setting['pair_wise_HNN'] = _pair_wise_HNN
+            # === get q_pred, p_pred from MLdHdq ===
 
-        q_pred, p_pred = ML_linear_integrator(**self._setting).integrate(multicpu=False)
-        q_pred = q_pred.reshape(-1,q_pred.shape[2],q_pred.shape[3])
-        p_pred = p_pred.reshape(-1, p_pred.shape[2], p_pred.shape[3])
+            _pair_wise_HNN = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
+            self._setting['pair_wise_HNN'] = _pair_wise_HNN
 
-        pred = (q_pred,p_pred)
-        pred = torch.tensor(pred,requires_grad=True)
+            q_pred, p_pred = ML_linear_integrator(**self._setting).integrate(multicpu=False)
+            q_pred = q_pred.reshape(-1,q_pred.shape[2],q_pred.shape[3])
+            p_pred = p_pred.reshape(-1, p_pred.shape[2], p_pred.shape[3])
 
-        loss = criterion(pred, label)
+            pred = (q_pred,p_pred)
+            pred = torch.tensor(pred,requires_grad=True)
 
-        loss.backward()
+            # =======================================
 
-        train_loss = loss.item()  # get the scalar output
+            loss = criterion(pred, label)
 
-        self._optimizer.step()
+            self._optimizer.zero_grad() # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
+            loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
+            train_loss = loss.item()  # get the scalar output
+            self._optimizer.step() # calling the step function on an optimizer makes an update to its parameters
 
-        if self._scheduler:  # if scheduler exists
-            self._scheduler.step(loss)
+            # if self._scheduler:  # if scheduler exists
+            #     self._scheduler.step(loss)
 
-        return train_loss  # return the average
+        return train_loss
 
     def train(self):
 
@@ -128,6 +133,6 @@ class HNN_trainer:
             print('==================')
             print('epoch',i)
             print('==================')
-            train_loss = self.train_epoch()
+            train_loss = self.train_epoch
             print('epoch:{} train_loss:{:.6f}'.format(i,train_loss))
 
