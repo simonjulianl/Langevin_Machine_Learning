@@ -56,6 +56,10 @@ class Hamiltonian_Dataset(Dataset):
         init_vel = curr_data[:,1] ; kwargs['momentum'] = init_vel * kwargs['m']
         init_p = init_vel * kwargs['m']
 
+        print('== inital data ===')
+        print(init_q,init_p)
+        print('==================')
+
         self._setting = kwargs
 
         # generate data by pairing up all particles - get delta_q
@@ -102,7 +106,7 @@ class Hamiltonian_Dataset(Dataset):
         paired_data = np.concatenate((paired_data_,tau),axis=-1) # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
         paired_data = paired_data.reshape(-1,paired_data.shape[3]) # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
 
-        print('=== input data : del_qx del_qy del_px del_py tau ===')
+        print('=== input data for ML : del_qx del_qy del_px del_py tau ===')
         print(paired_data)
         print(paired_data.shape)
 
@@ -126,8 +130,10 @@ class Hamiltonian_Dataset(Dataset):
         q_after = np.expand_dims(q_after, axis=1)
         p_after = np.expand_dims(p_after, axis=1)
 
-        label = np.concatenate((q_after, p_after),axis=1) # nsamples x (q,p) x N_particle   x DIM
+        label = np.concatenate((q_after, p_after),axis=1) # nsamples x (q,p) x N_particle x DIM
+        print('=== data label ===')
         print(label)
+        print("shape : nsamples x (q,p) x N_particle x DIM")
         print(label.shape)
 
         return label[:,0], label[:,1]

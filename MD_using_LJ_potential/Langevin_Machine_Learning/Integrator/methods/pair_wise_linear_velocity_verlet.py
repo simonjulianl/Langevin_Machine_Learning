@@ -31,11 +31,16 @@ def pair_wise_linear_velocity_verlet(**state) :
 
     '''
     #get all the constants
-    q = state['phase_space'].get_q()
-    p = state['phase_space'].get_p()
+    # q = state['phase_space'].get_q()
+    # p = state['phase_space'].get_p()
+    q, p = state['init_config']
+    state['phase_space'].set_q(q)
+    state['phase_space'].set_p(p)
+
     Hamiltonian = state['pair_wise_HNN']
-    tau = state['tau'] * state['iterations']
-    print('tau',tau)
+    tau = state['tau'] * state['iterations'] #this is big time step to be trained
+    print('pair wise vv tau',tau)
+
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 
@@ -43,14 +48,18 @@ def pair_wise_linear_velocity_verlet(**state) :
     state['phase_space'].set_p(p_list_dummy)
 
     p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
+    #print('update p',q,p)
+
     q = q + tau * p # dq/dt = dK/dp = p
 
     pb_q.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
 
     pb_q.debug_pbc(q, boxsize)
+    #print('update q',q,p)
 
     p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], state['pb_q']) ) #dp/dt
+    #print('update p',q,p)
 
     state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state after 1 step 
     

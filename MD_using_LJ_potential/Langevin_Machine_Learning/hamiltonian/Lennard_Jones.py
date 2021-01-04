@@ -5,6 +5,7 @@ class Lennard_Jones():
     def __init__(self, phi, boxsize):
         self.phi = phi
         self.boxsize = boxsize
+        print('Lennard_Jones.py call potential')
         self._name = 'Lennard Jones Potential'
 
     def dimensionless(self,phase_space):

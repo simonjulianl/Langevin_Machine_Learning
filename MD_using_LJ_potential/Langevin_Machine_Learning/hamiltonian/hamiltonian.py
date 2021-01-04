@@ -56,11 +56,11 @@ class Hamiltonian:
         dHdq = np.zeros(q_list.shape)
 
         for term in self.hamiltonian_terms :
-
+            #print(term)
             dHdq += term.evaluate_derivative_q(phase_space, pb)
-
+            #print(dHdq)
         return dHdq 
-    
+
     def d2Hdq2(self,phase_space, pb):
         '''
         Function to get d2Hdq2 for every separable terms

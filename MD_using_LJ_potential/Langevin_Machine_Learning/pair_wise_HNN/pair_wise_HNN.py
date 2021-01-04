@@ -38,9 +38,9 @@ class pair_wise_HNN:
         '''
 
         noMLdHdq = self.noML_hamiltonian.dHdq(phase_space,pb)
-        print('noML',noMLdHdq)
-        print('ML',self.MLdHdq)
-
+        # print('noML',noMLdHdq)
+        # # print('ML',self.MLdHdq)
+        # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
         return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
 
     # def d2Hdq2(self, phase_space, pb):

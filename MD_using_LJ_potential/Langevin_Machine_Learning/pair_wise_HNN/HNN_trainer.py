@@ -77,17 +77,24 @@ class HNN_trainer:
 
         model = self._model.train() # fetch the model
         MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
-        print(MLdHdq.shape)
+        print('MLdHdq shape',MLdHdq.shape)
         criterion = self._loss  # fetch the loss
 
         for batch_idx, data in enumerate(self._train_loader):
 
-            print('batch_idx',batch_idx)
-            print(data)     # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+            print('batch_idx : {}, batch size : {}'.format(batch_idx,self._batch_size))
+            print('=== input data ===')
+            print(data)     # (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+            print('shape : (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )')
             print(data.shape)
+            print('==================')
             self._optimizer.zero_grad()
 
             MLdHdq[batch_idx] = model(data)
+
+        print('predict MLdHdq')
+        print(MLdHdq)
+        print('==================')
 
         label = (self.q_label, self.p_label)
         label = torch.tensor(label,requires_grad=True)
@@ -118,7 +125,9 @@ class HNN_trainer:
     def train(self):
 
         for i in range(1, self._n_epochs + 1):
+            print('==================')
             print('epoch',i)
+            print('==================')
             train_loss = self.train_epoch()
             print('epoch:{} train_loss:{:.6f}'.format(i,train_loss))
 
