@@ -111,19 +111,20 @@ class HNN_trainer:
 
             MLdHdq[batch_idx] = model(data)
 
-        label = (self.q_label, self.p_label)  # rebrand the label
-
-        _dHdq = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
-        self._setting['pair_wise_HNN'] = _dHdq
-
-        q_data, p_data = ML_linear_integrator(**self._setting).integrate(multicpu=False)
-        q_data = q_data.reshape(-1,q_data.shape[2],q_data.shape[3])
-        p_data = p_data.reshape(-1, p_data.shape[2], p_data.shape[3])
-
-        data_ = (q_data,p_data)
-        data_ = torch.tensor(data_,requires_grad=True)
+        label = (self.q_label, self.p_label)
         label = torch.tensor(label,requires_grad=True)
-        loss = criterion(data_, label)
+
+        _pair_wise_HNN = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
+        self._setting['pair_wise_HNN'] = _pair_wise_HNN
+
+        q_pred, p_pred = ML_linear_integrator(**self._setting).integrate(multicpu=False)
+        q_pred = q_pred.reshape(-1,q_pred.shape[2],q_pred.shape[3])
+        p_pred = p_pred.reshape(-1, p_pred.shape[2], p_pred.shape[3])
+
+        pred = (q_pred,p_pred)
+        pred = torch.tensor(pred,requires_grad=True)
+
+        loss = criterion(pred, label)
 
         loss.backward()
 
@@ -141,5 +142,5 @@ class HNN_trainer:
         for i in range(1, self._n_epochs + 1):
             print('epoch',i)
             train_loss = self.train_epoch()
-            print('epoch:{} train_loss:{:.6f} ; validation_loss.{:.6f}'.format(i,train_loss,train_loss))
+            print('epoch:{} train_loss:{:.6f}'.format(i,train_loss))
 
