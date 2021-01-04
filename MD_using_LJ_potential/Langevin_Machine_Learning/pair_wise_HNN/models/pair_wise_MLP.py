@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from ..pair_wise_HNN import pair_wise_HNN
+from ...Integrator.ML_linear_integrator import ML_linear_integrator
 import numpy as np
 
 class pair_wise_MLP(nn.Module):
@@ -17,11 +19,19 @@ class pair_wise_MLP(nn.Module):
             nn.Linear(n_hidden, 2)
         )
 
-    def forward(self, data): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
+    def forward(self, data, **_setting): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
 
         MLdHdq_ = self.correction_term(data)
         MLdHdq_ = MLdHdq_.reshape(3,2,2)  # N_particle, N_particle-1, DIM
 
         MLdHdq = torch.sum(MLdHdq_,axis=1) # ex) a,b,c three particles;  sum Fa = Fab + Fac
 
-        return MLdHdq
+        # === get q_pred, p_pred from MLdHdq ===
+        _pair_wise_HNN = pair_wise_HNN(_setting['hamiltonian'], MLdHdq)
+        _setting['pair_wise_HNN'] = _pair_wise_HNN
+
+        q_pred, p_pred = ML_linear_integrator(**_setting).integrate(multicpu=False)
+        q_pred = q_pred.reshape(-1, q_pred.shape[2], q_pred.shape[3])
+        p_pred = p_pred.reshape(-1, p_pred.shape[2], p_pred.shape[3])
+
+        return (q_pred,p_pred)
