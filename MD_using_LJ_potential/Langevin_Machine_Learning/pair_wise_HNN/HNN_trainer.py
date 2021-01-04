@@ -73,28 +73,6 @@ class HNN_trainer:
 
         self.q_label, self.p_label = self._train_dataset.data_label()
 
-    # def _MLdHdq(self):
-    #
-    #     model = self._model.train() # fetch the model
-    #     MLdHdq = torch.empty(self._setting['particle'],self._setting['DIM'])
-    #     print(MLdHdq.shape)
-    #
-    #     for batch_idx, data in enumerate(self._train_loader):
-    #
-    #         print('batch_idx',batch_idx)
-    #         print(data)     # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-    #         print(data.shape)
-    #
-    #         self._optimizer.zero_grad()
-    #
-    #         MLdHdq[batch_idx] = model(data)
-    #
-    #         print('MLdHdq{}'.format(batch_idx),MLdHdq[batch_idx])
-    #
-    #     print('MLdHdq',MLdHdq)
-    #     print('MLdHdq', MLdHdq.shape)
-    #     return MLdHdq
-
     def train_epoch(self):
 
         model = self._model.train() # fetch the model

@@ -69,39 +69,40 @@ class Hamiltonian_Dataset(Dataset):
             delta_init_p_, _ = kwargs['pb_q'].paired_distance_reduced(init_p[z]/kwargs['BoxSize']) #reduce distance
             delta_init_p_ = delta_init_p_ * kwargs['BoxSize']
 
-            print('delta_init_q',delta_init_q_)
-            print('delta_init_q',delta_init_q_.shape)
-            print('delta_init_p',delta_init_p_)
-            print('delta_init_p', delta_init_p_.shape)
+            # print('delta_init_q',delta_init_q_)
+            # print('delta_init_q',delta_init_q_.shape)
+            # print('delta_init_p',delta_init_p_)
+            # print('delta_init_p', delta_init_p_.shape)
 
             # delta_q_x, delta_q_y, t
             for i in range(N_particle):
                 x = 0  # all index case i=j and i != j
                 for j in range(N_particle):
                     if i != j:
-                        print(i,j)
-                        print(delta_init_q_[i,j,:])
+                        # print(i,j)
+                        # print(delta_init_q_[i,j,:])
                         delta_init_q[z][i][x] = delta_init_q_[i,j,:]
                         delta_init_p[z][i][x] = delta_init_p_[i,j,:]
 
                         x=x+1
 
-        print('delta_init')
-        print(delta_init_q)
-        print(delta_init_p)
+        # print('delta_init')
+        # print(delta_init_q)
+        # print(delta_init_p)
 
         # tau : #this is big time step to be trained
         # to add paired data array
         tau = np.array([kwargs['tau'] * kwargs['iterations']] * N_particle * (N_particle - 1))
         tau = tau.reshape(-1,N_particle,(N_particle - 1),1) # broadcasting
 
-        print('concat')
+        # print('concat')
         paired_data_ = np.concatenate((delta_init_q,delta_init_p),axis=-1) # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
-        print(paired_data_)
-        print(paired_data_.shape)
+        # print(paired_data_)
+        # print(paired_data_.shape)
         paired_data = np.concatenate((paired_data_,tau),axis=-1) # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
         paired_data = paired_data.reshape(-1,paired_data.shape[3]) # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
 
+        print('=== input data : del_qx del_qy del_px del_py tau ===')
         print(paired_data)
         print(paired_data.shape)
 
