@@ -73,7 +73,7 @@ class HNN_trainer:
 
         self.q_label, self.p_label = self._train_dataset.data_label()
 
-    @property
+
     def train_epoch(self):
 
         model = self._model.train() # fetch the model
@@ -114,6 +114,7 @@ class HNN_trainer:
             print('==================')
             print('epoch',i)
             print('==================')
-            train_loss = self.train_epoch
+            train_loss = self.train_epoch()
+
             print('epoch:{} train_loss:{:.6f}'.format(i,train_loss))
 
