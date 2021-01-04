@@ -34,7 +34,8 @@ def pair_wise_linear_velocity_verlet(**state) :
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
     Hamiltonian = state['pair_wise_HNN']
-    tau = state['tau']
+    tau = state['tau'] * state['iterations']
+    print('tau',tau)
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 

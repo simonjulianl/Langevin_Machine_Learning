@@ -42,7 +42,7 @@ class ML_linear_integrator(Integration):
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
         iterations = 1
-        tau = self._intSetting['tau']
+        tau = self._intSetting['tau']  * self._intSetting['iterations']
         ML_integrator_method = self._intSetting['ML_integrator_method']
 
         q_list = np.zeros((iterations, N, particle, DIM))
