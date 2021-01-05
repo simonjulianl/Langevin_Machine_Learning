@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-import numpy as np
+import torch
 
 class pair_wise_HNN:
 
-    def __init__(self, noML_hamiltonian, MLdHdq):
+    def __init__(self, noML_hamiltonian, net):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
         self.noML_hamiltonian = noML_hamiltonian  # for every separable terms possible
-        self.MLdHdq = MLdHdq
+        self.net = net
         self.tau = 0
 
     def set_tau(self,t):
         self.tau = t
+
+    def phase_space2data(self,phase_space):
+
+    def predict_force(self,phase_space,pb):
+        data = self.phase_space2data(phase_space)
+        return self.net(data)
 
     def total_energy(self, phase_space, pb):
         '''
@@ -38,10 +43,13 @@ class pair_wise_HNN:
         '''
 
         noMLdHdq = self.noML_hamiltonian.dHdq(phase_space,pb)
+        noMLdHdq = torch.from_numpy(noMLdHdq)
+        MLdHdq = self.predict_force(phase_space,pb)
         # print('noML',noMLdHdq)
         # # print('ML',self.MLdHdq)
         # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
-        return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
+        #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
+        return noMLdHdq + MLdHdq
 
     # def d2Hdq2(self, phase_space, pb):
     #     '''

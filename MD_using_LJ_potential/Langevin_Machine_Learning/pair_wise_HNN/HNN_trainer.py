@@ -90,11 +90,13 @@ class HNN_trainer:
             print(data.shape)
             print('==================')
 
+            data = data.to(self._device).requires_grad_(True)
+
             pred = model(data, **self._setting)  # shape :  N_particle x DIM
-            pred = torch.tensor(pred, requires_grad=True)
+            pred = torch.tensor(pred, requires_grad=True) # convert numpy to tensor
 
             label = (self.q_label, self.p_label)
-            label = torch.tensor(label,requires_grad=True)
+            label = torch.tensor(label).to(self._device) # convert numpy to tensor
 
             loss = criterion(pred, label)
 

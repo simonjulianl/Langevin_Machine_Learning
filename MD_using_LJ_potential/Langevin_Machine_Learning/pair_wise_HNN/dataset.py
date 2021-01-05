@@ -97,8 +97,8 @@ class Hamiltonian_Dataset(Dataset):
         # tau : #this is big time step to be trained
         # to add paired data array
         tau = np.array([kwargs['tau'] * kwargs['iterations']] * N_particle * (N_particle - 1))
-        tau = tau.reshape(-1,N_particle,(N_particle - 1),1) # broadcasting
-
+        tau = tau.reshape(-1, N_particle, (N_particle - 1), 1) # broadcasting
+        print('tau',tau.shape)
         # print('concat')
         paired_data_ = np.concatenate((delta_init_q,delta_init_p),axis=-1) # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
         # print(paired_data_)
@@ -125,7 +125,6 @@ class Hamiltonian_Dataset(Dataset):
 
         q_after, p_after = linear_integrator(**self._setting).integrate(multicpu=False) # using the integrator class
         q_after, p_after = q_after[-1], p_after[-1] # only take the last from the list
-
 
         q_after = np.expand_dims(q_after, axis=1)
         p_after = np.expand_dims(p_after, axis=1)

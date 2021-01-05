@@ -1,40 +1,47 @@
 import torch
+import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 
 
 class NN(nn.Module): #define forward that you call on the torch.nn.Module 
 
-    def __init__(self,n_particle):
+    def __init__(self):
         super(NN,self).__init__()
 
-        in1 = 1*n_particle
-
-        #weight
-        self.w = torch.randn(in1,n_particle)
-        print(self.w)
+        in1 = 1
+        self.fc = nn.Linear(in1,1,bias=False)
 
     def forward(self,x):
 
-        out = torch.matmul(x, self.w)
+        out = self.fc(x)
 
         return out
 
+# ex) q = t , qdot = p = 1
+tau = 1
 
-n_particle = 1
-q = torch.tensor([1.], requires_grad=True) # batch 3 , q = q1,q2,=> q1x, q1y, q2x,q2y
-p = torch.tensor([1.], requires_grad=True) # batch 3 , p = px, py
+seed =  937162211
 
-q_gt = torch.tensor([1.], requires_grad=True) # batch 3 , q = q1,q2,=> q1x, q1y, q2x,q2y
-p_gt = torch.tensor([1.], requires_grad=True) # batch 3 , p = px, py 
+torch.manual_seed(seed)
+# torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the model functions nondeterministically.
+# torch.backends.cudnn.benchmark = False
+torch.cuda.manual_seed_all(seed)
+np.random.seed(seed)
 
-tau = 0.01
+q0 = torch.tensor([1.], requires_grad=True)
+qdot0 = torch.tensor([1.], requires_grad=True)
 
-net = NN(n_particle)
+q_gt = torch.tensor([2.], requires_grad=True)
+qdot_gt = torch.tensor([1.], requires_grad=True)
+# print(q_gt)
+# print(p_gt)
+# quit()
+net = NN()
 print(net)
-nepoch = 100 
-lr = 0.1
+
+nepoch = 100000
+lr = 0.0001
 
 #optimizer on multi-NN
 opt = optim.Adam(net.parameters(),lr)
@@ -42,23 +49,61 @@ net.train()
 
 for e in range(nepoch):
 
-    force = net(q)
-    p = p + force*tau/2
+    q = q0
+    qdot = qdot0
+    # print('============== ')
+    # print('epoch {}'.format(e))
+    # print('============== ')
+    #
+    # print('=== first input === ')
+    # print(q)
+    f_pred = net(q) #f_w
 
-    q = q + p*tau
+    # print('=== First calc force === ')
+    # print('======== weight ======== ')
+    # print(net.fc.weight)
+    # print('========= bias ========= ')
+    # print(net.fc.bias)
+    # print('========= force ========= ')
+    # print(f_pred)
 
-    force = net(q)
-    p = p + force*tau/2
+    qdot = qdot + f_pred * tau/2
+    # print('=== update p ===')
+    # print(p)
+    # print('================')
+
+    q = q + qdot * tau
+    # print('=== update q ===')
+    # print(q)
+    # print('================')
+    #
+    # print('=== second input === ')
+    # print(q)
+
+    f_pred = net(q)
+    # print('== second calc force === ')
+    # print('======== weight ======== ')
+    # print(net.fc.weight)
+    # print('========= bias ========= ')
+    # print(net.fc.bias)
+    # print('========= force ========= ')
+    # print(f_pred)
+    # print('============== ')
+
+    qdot = qdot + f_pred * tau/2
+    # print('=== update p ===')
+    # print(p)
+    # print('================')
 
     # setting gradient to zeros
     opt.zero_grad()
-    loss = (torch.sum((p-p_gt)*(p-p_gt))+torch.sum((q-q_gt)*(q-q_gt)))/(n_particle)
+    loss = (torch.sum((qdot-qdot_gt)*(qdot-qdot_gt))+torch.sum((q-q_gt)*(q-q_gt)))
     # backward propagation
     loss.backward()
+
     # update the gradient to new gradients
     opt.step()
-    if e%(nepoch//10)==0: print('e ',e,'loss ',loss)
-
+    if e%(nepoch//10)==0: print('e ',e,'loss ',loss.item())
 
 
 # if dpdt.shape != q.shape or dpdt.shape != p.shape:
