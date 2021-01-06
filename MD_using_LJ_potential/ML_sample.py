@@ -16,8 +16,8 @@ T = 0.04
 iterations= 10
 tau = 0.01
 lr= 0.01
-#batch_size= N_particle-1
-batch_size= N_particle * (N_particle-1)
+#batch_size= N_particle * (N_particle-1)
+batch_size = 1
 nsamples = 1 # not use when ML
 
 print("iterations",iterations)

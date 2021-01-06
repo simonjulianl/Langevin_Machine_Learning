@@ -3,11 +3,11 @@
 
 import torch
 import numpy as np
-from ..Integrator.ML_linear_integrator import ML_linear_integrator
-from .dataset import Hamiltonian_Dataset
-from ..hamiltonian.pb import periodic_bc
-from ..phase_space import phase_space
-from .pair_wise_HNN import pair_wise_HNN
+from MD_using_LJ_potential.Langevin_Machine_Learning.Integrator.ML_linear_integrator import ML_linear_integrator
+from MD_using_LJ_potential.Langevin_Machine_Learning.pair_wise_HNN.dataset import Hamiltonian_Dataset
+from MD_using_LJ_potential.Langevin_Machine_Learning.hamiltonian.pb import periodic_bc
+from MD_using_LJ_potential.Langevin_Machine_Learning.phase_space import phase_space
+from MD_using_LJ_potential.Langevin_Machine_Learning.pair_wise_HNN.pair_wise_HNN import pair_wise_HNN
 from torch.utils.data import DataLoader
 
 class HNN_trainer:
@@ -71,6 +71,9 @@ class HNN_trainer:
         except : 
             raise Exception('model not found')
 
+        self.q_label, self.p_label = self._train_dataset.data_label()
+
+
     def train_epoch(self):
 
         model = self._model.train() # fetch the model
@@ -81,26 +84,19 @@ class HNN_trainer:
         for batch_idx, data in enumerate(self._train_loader):
 
             print('batch_idx : {}, batch size : {}'.format(batch_idx,self._batch_size))
-
-            print('=== initial data ===')
-            q_list = data[0][0].to(self._device).requires_grad_(True)
-            p_list = data[0][1].to(self._device).requires_grad_(True)
-
-            print('=== label data ===')
-            q_list_label = data[1][0].to(self._device)
-            p_list_label = data[1][1].to(self._device)
+            print('=== input data ===')
+            print(data)
+            print('shape : ( N_particle x (N_particle-1) ) x  (del_qx, del_qy, del_px, del_py, tau )')
+            print(data.shape)
             print('==================')
 
-            label = (q_list_label, p_list_label)
+            data = data.to(self._device).requires_grad_(True)
 
-            _pair_wise_HNN = pair_wise_HNN(self._setting['hamiltonian'], q_list, p_list, self._model, **self._setting)
-            self._setting['pair_wise_HNN'] = _pair_wise_HNN
+            pred = model(data, **self._setting)  # shape :  N_particle x DIM
+            pred = torch.tensor(pred, requires_grad=True) # convert numpy to tensor
 
-            q_pred, p_pred = ML_linear_integrator(**self._setting).integrate(multicpu=False)
-            q_pred = q_pred.reshape(-1, q_pred.shape[2], q_pred.shape[3])
-            p_pred = p_pred.reshape(-1, p_pred.shape[2], p_pred.shape[3])
-
-            pred = (q_pred, p_pred)
+            label = (self.q_label, self.p_label)
+            label = torch.tensor(label).to(self._device) # convert numpy to tensor
 
             loss = criterion(pred, label)
 

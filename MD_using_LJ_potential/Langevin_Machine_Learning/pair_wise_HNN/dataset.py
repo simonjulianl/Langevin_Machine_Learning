@@ -62,56 +62,17 @@ class Hamiltonian_Dataset(Dataset):
 
         self._setting = kwargs
 
-        # generate data by pairing up all particles - get delta_q
-        delta_init_q = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
-        delta_init_p = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
-
-        for z in range(N):
-
-            delta_init_q_, _ = kwargs['pb_q'].paired_distance_reduced(init_q[z]/kwargs['BoxSize']) #reduce distance
-            delta_init_q_ = delta_init_q_ * kwargs['BoxSize']
-            delta_init_p_, _ = kwargs['pb_q'].paired_distance_reduced(init_p[z]/kwargs['BoxSize']) #reduce distance
-            delta_init_p_ = delta_init_p_ * kwargs['BoxSize']
-
-            # print('delta_init_q',delta_init_q_)
-            # print('delta_init_q',delta_init_q_.shape)
-            # print('delta_init_p',delta_init_p_)
-            # print('delta_init_p', delta_init_p_.shape)
-
-            # delta_q_x, delta_q_y, t
-            for i in range(N_particle):
-                x = 0  # all index case i=j and i != j
-                for j in range(N_particle):
-                    if i != j:
-                        # print(i,j)
-                        # print(delta_init_q_[i,j,:])
-                        delta_init_q[z][i][x] = delta_init_q_[i,j,:]
-                        delta_init_p[z][i][x] = delta_init_p_[i,j,:]
-
-                        x=x+1
-
-        # print('delta_init')
-        # print(delta_init_q)
-        # print(delta_init_p)
-
-        # tau : #this is big time step to be trained
-        # to add paired data array
-        tau = np.array([kwargs['tau'] * kwargs['iterations']] * N_particle * (N_particle - 1))
-        tau = tau.reshape(-1, N_particle, (N_particle - 1), 1) # broadcasting
-        print('tau',tau.shape)
-        # print('concat')
-        paired_data_ = np.concatenate((delta_init_q,delta_init_p),axis=-1) # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
-        # print(paired_data_)
-        # print(paired_data_.shape)
-        paired_data = np.concatenate((paired_data_,tau),axis=-1) # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-        paired_data = paired_data.reshape(-1,paired_data.shape[3]) # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-
-        print('=== input data for ML : del_qx del_qy del_px del_py tau ===')
-        print(paired_data)
-        print(paired_data.shape)
+        q_after, p_after = linear_integrator(**self._setting).integrate(multicpu=False) # using the integrator class
+        q_after, p_after = q_after[-1], p_after[-1] # only take the last from the list
 
         #populate the dataset 
-        self._dataset = paired_data # change the data and label here
+        self._dataset = [] # change the data and label here
+
+        for i in range(N):
+            data = (init_q[i],init_p[i])
+            label = (q_after[i], p_after[i])
+
+            self._dataset.append([data,label])
 
         print('dataset loaded')
         
@@ -119,20 +80,5 @@ class Hamiltonian_Dataset(Dataset):
         return len(self._dataset)  # samples x data/label x q/p x num. of particles x DIM
     
     def __getitem__(self, idx):
-        return self._dataset[idx]
+        return (self._dataset[idx][0], self._dataset[idx][1])
 
-    def data_label(self):
-
-        q_after, p_after = linear_integrator(**self._setting).integrate(multicpu=False) # using the integrator class
-        q_after, p_after = q_after[-1], p_after[-1] # only take the last from the list
-
-        q_after = np.expand_dims(q_after, axis=1)
-        p_after = np.expand_dims(p_after, axis=1)
-
-        label = np.concatenate((q_after, p_after),axis=1) # nsamples x (q,p) x N_particle x DIM
-        print('=== data label ===')
-        print(label)
-        print("shape : nsamples x (q,p) x N_particle x DIM")
-        print(label.shape)
-
-        return label[:,0], label[:,1]

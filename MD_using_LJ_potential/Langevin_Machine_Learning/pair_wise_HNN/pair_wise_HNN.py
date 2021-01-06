@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import torch
+import numpy as np
 
 class pair_wise_HNN:
 
-    def __init__(self, noML_hamiltonian, net):
+    def __init__(self, noML_hamiltonian, q_list, p_list, net, **_setting):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
         self.noML_hamiltonian = noML_hamiltonian  # for every separable terms possible
+        self.q_list = q_list
+        self.p_list = p_list
+        self._setting = _setting
         self.net = net
         self.tau = 0
 
@@ -17,8 +21,63 @@ class pair_wise_HNN:
 
     def phase_space2data(self,phase_space):
 
-    def predict_force(self,phase_space,pb):
-        data = self.phase_space2data(phase_space)
+        init_q = phase_space.set_q(self.q_list)
+        init_p = phase_space.set_p(self.p_list)
+        print(init_q)
+        N, N_particle, DIM = init_q.shape
+
+        delta_init_q = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
+        delta_init_p = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
+
+        for z in range(N):
+
+            delta_init_q_, _ = self._setting['pb_q'].paired_distance_reduced(init_q[z]/self._setting['BoxSize']) #reduce distance
+            delta_init_q_ = delta_init_q_ * self._setting['BoxSize']
+            delta_init_p_, _ = self._setting['pb_q'].paired_distance_reduced(init_p[z]/self._setting['BoxSize']) #reduce distance
+            delta_init_p_ = delta_init_p_ * self._setting['BoxSize']
+
+            # print('delta_init_q',delta_init_q_)
+            # print('delta_init_q',delta_init_q_.shape)
+            # print('delta_init_p',delta_init_p_)
+            # print('delta_init_p', delta_init_p_.shape)
+
+            # delta_q_x, delta_q_y, t
+            for i in range(N_particle):
+                x = 0  # all index case i=j and i != j
+                for j in range(N_particle):
+                    if i != j:
+                        # print(i,j)
+                        # print(delta_init_q_[i,j,:])
+                        delta_init_q[z][i][x] = delta_init_q_[i,j,:]
+                        delta_init_p[z][i][x] = delta_init_p_[i,j,:]
+
+                        x=x+1
+
+        # print('delta_init')
+        # print(delta_init_q)
+        # print(delta_init_p)
+
+        # tau : #this is big time step to be trained
+        # to add paired data array
+        tau = np.array([self._setting['tau'] * self._setting['iterations']] * N_particle * (N_particle - 1))
+        tau = tau.reshape(-1, N_particle, (N_particle - 1), 1) # broadcasting
+        print('tau',tau.shape)
+        # print('concat')
+        paired_data_ = np.concatenate((delta_init_q,delta_init_p),axis=-1) # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
+        # print(paired_data_)
+        # print(paired_data_.shape)
+        paired_data = np.concatenate((paired_data_,tau),axis=-1) # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+        paired_data = paired_data.reshape(-1,paired_data.shape[3]) # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+
+        print('=== input data for ML : del_qx del_qy del_px del_py tau ===')
+        print(paired_data)
+        print(paired_data.shape)
+
+        return paired_data
+
+
+    def predict_force(self,phase_space):
+        data = self.phase_space2data(self._setting['phase_space'])
         return self.net(data)
 
     def total_energy(self, phase_space, pb):
@@ -44,7 +103,7 @@ class pair_wise_HNN:
 
         noMLdHdq = self.noML_hamiltonian.dHdq(phase_space,pb)
         noMLdHdq = torch.from_numpy(noMLdHdq)
-        MLdHdq = self.predict_force(phase_space,pb)
+        MLdHdq = self.predict_force(phase_space)
         # print('noML',noMLdHdq)
         # # print('ML',self.MLdHdq)
         # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
@@ -66,10 +125,4 @@ class pair_wise_HNN:
     #
     #     return noMLd2Hdq2+MLd2Hdq2
 
-    # def predict_residue_dHdq(self,tau,phase_space,pb):
-    #
-    #     # pass data though MLP to predict dHdq
-    #     predict_dHdq = self.pair_wise_MLP(i)
-    #
-    #     return predict_dHdq
 
