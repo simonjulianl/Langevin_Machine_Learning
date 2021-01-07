@@ -35,7 +35,7 @@ class Integration(ABC) :
                 'm' : kwargs['m'],
                 'particle' : kwargs['particle'],
                 'hamiltonian' : hamiltonian,
-                'general_hamiltonian': kwargs['general_hamiltonian'],
+                #'general_hamiltonian': kwargs['general_hamiltonian'],
                 'BoxSize': kwargs['BoxSize']
             }
         except :
@@ -60,7 +60,9 @@ class Integration(ABC) :
         # just create container
         pos = kwargs.get('pos', None)
         vel = kwargs.get('vel', None)
+
         print('base_simulation',pos,vel)
+
         if pos is None :  # create random particle initialization of U[-1,1) for q (pos) and v if not supplied
             pos = np.random.uniform(-0.5, 0.5, ( self._configuration['particle'], self._configuration['DIM'])) ### ADD particle
             pos = pos * self._configuration['BoxSize']

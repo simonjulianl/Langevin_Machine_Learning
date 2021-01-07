@@ -52,6 +52,8 @@ class MD_learner:
 
         state['tau'] = state['tau'] * state['iterations']  # large time step
         state['iterations'] = int(state['iterations'] / state['iterations'])  # one step
+        init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
+        state['pos'] = init_q; state['vel'] = init_p
 
         self._setting = state  # save the setting
 
@@ -93,7 +95,7 @@ class MD_learner:
 
                 label = (q_list_label, p_list_label)
 
-                pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
+                #pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
 
                 print('linear integrator')
                 q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)
