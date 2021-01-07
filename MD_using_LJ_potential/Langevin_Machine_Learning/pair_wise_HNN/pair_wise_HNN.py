@@ -54,7 +54,7 @@ class pair_wise_HNN:
         return corrected_force
 
     def phase_spacedata(self, init_q, init_p, **state):
-        
+
         self.init_q = init_q
         self.init_p = init_p
         self._state = state
