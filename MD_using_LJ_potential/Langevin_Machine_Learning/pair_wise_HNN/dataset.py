@@ -61,9 +61,13 @@ class Hamiltonian_Dataset(Dataset):
         print('==================')
 
         self._setting = kwargs
-
-        q_after, p_after = linear_integrator(**self._setting).integrate(multicpu=False) # using the integrator class
+        print(self._setting)
+        q_after, p_after = linear_integrator(**self._setting).integrate(kwargs['hamiltonian'],multicpu=False) # using the integrator class
         q_after, p_after = q_after[-1], p_after[-1] # only take the last from the list
+
+        print('== label data ===')
+        print(q_after,p_after)
+        print('==================')
 
         #populate the dataset 
         self._dataset = [] # change the data and label here

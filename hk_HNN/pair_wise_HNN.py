@@ -17,7 +17,7 @@ class pairwise_HNN:
         predict = self.network(data)
         noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
 
-        corrected_force = noML_force + predict???
+        corrected_force = noML_force + predict
 
         return corrected_force
 

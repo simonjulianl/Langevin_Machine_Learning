@@ -3,7 +3,7 @@ import Langevin_Machine_Learning.pair_wise_HNN as Pair_wise_HNN
 import Langevin_Machine_Learning.Integrator as Integrator
 import Langevin_Machine_Learning.hamiltonian as noML_hamiltonian
 import Langevin_Machine_Learning.Integrator.methods as methods
-import Langevin_Machine_Learning.pair_wise_HNN as pair_wise_HNN
+
 import torch
 import torch.optim as optim
 import numpy as np
@@ -16,7 +16,7 @@ T = 0.04
 iterations= 10
 tau = 0.01
 lr= 0.01
-#batch_size= N_particle * (N_particle-1)
+DIM = 2
 batch_size = 1
 nsamples = 1 # not use when ML
 
@@ -26,10 +26,11 @@ print("batch size",batch_size)
 
 # noML_hamiltonian
 noML_hamiltonian = noML_hamiltonian.hamiltonian()
-energy = pairwise_HNN(noML_hamiltonian,pairwise_MLP())
 LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho))
-energy.append(Hamiltonian.Lennard_Jones(LJ, boxsize=np.sqrt(N_particle/rho)))
-energy.append(Hamiltonian.kinetic_energy(mass = 1))
+noML_hamiltonian.append(Hamiltonian.Lennard_Jones(LJ, boxsize=np.sqrt(N_particle/rho)))
+noML_hamiltonian.append(Hamiltonian.kinetic_energy(mass = 1))
+
+energy = pairwise_HNN(noML_hamiltonian, pairwise_MLP)
 
 configuration = {
     'kB' : 1.0, # put as a constant
@@ -62,7 +63,7 @@ NN_trainer_setting = {
     'loss' : loss,
     'epoch' : 3,
     'batch_size' : batch_size,
-    'ML_integrator_method' : methods.pair_wise_linear_velocity_verlet
+    'ML_integrator_method' : methods.linear_velocity_verlet
     }
 
 configuration.update(integration_setting)

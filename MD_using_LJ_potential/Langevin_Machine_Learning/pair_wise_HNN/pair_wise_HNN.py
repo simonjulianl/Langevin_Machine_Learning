@@ -3,26 +3,64 @@
 import torch
 import numpy as np
 
+
 class pair_wise_HNN:
 
-    def __init__(self, noML_hamiltonian, q_list, p_list, net, **_setting):
+    def __init__(self,hamiltonian,network):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
-        self.noML_hamiltonian = noML_hamiltonian  # for every separable terms possible
-        self.q_list = q_list
-        self.p_list = p_list
-        self._setting = _setting
-        self.net = net
+        self.network = network
+        self.noML_hamiltonian = hamiltonian
         self.tau = 0
 
-    def set_tau(self,t):
-        self.tau = t
 
-    def phase_space2data(self,phase_space):
+    # def set_tau(self,t):
+    #     self.tau = t
 
-        init_q = phase_space.set_q(self.q_list)
-        init_p = phase_space.set_p(self.p_list)
+    def train(self):
+        self.network.train() # pytorch network for training
+
+    def eval(self):
+        self.network.eval()
+
+    # def total_energy(self, phase_space, pb):
+    #     '''
+    #     get the hamiltonian which is define as H(p,q) for every separable terms
+    #
+    #     Returns
+    #     -------
+    #     H : float
+    #         H is the hamiltonian of the states with separable terms
+    #     '''
+    #     return self.noML_hamiltonian.total_energy(phase_space,pb)
+
+    def dHdq(self, phase_space, pb):
+
+        noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
+        print('no ML',noML_force)
+
+        #noML_force = torch.from_numpy(noMLdHdq)
+
+        data = self.phase_space2data( phase_space, pb)
+        predict = self.network(data)
+
+        corrected_force = noML_force + predict
+
+        # print('noML',noMLdHdq)
+        # # print('ML',self.MLdHdq)
+        # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
+        #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
+        return corrected_force
+
+
+    def phase_space2data(self, phase_space, pb):
+
+        print('phase_space2data')
+        print(phase_space.get_q(), phase_space.get_p())
+
+        init_q = self.phase_space.set_q(self.q_list)
+        init_p = self.phase_space.set_p(self.p_list)
         print(init_q)
         N, N_particle, DIM = init_q.shape
 
@@ -75,40 +113,6 @@ class pair_wise_HNN:
 
         return paired_data
 
-
-    def predict_force(self,phase_space):
-        data = self.phase_space2data(self._setting['phase_space'])
-        return self.net(data)
-
-    def total_energy(self, phase_space, pb):
-        '''
-        get the hamiltonian which is define as H(p,q) for every separable terms
-
-        Returns
-        -------
-        H : float
-            H is the hamiltonian of the states with separable terms
-        '''
-        return self.noML_hamiltonian.total_energy(phase_space,pb)
-
-    def dHdq(self, phase_space, pb):
-        '''
-        Function to get dHdq for every separable terms
-
-        Returns
-        -------
-        dHdq : float
-            dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
-        '''
-
-        noMLdHdq = self.noML_hamiltonian.dHdq(phase_space,pb)
-        noMLdHdq = torch.from_numpy(noMLdHdq)
-        MLdHdq = self.predict_force(phase_space)
-        # print('noML',noMLdHdq)
-        # # print('ML',self.MLdHdq)
-        # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
-        #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
-        return noMLdHdq + MLdHdq
 
     # def d2Hdq2(self, phase_space, pb):
     #     '''

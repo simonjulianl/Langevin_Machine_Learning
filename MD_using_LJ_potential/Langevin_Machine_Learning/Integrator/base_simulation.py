@@ -35,6 +35,7 @@ class Integration(ABC) :
                 'm' : kwargs['m'],
                 'particle' : kwargs['particle'],
                 'hamiltonian' : hamiltonian,
+                'general_hamiltonian': kwargs['general_hamiltonian'],
                 'BoxSize': kwargs['BoxSize']
             }
         except :
@@ -90,7 +91,7 @@ class Integration(ABC) :
         #self._configuration['phase_space'].set_p(vel)
 
     @abstractmethod
-    def integrate(self):
+    def integrate(self, hamiltonian):
         pass
     
     def _filename_creator(self): 

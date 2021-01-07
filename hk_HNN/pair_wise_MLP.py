@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from ..pair_wise_HNN import pair_wise_HNN
-from ...Integrator.ML_linear_integrator import ML_linear_integrator
 import numpy as np
 
 class pair_wise_MLP(nn.Module):

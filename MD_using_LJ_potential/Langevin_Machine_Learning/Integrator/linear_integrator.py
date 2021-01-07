@@ -23,9 +23,8 @@ class linear_integrator(Integration):
             self._intSetting = {
                 'iterations' : kwargs['iterations'],
                 'gamma' : kwargs['gamma'],
-                'tau' : kwargs['tau'],
+                'tau' : kwargs['tau'] ,
                 'integrator_method': kwargs['integrator_method']
-
                 }
 
         except : 
@@ -35,14 +34,14 @@ class linear_integrator(Integration):
         seed = kwargs.get('seed', 937162211)
         np.random.seed(seed)
 
-    def integrate(self,multicpu=True):
+    def integrate(self, hamiltonian, multicpu=True):
 
         #obtain all the constants
         N = self._configuration['N'] # total number of samples
         particle = self._configuration['particle']  #ADD
         DIM = self._configuration['DIM']
         iterations = self._intSetting['iterations']
-        tau = self._intSetting['tau']
+        tau = self._intSetting['tau'] * self._intSetting['iterations']
         integrator_method = self._intSetting['integrator_method']
 
         q_list = np.zeros((iterations, N, particle, DIM))
@@ -55,7 +54,7 @@ class linear_integrator(Integration):
 
             for i in trange(iterations):
 
-                self._configuration = integrator_method(**self._configuration)
+                self._configuration = integrator_method(hamiltonian, **self._configuration)
 
                 q_list[i] = self._configuration['phase_space'].get_q()
                 p_list[i] = self._configuration['phase_space'].get_p()  # sample

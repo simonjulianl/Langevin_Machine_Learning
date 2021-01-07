@@ -7,8 +7,8 @@ Created on Mon Jun  8 11:34:53 2020
 """
 import numpy as np 
 
-def linear_velocity_verlet(**state) :
-    
+def linear_velocity_verlet(Hamiltonian, **state) :
+
     '''
     velocity verlet integrator method 
 
@@ -34,7 +34,7 @@ def linear_velocity_verlet(**state) :
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
 
-    Hamiltonian = state['hamiltonian']
+    #Hamiltonian = state['general_hamiltonian'] # for ML
     tau = state['tau']
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
