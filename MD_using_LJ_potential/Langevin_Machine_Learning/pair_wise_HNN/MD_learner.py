@@ -14,8 +14,6 @@ class MD_learner:
         self.nepoch = state['epoch']
         self.optimizer = state['optim']
         self._loss = state['loss']
-        self.phase_space = phase_space()
-        self.pb = periodic_bc()
 
         try:  # data loader and seed setting
             self._batch_size = state['batch_size']  # will be used for data loader setting
@@ -32,23 +30,13 @@ class MD_learner:
 
             self._sample = state['N']
             Temperature = state['Temperature']
-            # kwargs['pb_q'] = periodic_bc()
-            # kwargs['phase_space'] = phase_space()
+            state['pb_q'] = periodic_bc()
+            state['phase_space'] = phase_space()
 
         except:
             raise Exception('epoch / batch_size not defined ')
 
-        self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self._current_epoch = 1
-        self._setting = state  # save the setting
-
         DataLoader_Setting = {'num_workers': num_workers, 'pin_memory': True, 'shuffle': shuffle}
-
-        try:  # dataset setting
-            if state['DIM'] != 2:
-                raise Exception('Not supported for Dimension is not 2')
-        except:
-            raise Exception('Temperature_List for loading / sample not found ')
 
         self._train_dataset = Hamiltonian_Dataset(Temperature,
                                                   self._sample,
@@ -59,6 +47,20 @@ class MD_learner:
                                         batch_size=self._batch_size,
                                         **DataLoader_Setting)
 
+        self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self._current_epoch = 1
+
+        state['tau'] = state['tau'] * state['iterations']  # large time step
+        state['iterations'] = int(state['iterations'] / state['iterations'])  # one step
+
+        self._setting = state  # save the setting
+
+        try:  # dataset setting
+            if state['DIM'] != 2:
+                raise Exception('Not supported for Dimension is not 2')
+        except:
+            raise Exception('Temperature_List for loading / sample not found ')
+
         # try:  # architecture setting
         #     self._model = kwargs['model'].double().to(self._device)
         # except:
@@ -68,24 +70,41 @@ class MD_learner:
     # pb is boundary condition
     def train(self):
 
+        print('set',self._setting)
         pairwise_hnn = self._setting['general_hamiltonian']
-        pairwise_hnn.phase_space2data(self.phase_space, self.pb)
         pairwise_hnn.train()
         criterion = self._loss
 
         for e in range(self.nepoch):
 
-            print(self._setting)
+            for batch_idx, data in enumerate(self._train_loader):
+                print('batch_idx : {}, batch size : {}'.format(batch_idx, self._batch_size))
 
-            q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)
-            pred = (q_list_predict, p_list_predict)
+                print('=== initial data ===')
+                q_list = data[0][0].to(self._device).requires_grad_(True)
+                p_list = data[0][1].to(self._device).requires_grad_(True)
+                print(q_list,p_list)
 
-            loss = criterion(pred, label)
+                print('=== label data ===')
+                q_list_label = data[1][0].to(self._device)
+                p_list_label = data[1][1].to(self._device)
+                print(q_list_label,p_list_label)
+                print('==================')
 
-            self._optimizer.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
-            loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
-            train_loss = loss.item()  # get the scalar output
-            self._optimizer.step()
+                label = (q_list_label, p_list_label)
+
+                pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
+
+                print('linear integrator')
+                q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)
+                pred = (q_list_predict, p_list_predict)
+
+                loss = criterion(pred, label)
+
+                self._optimizer.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
+                loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
+                train_loss = loss.item()  # get the scalar output
+                self._optimizer.step()
 
     def step(self,phase_space,pb,tau):
         pairwise_hnn.eval()

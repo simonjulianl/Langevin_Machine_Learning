@@ -28,7 +28,6 @@ class Hamiltonian_Dataset(Dataset):
         base_dir = uppath(__file__, 2)
         init_path = base_dir + '/init_config/'
         N_particle = kwargs['particle']
-        DIM = kwargs['DIM']
         seed = kwargs.get('seed', 9372211)  # first: 937162211 second: 937111
 
         q_list, p_list = data_loader.loadp_q(init_path,
@@ -53,7 +52,7 @@ class Hamiltonian_Dataset(Dataset):
 
         N = curr_data.shape[0] ;  kwargs['N'] = N # nsamples
         init_q = curr_data[:,0] ; kwargs['pos'] = init_q
-        init_vel = curr_data[:,1] ; kwargs['momentum'] = init_vel * kwargs['m']
+        init_vel = curr_data[:,1] ; kwargs['vel'] = init_vel
         init_p = init_vel * kwargs['m']
 
         print('== inital data ===')

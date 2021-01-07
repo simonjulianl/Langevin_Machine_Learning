@@ -51,8 +51,9 @@ class linear_integrator(Integration):
             print('Not multicpu')
 
             self._configuration.update(self._intSetting)
-
+            print('integrator',self._configuration)
             for i in trange(iterations):
+                print('iterations {}'.format(i))
 
                 self._configuration = integrator_method(hamiltonian, **self._configuration)
 

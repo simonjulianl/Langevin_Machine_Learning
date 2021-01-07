@@ -3,7 +3,6 @@
 import torch
 import numpy as np
 
-
 class pair_wise_HNN:
 
     def __init__(self,hamiltonian,network):
@@ -12,8 +11,7 @@ class pair_wise_HNN:
         '''
         self.network = network
         self.noML_hamiltonian = hamiltonian
-        self.tau = 0
-
+        # self.tau = 0
 
     # def set_tau(self,t):
     #     self.tau = t
@@ -38,12 +36,14 @@ class pair_wise_HNN:
     def dHdq(self, phase_space, pb):
 
         noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
+        #noML_force = torch.from_numpy(noML_force)
         print('no ML',noML_force)
 
-        #noML_force = torch.from_numpy(noMLdHdq)
-
-        data = self.phase_space2data( phase_space, pb)
+        data = torch.from_numpy(self.input_data()).float()
         predict = self.network(data)
+        predict = predict.detach().cpu().numpy()
+
+        print('ML', predict)
 
         corrected_force = noML_force + predict
 
@@ -53,26 +53,34 @@ class pair_wise_HNN:
         #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
         return corrected_force
 
+    def phase_spacedata(self, init_q, init_p, **state):
+        
+        self.init_q = init_q
+        self.init_p = init_p
+        self._state = state
 
-    def phase_space2data(self, phase_space, pb):
+        print('space',self.init_q,self.init_p)
+
+    def phase_space2data(self):
 
         print('phase_space2data')
-        print(phase_space.get_q(), phase_space.get_p())
 
-        init_q = self.phase_space.set_q(self.q_list)
-        init_p = self.phase_space.set_p(self.p_list)
-        print(init_q)
-        N, N_particle, DIM = init_q.shape
+        print(self.init_q, self.init_p)
+
+        self.init_q = self.init_q.detach().cpu().numpy()
+        self.init_p = self.init_p.detach().cpu().numpy()
+
+        N, N_particle, DIM = self.init_q.shape
 
         delta_init_q = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
         delta_init_p = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
 
         for z in range(N):
 
-            delta_init_q_, _ = self._setting['pb_q'].paired_distance_reduced(init_q[z]/self._setting['BoxSize']) #reduce distance
-            delta_init_q_ = delta_init_q_ * self._setting['BoxSize']
-            delta_init_p_, _ = self._setting['pb_q'].paired_distance_reduced(init_p[z]/self._setting['BoxSize']) #reduce distance
-            delta_init_p_ = delta_init_p_ * self._setting['BoxSize']
+            delta_init_q_, _ = self._state['pb_q'].paired_distance_reduced(self.init_q[z]/self._state['BoxSize']) #reduce distance
+            delta_init_q_ = delta_init_q_ * self._state['BoxSize']
+            delta_init_p_, _ = self._state['pb_q'].paired_distance_reduced(self.init_p[z]/self._state['BoxSize']) #reduce distance
+            delta_init_p_ = delta_init_p_ * self._state['BoxSize']
 
             # print('delta_init_q',delta_init_q_)
             # print('delta_init_q',delta_init_q_.shape)
@@ -97,7 +105,7 @@ class pair_wise_HNN:
 
         # tau : #this is big time step to be trained
         # to add paired data array
-        tau = np.array([self._setting['tau'] * self._setting['iterations']] * N_particle * (N_particle - 1))
+        tau = np.array([self._state['tau'] * self._state['iterations']] * N_particle * (N_particle - 1))
         tau = tau.reshape(-1, N_particle, (N_particle - 1), 1) # broadcasting
         print('tau',tau.shape)
         # print('concat')
@@ -113,6 +121,9 @@ class pair_wise_HNN:
 
         return paired_data
 
+    def input_data(self):
+
+        return self.phase_space2data()
 
     # def d2Hdq2(self, phase_space, pb):
     #     '''

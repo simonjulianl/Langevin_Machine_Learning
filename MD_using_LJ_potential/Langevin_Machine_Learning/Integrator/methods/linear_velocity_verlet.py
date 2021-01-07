@@ -39,6 +39,8 @@ def linear_velocity_verlet(Hamiltonian, **state) :
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 
+    print('vv',q,p,tau)
+
     p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
     state['phase_space'].set_p(p_list_dummy)
 
@@ -52,8 +54,8 @@ def linear_velocity_verlet(Hamiltonian, **state) :
 
     p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], pb_q) ) #dp/dt
 
-    state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state after 1 step 
-    
+    state['phase_space'].set_q(q) ; state['phase_space'].set_p(p) # update state after 1 step
+
     return state 
 
 linear_velocity_verlet.name = 'linear_velocity_verlet' # add attribute to the function for marker
