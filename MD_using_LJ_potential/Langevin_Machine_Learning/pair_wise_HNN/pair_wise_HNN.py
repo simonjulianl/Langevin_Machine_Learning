@@ -53,7 +53,7 @@ class pair_wise_HNN:
         #noML_force = torch.from_numpy(noML_force)
         print('no ML',noML_force)
 
-        print('==after dHdq ==')
+        print('==after dHdq ==') #### dimensionless .... 
         q_list = phase_space.get_q()*self._state['BoxSize']
         p_list = phase_space.get_p()*self._state['BoxSize']
 
