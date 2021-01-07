@@ -5,12 +5,13 @@ import numpy as np
 
 class pair_wise_HNN:
 
-    def __init__(self,hamiltonian,network):
+    def __init__(self, network, **state):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
         self.network = network
-        self.noML_hamiltonian = hamiltonian
+        self.noML_hamiltonian = state['hamiltonian']
+        self._state = state
         # self.tau = 0
 
     # def set_tau(self,t):
@@ -35,15 +36,30 @@ class pair_wise_HNN:
 
     def dHdq(self, phase_space, pb):
 
-        noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
-        #noML_force = torch.from_numpy(noML_force)
-        print('no ML',noML_force)
+        print('==dHdq==')
+        print(phase_space.get_q())
+        print(phase_space.get_p())
 
-        data = torch.from_numpy(self.input_data()).float()
+        data = self.phase_space2data(phase_space)
+        #data = torch.from_numpy(self.input_data()).float()
         predict = self.network(data)
         predict = predict.detach().cpu().numpy()
 
         print('ML', predict)
+        print(phase_space.get_q())
+        print(phase_space.get_p())
+
+        noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
+        #noML_force = torch.from_numpy(noML_force)
+        print('no ML',noML_force)
+
+        print('==after dHdq ==')
+        q_list = phase_space.get_q()*self._state['BoxSize']
+        p_list = phase_space.get_p()*self._state['BoxSize']
+
+        phase_space.set_q(q_list)
+        phase_space.set_p(p_list)
+
 
         corrected_force = noML_force + predict
 
@@ -53,33 +69,34 @@ class pair_wise_HNN:
         #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
         return corrected_force
 
-    def phase_spacedata(self, init_q, init_p, **state):
-        
-        self.init_q = init_q
-        self.init_p = init_p
-        self._state = state
+    # def phase_spacedata(self, init_q, init_p, **state):
+    #
+    #     self.init_q = init_q
+    #     self.init_p = init_p
+    #     self._state = state
+    #
+    #     print('space',self.init_q,self.init_p)
 
-        print('space',self.init_q,self.init_p)
-
-    def phase_space2data(self):
+    def phase_space2data(self,phase_space):
 
         print('phase_space2data')
+        q_list = phase_space.get_q()
+        p_list = phase_space.get_p()
+        print(q_list, p_list)
 
-        print(self.init_q, self.init_p)
+        # q_list = q_list.detach().cpu().numpy()
+        # p_list = p_list.detach().cpu().numpy()
 
-        self.init_q = self.init_q.detach().cpu().numpy()
-        self.init_p = self.init_p.detach().cpu().numpy()
+        N, N_particle, DIM = self.q_list.shape
 
-        N, N_particle, DIM = self.init_q.shape
-
-        delta_init_q = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
-        delta_init_p = np.zeros( (N, N_particle , (N_particle - 1), DIM) )
+        delta_init_q = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
+        delta_init_p = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
 
         for z in range(N):
 
-            delta_init_q_, _ = self._state['pb_q'].paired_distance_reduced(self.init_q[z]/self._state['BoxSize']) #reduce distance
+            delta_init_q_, _ = self._state['pb_q'].paired_distance_reduced(q_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_q_ = delta_init_q_ * self._state['BoxSize']
-            delta_init_p_, _ = self._state['pb_q'].paired_distance_reduced(self.init_p[z]/self._state['BoxSize']) #reduce distance
+            delta_init_p_, _ = self._state['pb_q'].paired_distance_reduced(p_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_p_ = delta_init_p_ * self._state['BoxSize']
 
             # print('delta_init_q',delta_init_q_)
@@ -121,9 +138,6 @@ class pair_wise_HNN:
 
         return paired_data
 
-    def input_data(self):
-
-        return self.phase_space2data()
 
     # def d2Hdq2(self, phase_space, pb):
     #     '''

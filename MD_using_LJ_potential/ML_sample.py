@@ -31,10 +31,6 @@ LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho))
 noML_hamiltonian.append(Hamiltonian.Lennard_Jones(LJ, boxsize=np.sqrt(N_particle/rho)))
 noML_hamiltonian.append(Hamiltonian.kinetic_energy(mass = 1))
 
-# noML + ML
-MLP = models.pair_wise_MLP.pair_wise_MLP(5,20)
-pairwise_HNN = pair_wise_HNN.pair_wise_HNN(noML_hamiltonian, MLP)
-
 configuration = {
     'kB' : 1.0, # put as a constant
     'DIM' : 2,
@@ -44,8 +40,7 @@ configuration = {
     'N': nsamples,  # Total number of samples for train 50000 for test 5000
     'Temperature': T,
     'm' : 1,
-    'hamiltonian' : noML_hamiltonian,
-    'general_hamiltonian' : pairwise_HNN
+    'hamiltonian' : noML_hamiltonian
     }
 
 integration_setting = {
@@ -55,6 +50,15 @@ integration_setting = {
     'integrator_method' : methods.linear_velocity_verlet
     }
 
+configuration.update(integration_setting)
+configuration.update(integration_setting)
+print('==')
+print(noML_hamiltonian)
+
+# noML + ML
+MLP = models.pair_wise_MLP.pair_wise_MLP(5,20)
+pairwise_HNN = pair_wise_HNN.pair_wise_HNN(MLP, **configuration)
+
 loss = qp_MSE_loss
 
 NN_trainer_setting = {
@@ -62,13 +66,13 @@ NN_trainer_setting = {
     'model' : MLP,
     'loss' : loss,
     'epoch' : 3,
-    'batch_size' : batch_size
+    'batch_size' : batch_size,
+    'general_hamiltonian' : pairwise_HNN
     }
 
-configuration.update(integration_setting)
-configuration.update(integration_setting)
-configuration.update(NN_trainer_setting)
 
+configuration.update(NN_trainer_setting)
+print(configuration)
 MD_learner = pair_wise_HNN.MD_learner(**configuration)
 MD_learner.train()
 
