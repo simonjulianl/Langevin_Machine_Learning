@@ -52,8 +52,6 @@ integration_setting = {
 
 configuration.update(integration_setting)
 configuration.update(integration_setting)
-print('==')
-print(noML_hamiltonian)
 
 # noML + ML
 MLP = models.pair_wise_MLP.pair_wise_MLP(5,20)
@@ -70,9 +68,8 @@ NN_trainer_setting = {
     'general_hamiltonian' : pairwise_HNN
     }
 
-
 configuration.update(NN_trainer_setting)
-print(configuration)
+
 MD_learner = pair_wise_HNN.MD_learner(**configuration)
 MD_learner.train()
 

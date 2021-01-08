@@ -45,30 +45,20 @@ class pair_wise_HNN:
         print(phase_space.get_p())
 
         data = self.phase_space2data(phase_space)
-        data = torch.from_numpy(data).float()
+        data = torch.from_numpy(data).float() # convert numpy to tensor
         predict = self.network(data)
-        predict = predict.detach().cpu().numpy()
+        predict = predict.detach().cpu().numpy() # convert tensor to numpy
 
         print('ML', predict)
         print(phase_space.get_q())
         print(phase_space.get_p())
 
-        noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
+        noML_force = -self.noML_hamiltonian.dHdq(phase_space,pb)
         #noML_force = torch.from_numpy(noML_force)
         print('no ML',noML_force)
 
-        print('==after dHdq ==') #### dimensionless .... 
-        q_list = phase_space.get_q()*self._state['BoxSize']
-        p_list = phase_space.get_p()*self._state['BoxSize']
-
-        phase_space.set_q(q_list)
-        phase_space.set_p(p_list)
-
-        print(phase_space.get_q())
-        print(phase_space.get_p())
-
-        corrected_force = noML_force + predict
-
+        corrected_force = - ( noML_force + predict )  # code in linear_vv calculates potential. so need minus
+        print('corrected_force',corrected_force)
         # print('noML',noMLdHdq)
         # # print('ML',self.MLdHdq)
         # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())

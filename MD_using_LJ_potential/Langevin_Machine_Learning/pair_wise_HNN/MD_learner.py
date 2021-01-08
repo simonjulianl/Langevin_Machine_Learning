@@ -52,8 +52,8 @@ class MD_learner:
 
         state['tau'] = state['tau'] * state['iterations']  # large time step
         state['iterations'] = int(state['iterations'] / state['iterations'])  # one step
-        init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
-        state['pos'] = init_q; state['vel'] = init_p
+        # init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
+        #
 
         self._setting = state  # save the setting
 
@@ -86,6 +86,9 @@ class MD_learner:
                 q_list = data[0][0].to(self._device).requires_grad_(True)
                 p_list = data[0][1].to(self._device).requires_grad_(True)
                 print(q_list,p_list)
+
+                self._setting['pos'] = q_list.detach().cpu().numpy()  # convert tensor to numpy
+                self._setting['vel'] = p_list.detach().cpu().numpy()  # convert tensor to numpy
 
                 print('=== label data ===')
                 q_list_label = data[1][0].to(self._device)
