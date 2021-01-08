@@ -17,15 +17,19 @@ class phase_space :
 
     def set_p(self, p_list):
         self._p_list = copy.deepcopy(p_list)
+        #self._p_list = p_list
 
     def set_q(self, q_list):
         self._q_list = copy.deepcopy(q_list)
+        #self._q_list = q_list
     
     def get_p(self):
         return copy.deepcopy(self._p_list) # nsamples N X particle X DIM array
+        #return  self._p_list
 
     def get_q(self):
         return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
+        #return  self._q_list
 
     def read(self, filename, nsamples):
         '''function to read the phase space file, 

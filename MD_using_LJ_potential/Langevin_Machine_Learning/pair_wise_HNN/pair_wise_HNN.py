@@ -75,7 +75,7 @@ class pair_wise_HNN:
         print(q_list, p_list)
 
         N, N_particle, DIM = q_list.shape
-
+        print(q_list.shape)
         delta_init_q = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
         delta_init_p = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
 
