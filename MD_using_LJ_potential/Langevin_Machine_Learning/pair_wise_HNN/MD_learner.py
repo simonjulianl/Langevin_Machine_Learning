@@ -12,7 +12,7 @@ class MD_learner:
 
         #self.linear_integrator = linear_integrator
         self.nepoch = state['epoch']
-        self.optimizer = state['optim']
+        self._optimizer = state['optim']
         self._loss = state['loss']
 
         try:  # data loader and seed setting
@@ -95,11 +95,16 @@ class MD_learner:
 
                 label = (q_list_label, p_list_label)
 
-                #pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
-
                 print('linear integrator')
                 q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)
+                q_list_predict = q_list_predict.reshape(-1,q_list_predict.shape[2],q_list_predict.shape[3])
+                p_list_predict = p_list_predict.reshape(-1, p_list_predict.shape[2], p_list_predict.shape[3])
+
+                # q_list_predict = torch.from_numpy(q_list_predict)
+                # p_list_predict = torch.from_numpy(p_list_predict)
+
                 pred = (q_list_predict, p_list_predict)
+                pred = torch.tensor(pred, requires_grad=True)
 
                 loss = criterion(pred, label)
 
@@ -107,6 +112,8 @@ class MD_learner:
                 loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
                 train_loss = loss.item()  # get the scalar output
                 self._optimizer.step()
+
+                print(e,train_loss)
 
     def step(self,phase_space,pb,tau):
         pairwise_hnn.eval()

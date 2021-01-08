@@ -41,8 +41,8 @@ def linear_velocity_verlet(Hamiltonian, **state) :
 
     print('vv',q,p,tau)
 
-    p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
-    state['phase_space'].set_p(p_list_dummy)
+    # p_list_dummy = np.zeros(p.shape) # to prevent KE from being integrated
+    # state['phase_space'].set_p(p_list_dummy)
 
     p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], pb_q) ) #dp/dt
     print('vv p 1 update',q,p,tau)
