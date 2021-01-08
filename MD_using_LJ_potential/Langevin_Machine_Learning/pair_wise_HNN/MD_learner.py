@@ -91,8 +91,10 @@ class MD_learner:
                 print(q_list,p_list)
 
                 # to integrate
-                self._setting['pos'] = q_list.detach().cpu().numpy()  # convert tensor to numpy
-                self._setting['vel'] = p_list.detach().cpu().numpy()  # convert tensor to numpy
+                # self._setting['pos'] = q_list.detach().cpu().numpy()  # convert tensor to numpy
+                # self._setting['vel'] = p_list.detach().cpu().numpy()  # convert tensor to numpy
+                self._setting['pos'] = q_list
+                self._setting['vel'] = p_list
 
                 print('=== label data ===')
                 q_list_label = data[1][0].to(self._device)

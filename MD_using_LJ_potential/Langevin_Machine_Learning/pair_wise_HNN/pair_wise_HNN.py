@@ -56,7 +56,7 @@ class pair_wise_HNN:
         print(phase_space.get_p())
 
         noML_force = -self.noML_hamiltonian.dHdq(phase_space,pb)
-        #noML_force = torch.from_numpy(noML_force)
+        #noML_force = torch.from_numpy(noML_force).float().requires_grad_(True)
         print('no ML',noML_force)
 
         corrected_force = - ( noML_force + predict )  # code in linear_vv calculates potential. so need minus
