@@ -18,7 +18,6 @@ def linear_velocity_verlet(Hamiltonian, **state) :
     # state['phase_space'].set_p(p_list_dummy)
 
     p = p + tau / 2 * ( -Hamiltonian.dHdq(state['phase_space'], pb) ) #dp/dt
-    print('cor',-Hamiltonian.dHdq(state['phase_space'], pb) )
     print('vv p 1 update',q,p,tau)
 
     state['phase_space'].set_p(p)

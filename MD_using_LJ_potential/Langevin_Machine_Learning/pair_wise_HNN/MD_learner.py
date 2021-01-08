@@ -50,6 +50,7 @@ class MD_learner:
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._current_epoch = 1
 
+        state['_device'] = self._device
         state['tau'] = state['tau'] * state['iterations']  # large time step
         state['iterations'] = int(state['iterations'] / state['iterations'])  # one step
         # init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
@@ -82,11 +83,14 @@ class MD_learner:
             for batch_idx, data in enumerate(self._train_loader):
                 print('batch_idx : {}, batch size : {}'.format(batch_idx, self._batch_size))
 
-                print('=== initial data ===')
-                q_list = data[0][0].to(self._device).requires_grad_(True)
-                p_list = data[0][1].to(self._device).requires_grad_(True)
+                print('=== initial data ===') # shape : nsamples x N_particles x DIM
+                # q_list = data[0][0].to(self._device).requires_grad_(True)
+                # p_list = data[0][1].to(self._device).requires_grad_(True)
+                q_list = data[0][0].to(self._device)
+                p_list = data[0][1].to(self._device)
                 print(q_list,p_list)
 
+                # to integrate
                 self._setting['pos'] = q_list.detach().cpu().numpy()  # convert tensor to numpy
                 self._setting['vel'] = p_list.detach().cpu().numpy()  # convert tensor to numpy
 

@@ -45,7 +45,9 @@ class pair_wise_HNN:
         print(phase_space.get_p())
 
         data = self.phase_space2data(phase_space)
-        data = torch.from_numpy(data).float() # convert numpy to tensor
+        #data = torch.from_numpy(data).float() # convert numpy to tensor
+        data = torch.from_numpy(data).float().requires_grad_(True)
+        print('data',data)
         predict = self.network(data)
         predict = predict.detach().cpu().numpy() # convert tensor to numpy
 
