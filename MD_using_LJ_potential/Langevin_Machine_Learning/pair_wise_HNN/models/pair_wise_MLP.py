@@ -23,7 +23,7 @@ class pair_wise_MLP(nn.Module):
 
         print('MLP',data)
         MLdHdq_ = self.correction_term(data)
-        print('MLP', MLdHdq_)
+        #print('MLP', MLdHdq_)
         MLdHdq_ = MLdHdq_.reshape(3,2,2)  # N_particle, N_particle-1, DIM
         MLdHdq = torch.sum(MLdHdq_, dim=1) # ex) a,b,c three particles;  sum Fa = Fab + Fac
         print('MLP', MLdHdq)

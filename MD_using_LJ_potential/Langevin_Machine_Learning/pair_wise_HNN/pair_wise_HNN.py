@@ -52,8 +52,8 @@ class pair_wise_HNN:
         predict = predict.detach().cpu().numpy() # convert tensor to numpy
 
         print('ML', predict)
-        print(phase_space.get_q())
-        print(phase_space.get_p())
+        # print(phase_space.get_q())
+        # print(phase_space.get_p())
 
         noML_force = -self.noML_hamiltonian.dHdq(phase_space,pb)
         #noML_force = torch.from_numpy(noML_force).float().requires_grad_(True)
