@@ -54,7 +54,7 @@ configuration.update(integration_setting)
 configuration.update(integration_setting)
 
 # noML + ML
-MLP = models.pair_wise_MLP.pair_wise_MLP(5,20)
+MLP = models.pair_wise_MLP.pair_wise_MLP(2*configuration['DIM'] + 1,20)
 pairwise_HNN = pair_wise_HNN.pair_wise_HNN(MLP, **configuration)
 
 loss = qp_MSE_loss
