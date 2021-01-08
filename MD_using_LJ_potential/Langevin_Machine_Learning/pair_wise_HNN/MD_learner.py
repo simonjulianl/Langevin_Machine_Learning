@@ -95,7 +95,7 @@ class MD_learner:
 
                 label = (q_list_label, p_list_label)
 
-                #pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
+                pairwise_hnn.phase_spacedata(q_list, p_list)
 
                 print('linear integrator')
                 q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)

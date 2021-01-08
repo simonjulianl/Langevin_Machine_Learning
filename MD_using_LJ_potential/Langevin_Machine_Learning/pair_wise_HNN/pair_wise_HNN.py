@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import torch
 import numpy as np
+from ..phase_space import phase_space
+from ..hamiltonian.pb import periodic_bc
 
 class pair_wise_HNN:
 
@@ -11,6 +13,8 @@ class pair_wise_HNN:
         '''
         self.network = network
         self.noML_hamiltonian = state['hamiltonian']
+        self.phase_space = phase_space()
+        self.pb = periodic_bc()
         self._state = state
         # self.tau = 0
 
@@ -69,13 +73,20 @@ class pair_wise_HNN:
         #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
         return corrected_force
 
-    # def phase_spacedata(self, init_q, init_p, **state):
-    #
-    #     self.init_q = init_q
-    #     self.init_p = init_p
-    #     self._state = state
-    #
-    #     print('space',self.init_q,self.init_p)
+    def phase_spacedata(self,q_list,p_list):
+
+        print('phase_spacedata')
+        q_list = q_list.detach().cpu().numpy()
+        p_list = p_list.detach().cpu().numpy()
+        self.phase_space.set_q(q_list)
+        self.phase_space.set_p(p_list)
+        print(self.phase_space.get_q())
+        print(self.phase_space.get_p())
+
+        data = self.phase_space2data(self.phase_space)
+
+        return data
+
 
     def phase_space2data(self,phase_space):
 
@@ -84,19 +95,16 @@ class pair_wise_HNN:
         p_list = phase_space.get_p()
         print(q_list, p_list)
 
-        # q_list = q_list.detach().cpu().numpy()
-        # p_list = p_list.detach().cpu().numpy()
+        N, N_particle, DIM = q_list.shape
 
-        N, N_particle, DIM = self.q_list.shape
-
-        delta_init_q = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
-        delta_init_p = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
+        delta_init_q = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
+        delta_init_p = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
 
         for z in range(N):
 
-            delta_init_q_, _ = self._state['pb_q'].paired_distance_reduced(q_list[z]/self._state['BoxSize']) #reduce distance
+            delta_init_q_, _ = self.pb.paired_distance_reduced(q_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_q_ = delta_init_q_ * self._state['BoxSize']
-            delta_init_p_, _ = self._state['pb_q'].paired_distance_reduced(p_list[z]/self._state['BoxSize']) #reduce distance
+            delta_init_p_, _ = self.pb.paired_distance_reduced(p_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_p_ = delta_init_p_ * self._state['BoxSize']
 
             # print('delta_init_q',delta_init_q_)
