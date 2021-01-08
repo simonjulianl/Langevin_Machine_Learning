@@ -4,7 +4,7 @@
 import numpy as np
 
 
-class Hamiltonian:
+class hamiltonian:
     '''Class container for Hamiltonian
 
     Common Parameters
@@ -53,7 +53,8 @@ class Hamiltonian:
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
-        dHdq = np.zeros(q_list.shape)
+        print(q_list)
+        dHdq = np.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:
             # print(term)
