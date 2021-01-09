@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import numpy as np
+import torch
 
 class LJ_term:
     def __init__(self, epsilon : float, sigma : float, boxsize : float):
@@ -27,7 +27,7 @@ class LJ_term:
 
         '''
         xi_state = xi_space.get_q()
-        term = np.zeros(xi_state.shape[0])
+        term = torch.zeros(xi_state.shape[0])
 
         # N : nsamples
         # n_particle : number of particles
@@ -35,20 +35,23 @@ class LJ_term:
 
         N, N_particle, DIM  = xi_state.shape
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / np.power(self._boxsize, 12)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / np.power(self._boxsize, 6)
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
 
         for z in range(N):
 
             _, d = pb.paired_distance_reduced(xi_state[z])
 
-            s12 = 1 /np.power(d,12)
-            s12[~np.isfinite(s12)] = 0
+            print('d',d)
+            s12 = 1 / torch.pow(d,12)
+            print('s12',s12)
+            s12[torch.isinf(s12)] = 0
+            print('s12',s12)
 
-            s6  = 1 /np.power(d,6)
-            s6[~np.isfinite(s6)] = 0
+            s6  = 1 / torch.pow(d,6)
+            s6[torch.isinf(s6)] = 0
 
-            term[z] = np.sum(a12* s12 - a6* s6) * 0.5
+            term[z] = torch.sum(a12* s12 - a6* s6) * 0.5
 
         return term
 
@@ -56,80 +59,90 @@ class LJ_term:
     def evaluate_derivative_q(self,xi_space,pb):
 
         xi_state = xi_space.get_q()
-        dphidxi = np.zeros(xi_state.shape) # derivative terms of nsamples
+        dphidxi = torch.zeros(xi_state.shape) # derivative terms of nsamples
         N, N_particle, DIM  = xi_state.shape
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / np.power(self._boxsize, 13)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / np.power(self._boxsize, 7)
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 13)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 7)
 
         for z in range(N):
 
             delta_xi, d = pb.paired_distance_reduced(xi_state[z])
-            d = np.expand_dims(d,axis=2)
+            d = torch.unsqueeze(d,dim =2)
 
-            s12 = -12*(delta_xi)/np.power(d,14)
-            s12[~np.isfinite(s12)] = 0
+            s12 = -12 * (delta_xi) / torch.pow(d,14)
+            print('s12',s12)
+            s12[torch.isnan(s12)] = 0
+            print('s12',s12)
 
-            s6  = -6*(delta_xi)/np.power(d,8)
-            s6[~np.isfinite(s6)] = 0
-            dphidxi[z] = a12*np.sum(s12,axis=1) - a6*np.sum(s6,axis=1) # np.sum axis=1 j != k
+            s6  = -6 * (delta_xi) / torch.pow(d,8)
+            s6[torch.isnan(s6)] = 0
+            dphidxi[z] = a12*torch.sum(s12,dim=1) - a6*torch.sum(s6,dim=1) # np.sum axis=1 j != k
 
         return dphidxi
 
     def evaluate_second_derivative_q(self,xi_space,pb):
 
         xi_state = xi_space.get_q()
-        d2phidxi2_arr = []
+        d2phidxi2_append = []
 
         N, N_particle, DIM  = xi_state.shape
-        d2phidxi2 = np.zeros((N, N_particle * DIM, N_particle * DIM)) # second derivative terms of nsamples
-        d2phidxi_lk = np.zeros((2,2))
+        d2phidxi2 = torch.zeros((N, N_particle * DIM, N_particle * DIM)) # second derivative terms of nsamples
+        d2phidxi_lk = torch.zeros((2,2))
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / np.power(self._boxsize, 14)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / np.power(self._boxsize, 8)
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 14)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 8)
 
         for z in range(N):
 
-            d2phidxi2_ = np.empty((0, N_particle * DIM))
+            d2phidxi2_ = torch.empty((0, N_particle * DIM))
 
             delta_xi, d = pb.paired_distance_reduced(xi_state[z])
-            d = np.expand_dims(d,axis=2)
+            d = torch.unsqueeze(d,dim=2)
 
-            s12_same_term = 1. / np.power(d,14)
-            s12_same_term[~np.isfinite(s12_same_term)] = 0
+            s12_same_term = 1. / torch.pow(d,14)
+            #print('s12_same_term',s12_same_term)
+            s12_same_term[torch.isinf(s12_same_term)] = 0
+            #print('s12_same_term',s12_same_term)
 
-            s12_lxkx_lyky = (-14) * np.power(delta_xi,2)/np.power(d,2)
-            s12_lxkx_lyky[~np.isfinite(s12_lxkx_lyky)] = 0
+            s12_lxkx_lyky = (-14) * torch.pow(delta_xi,2) / torch.pow(d,2)
+            #print('s12_lxkx_lyky',s12_lxkx_lyky)
+            s12_lxkx_lyky[torch.isnan(s12_lxkx_lyky)] = 0
+            #print('s12_lxkx_lyky',s12_lxkx_lyky)
+            #print('s12_lxkx_lyky',s12_lxkx_lyky.shape)
+            #print('expand s12_lxkx_lyky',torch.unsqueeze(s12_lxkx_lyky ,dim=-1))
 
-            s12_lxky_lykx = 1. /np.power(d,16)
-            s12_lxky_lykx[~np.isfinite(s12_lxky_lykx)] = 0
+            s12_lxky_lykx = 1. / torch.pow(d,16)
+            s12_lxky_lykx[torch.isinf(s12_lxky_lykx)] = 0
+            #print('s12_lxky_lykx',s12_lxky_lykx)
 
-            s6_same_term = 1. / np.power(d,8)
-            s6_same_term[~np.isfinite(s6_same_term)] = 0
+            s6_same_term = 1. / torch.pow(d,8)
+            s6_same_term[torch.isinf(s6_same_term)] = 0
 
-            s6_lxkx_lyky = (-8) * np.power(delta_xi,2)/np.power(d,2)
-            s6_lxkx_lyky[~np.isfinite(s6_lxkx_lyky)] = 0
+            s6_lxkx_lyky = (-8) * torch.pow(delta_xi,2) / torch.pow(d,2)
+            s6_lxkx_lyky[torch.isnan(s6_lxkx_lyky)] = 0
 
-            s6_lxky_lykx = 1. /np.power(d,10)
-            s6_lxky_lykx[~np.isfinite(s6_lxky_lykx)] = 0
+            s6_lxky_lykx = 1. / torch.pow(d,10)
+            s6_lxky_lykx[torch.isinf(s6_lxky_lykx)] = 0
 
             for l in range(N_particle):
                 for k in range(N_particle):
 
                     if l == k:
-                        d2phidxi_lxkx = a12 *(-12)* (np.sum(s12_same_term[k] * np.expand_dims(s12_lxkx_lyky[k,:,0],axis=2) + s12_same_term[k],axis=0)) \
-                                        - a6 *(-6)* (np.sum(s6_same_term[k] * np.expand_dims(s6_lxkx_lyky[k,:,0],axis=2) + s6_same_term[k],axis=0))
+                        d2phidxi_lxkx = a12 *(-12)* (torch.sum(s12_same_term[k] * torch.unsqueeze(s12_lxkx_lyky[k,:,0],dim=-1) + s12_same_term[k],dim=0)) \
+                                        - a6 *(-6)* (torch.sum(s6_same_term[k] * torch.unsqueeze(s6_lxkx_lyky[k,:,0],dim=-1) + s6_same_term[k],dim=0))
 
-                        d2phidxi_lxky = a12 * (-12)*(-14)*(np.sum(s12_lxky_lykx[k]*np.expand_dims(delta_xi[k,:,0],axis=2)*np.expand_dims(delta_xi[k,:,1],axis=2),axis=0))  \
-                                        - a6 * (-6)*(-8)*(np.sum(s6_lxky_lykx[k]*np.expand_dims(delta_xi[k,:,0],axis=2)*np.expand_dims(delta_xi[k,:,1],axis=2),axis=0))
+                        d2phidxi_lxky = a12 * (-12)*(-14)*(torch.sum(s12_lxky_lykx[k]*torch.unsqueeze(delta_xi[k,:,0],dim=-1)*torch.unsqueeze(delta_xi[k,:,1],dim=-1),dim=0))  \
+                                        - a6 * (-6)*(-8)*(torch.sum(s6_lxky_lykx[k]*torch.unsqueeze(delta_xi[k,:,0],dim=-1)*torch.unsqueeze(delta_xi[k,:,1],dim=-1),dim=0))
 
-                        d2phidxi_lykx = a12 * (-12)*(-14)*(np.sum(s12_lxky_lykx[k]*np.expand_dims(delta_xi[k,:,0],axis=2)*np.expand_dims(delta_xi[k,:,1],axis=2),axis=0)) \
-                                        - a6 * (-6)*(-8)*(np.sum(s6_lxky_lykx[k]*np.expand_dims(delta_xi[k,:,0],axis=2)*np.expand_dims(delta_xi[k,:,1],axis=2),axis=0))
+                        d2phidxi_lykx = a12 * (-12)*(-14)*(torch.sum(s12_lxky_lykx[k]*torch.unsqueeze(delta_xi[k,:,0],dim=-1)*torch.unsqueeze(delta_xi[k,:,1],dim=-1),dim=0)) \
+                                        - a6 * (-6)*(-8)*(torch.sum(s6_lxky_lykx[k]*torch.unsqueeze(delta_xi[k,:,0],dim=-1)*torch.unsqueeze(delta_xi[k,:,1],dim=-1),dim=0))
 
-                        d2phidxi_lyky = a12 *(-12)* (np.sum(s12_same_term[k] * np.expand_dims(s12_lxkx_lyky[k,:,1],axis=2) + s12_same_term[k],axis=0)) \
-                                        - a6 *(-6)* (np.sum(s6_same_term[k] * np.expand_dims(s6_lxkx_lyky[k,:,1],axis=2) + s6_same_term[k],axis=0))
+                        d2phidxi_lyky = a12 *(-12)* (torch.sum(s12_same_term[k] * torch.unsqueeze(s12_lxkx_lyky[k,:,1],dim=-1) + s12_same_term[k],dim=0)) \
+                                        - a6 *(-6)* (torch.sum(s6_same_term[k] * torch.unsqueeze(s6_lxkx_lyky[k,:,1],dim=-1) + s6_same_term[k],dim=0))
 
-                        d2phidxi_lk = np.array((d2phidxi_lxkx[0], d2phidxi_lxky[0], d2phidxi_lykx[0], d2phidxi_lyky[0])).reshape(2, 2)
+                        d2phidxi_lk = torch.tensor((d2phidxi_lxkx[0], d2phidxi_lxky[0], d2phidxi_lykx[0], d2phidxi_lyky[0])).reshape(2, 2)
+                        #print('l=k d2phidxi_lk',d2phidxi_lk)
 
                     if l != k:
                         d2phidxi_lxkx = - a12 *(-12)* s12_same_term[k][l] *( s12_lxkx_lyky[k][l][0] + 1) \
@@ -144,16 +157,23 @@ class LJ_term:
                         d2phidxi_lyky = - a12 *(-12)* s12_same_term[k][l] * ( s12_lxkx_lyky[k][l][1]  + 1) \
                                         + a6 *(-6)* s6_same_term[k][l]  * ( s6_lxkx_lyky[k][l][1] + 1)
 
-                        d2phidxi_lk = np.array((d2phidxi_lxkx[0],d2phidxi_lxky[0],d2phidxi_lykx[0],d2phidxi_lyky[0])).reshape(2,2)
+                        d2phidxi_lk = torch.tensor((d2phidxi_lxkx[0],d2phidxi_lxky[0],d2phidxi_lykx[0],d2phidxi_lyky[0])).reshape(2,2)
+                        #print('l != k d2phidxi_lk',d2phidxi_lk)
 
-                    d2phidxi2_arr.append(d2phidxi_lk)
+                    d2phidxi2_append.append(d2phidxi_lk)
+                    #print('d2phidxi2_append',d2phidxi2_append)
 
                 if k == N_particle-1:
-                    temp = np.array(d2phidxi2_arr)
-                    temp = temp.transpose((1,0,2)).reshape(2, N_particle * DIM )
-                    d2phidxi2_arr = []
+                    temp = torch.stack(d2phidxi2_append,dim=0)
+                    #print('temp',temp)
+                    #print('temp', temp.shape)
+                    #print('temp',temp.permute((1,0,2)))
+                    temp = temp.permute((1,0,2)).reshape(2, N_particle * DIM )
+                    #print('reshape',temp)
+                    d2phidxi2_append = []
 
-                d2phidxi2_ = np.append(d2phidxi2_,temp,axis=0)
+                d2phidxi2_ = torch.cat((d2phidxi2_,temp),dim=0)
+                #print('d2phidxi2_',d2phidxi2_)
 
             d2phidxi2[z] = d2phidxi2_
 
