@@ -71,14 +71,14 @@ class LJ_term:
             d = torch.unsqueeze(d,dim =2)
 
             s12 = -12 * (delta_xi) / torch.pow(d,14)
-            print('s12',s12)
+            #print('s12',s12)
             s12[torch.isnan(s12)] = 0
-            print('s12',s12)
+            #print('s12',s12)
 
             s6  = -6 * (delta_xi) / torch.pow(d,8)
             s6[torch.isnan(s6)] = 0
             dphidxi[z] = a12*torch.sum(s12,dim=1) - a6*torch.sum(s6,dim=1) # np.sum axis=1 j != k
-
+            print('dH/dq',dphidxi[z])
         return dphidxi
 
     def evaluate_second_derivative_q(self,xi_space,pb):

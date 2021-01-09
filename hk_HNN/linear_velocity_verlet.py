@@ -50,9 +50,11 @@ def linear_velocity_verlet(**state):
     print('update p', p)
 
     q = q + tau * p  # dq/dt = dK/dp = p
+    print('before adjust q',q)
 
     pb_q.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
+
 
     print('update q', q)
 

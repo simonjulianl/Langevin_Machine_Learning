@@ -14,9 +14,8 @@ class pb:
 
     def debug_pbc(self,q,boxsize):
 
-        print(q)
         bool = torch.abs(q) > 0.5*boxsize
-        print(bool.any())
+        #print(bool.any())
         if bool.any() == True: # if values have any above condition, return true.
             index = torch.where(torch.abs(q)>0.5*boxsize)
             debug = q[index]
@@ -34,7 +33,7 @@ class pb:
     def debug_pbc_max_distance(self,q):
 
         boxsize = 1
-        max_distance = torch.sqrt(boxsize/2.*boxsize/2. + boxsize/2.*boxsize/2.)
+        max_distance = torch.sqrt(boxsize/2. * boxsize/2. + boxsize/2. * boxsize/2.)
         index = torch.where(torch.abs(q)>max_distance)
         debug = q[index]
         if debug.any():
@@ -44,23 +43,23 @@ class pb:
     # HK def paired_distance_reduced(self,q,q_adj):
     def paired_distance_reduced(self,q):
 
-        print("==pb==")
-        print('dimensionless', q)
+        #print("==pb==")
+        #print('dimensionless', q)
         qlen = q.shape[0]
         q0 = torch.unsqueeze(q,dim=0)
         qm = torch.repeat_interleave(q0,qlen,dim=0)
-        print(qm)
+        #print(qm)
         qt = qm.permute(1,0,2)
-        print(qt)
+        #print(qt)
         dq = qt - qm
-        print(dq)
-        print(dq.shape)
+        #print(dq)
+        #print(dq.shape)
         indices = torch.where(torch.abs(dq)>0.5)
-        print(indices)
-        print(dq[indices])
+        #print(indices)
+        #print(dq[indices])
         #dq[indices] = dq[indices] - torch.copysign(1.0, dq[indices])
         dq[indices] = dq[indices] - torch.round(dq[indices])
-        print(dq)
+        #print(dq)
         dd = torch.sqrt(torch.sum(dq*dq,dim=2))
 
         return dq, dd
