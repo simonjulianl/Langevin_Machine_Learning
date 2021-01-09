@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import torch
 import numpy as np
+from ..phase_space import phase_space
+from ..hamiltonian.pb import periodic_bc
 
 class pair_wise_HNN:
 
@@ -11,6 +13,8 @@ class pair_wise_HNN:
         '''
         self.network = network
         self.noML_hamiltonian = state['hamiltonian']
+        self.phase_space = phase_space()
+        self.pb = periodic_bc()
         self._state = state
         # self.tau = 0
 
@@ -41,17 +45,20 @@ class pair_wise_HNN:
         print(phase_space.get_p())
 
         data = self.phase_space2data(phase_space)
-        #data = torch.from_numpy(self.input_data()).float()
+        #data = torch.from_numpy(data).float() # convert numpy to tensor
+        data = torch.from_numpy(data).float().requires_grad_(True)
+        print('data',data)
         predict = self.network(data)
-        predict = predict.detach().cpu().numpy()
+        predict = predict.detach().cpu().numpy() # convert tensor to numpy
 
         print('ML', predict)
-        print(phase_space.get_q())
-        print(phase_space.get_p())
+        # print(phase_space.get_q())
+        # print(phase_space.get_p())
 
-        noML_force = self.noML_hamiltonian.dHdq(phase_space,pb)
-        #noML_force = torch.from_numpy(noML_force)
+        noML_force = -self.noML_hamiltonian.dHdq(phase_space,pb)
+        #noML_force = torch.from_numpy(noML_force).float().requires_grad_(True)
         print('no ML',noML_force)
+
 
         print('==after dHdq ==') #### dimensionless ....
         q_list = phase_space.get_q()*self._state['BoxSize']
@@ -63,19 +70,15 @@ class pair_wise_HNN:
 
         corrected_force = noML_force + predict
 
+
+        corrected_force = - ( noML_force + predict )  # code in linear_vv calculates potential. so need minus
+        print('corrected_force',corrected_force)
+
         # print('noML',noMLdHdq)
         # # print('ML',self.MLdHdq)
         # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
         #return noMLdHdq + self.MLdHdq.detach().cpu().numpy()
         return corrected_force
-
-    # def phase_spacedata(self, init_q, init_p, **state):
-    #
-    #     self.init_q = init_q
-    #     self.init_p = init_p
-    #     self._state = state
-    #
-    #     print('space',self.init_q,self.init_p)
 
     def phase_space2data(self,phase_space):
 
@@ -84,19 +87,16 @@ class pair_wise_HNN:
         p_list = phase_space.get_p()
         print(q_list, p_list)
 
-        # q_list = q_list.detach().cpu().numpy()
-        # p_list = p_list.detach().cpu().numpy()
-
-        N, N_particle, DIM = self.q_list.shape
-
-        delta_init_q = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
-        delta_init_p = np.zeros( (self._state['N'], self._state['particle'] , (self._state['particle'] - 1), self._state['DIM']) )
+        N, N_particle, DIM = q_list.shape
+        print(q_list.shape)
+        delta_init_q = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
+        delta_init_p = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
 
         for z in range(N):
 
-            delta_init_q_, _ = self._state['pb_q'].paired_distance_reduced(q_list[z]/self._state['BoxSize']) #reduce distance
+            delta_init_q_, _ = self.pb.paired_distance_reduced(q_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_q_ = delta_init_q_ * self._state['BoxSize']
-            delta_init_p_, _ = self._state['pb_q'].paired_distance_reduced(p_list[z]/self._state['BoxSize']) #reduce distance
+            delta_init_p_, _ = self.pb.paired_distance_reduced(p_list[z]/self._state['BoxSize']) #reduce distance
             delta_init_p_ = delta_init_p_ * self._state['BoxSize']
 
             # print('delta_init_q',delta_init_q_)

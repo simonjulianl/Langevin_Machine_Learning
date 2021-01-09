@@ -12,7 +12,7 @@ class MD_learner:
 
         #self.linear_integrator = linear_integrator
         self.nepoch = state['epoch']
-        self.optimizer = state['optim']
+        self._optimizer = state['optim']
         self._loss = state['loss']
 
         try:  # data loader and seed setting
@@ -50,10 +50,11 @@ class MD_learner:
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._current_epoch = 1
 
+        state['_device'] = self._device
         state['tau'] = state['tau'] * state['iterations']  # large time step
         state['iterations'] = int(state['iterations'] / state['iterations'])  # one step
-        init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
-        state['pos'] = init_q; state['vel'] = init_p
+        # init_q, init_p = linear_integrator(**state).set_phase_space(nsamples = self._sample)
+        #
 
         self._setting = state  # save the setting
 
@@ -82,10 +83,18 @@ class MD_learner:
             for batch_idx, data in enumerate(self._train_loader):
                 print('batch_idx : {}, batch size : {}'.format(batch_idx, self._batch_size))
 
-                print('=== initial data ===')
-                q_list = data[0][0].to(self._device).requires_grad_(True)
-                p_list = data[0][1].to(self._device).requires_grad_(True)
+                print('=== initial data ===') # shape : nsamples x N_particles x DIM
+                # q_list = data[0][0].to(self._device).requires_grad_(True)
+                # p_list = data[0][1].to(self._device).requires_grad_(True)
+                q_list = data[0][0].to(self._device)
+                p_list = data[0][1].to(self._device)
                 print(q_list,p_list)
+
+                # to integrate
+                # self._setting['pos'] = q_list.detach().cpu().numpy()  # convert tensor to numpy
+                # self._setting['vel'] = p_list.detach().cpu().numpy()  # convert tensor to numpy
+                self._setting['pos'] = q_list
+                self._setting['vel'] = p_list
 
                 print('=== label data ===')
                 q_list_label = data[1][0].to(self._device)
@@ -95,11 +104,16 @@ class MD_learner:
 
                 label = (q_list_label, p_list_label)
 
-                #pairwise_hnn.phase_spacedata(q_list, p_list, **self._setting)
-
                 print('linear integrator')
                 q_list_predict, p_list_predict = linear_integrator(**self._setting).integrate(pairwise_hnn, multicpu=False)
+                q_list_predict = q_list_predict.reshape(-1,q_list_predict.shape[2],q_list_predict.shape[3])
+                p_list_predict = p_list_predict.reshape(-1, p_list_predict.shape[2], p_list_predict.shape[3])
+
+                # q_list_predict = torch.from_numpy(q_list_predict)
+                # p_list_predict = torch.from_numpy(p_list_predict)
+
                 pred = (q_list_predict, p_list_predict)
+                pred = torch.tensor(pred, requires_grad=True)
 
                 loss = criterion(pred, label)
 
@@ -107,6 +121,8 @@ class MD_learner:
                 loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
                 train_loss = loss.item()  # get the scalar output
                 self._optimizer.step()
+
+                print(e,train_loss)
 
     def step(self,phase_space,pb,tau):
         pairwise_hnn.eval()

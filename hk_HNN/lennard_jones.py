@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-class Lennard_Jones():
+class lennard_jones():
     def __init__(self, phi, boxsize):
         self.phi = phi
         self.boxsize = boxsize
@@ -15,12 +15,16 @@ class Lennard_Jones():
         return phase_space
 
     def energy(self, phase_space, pb): # phase space is real-space-unit
+        # print(phase_space.get_q())
         xi_space = self.dimensionless(phase_space)
         return self.phi.energy(xi_space,pb)
 
     def evaluate_derivative_q(self, phase_space,pb):
+        print('eval deri ',phase_space.get_q())
         xi_space = self.dimensionless(phase_space)
+        print('xi_space',xi_space.get_q())
         dphidq = self.phi.evaluate_derivative_q(xi_space,pb)
+        print('dphidq',dphidq)
         return dphidq
 
     def evaluate_second_derivative_q(self, phase_space,pb):

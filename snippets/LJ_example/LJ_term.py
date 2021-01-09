@@ -29,7 +29,7 @@ class LJ_term(Interaction):
 
         super().__init__('1.0 / q ** {0} '.format(self._exponent))
         self.parameter_term = (4*self._epsilon)*((self._sigma/self._boxsize)**self._exponent )
-        print('Lennard_Jones.py call LJ potential')
+        print('lennard_jones.py call LJ potential')
         self._name = 'Lennard Jones Potential'
         #since interaction is a function of r or delta q instead of q, we need to modift the data
 
@@ -53,12 +53,12 @@ class LJ_term(Interaction):
         for z in range(N):
             pb.adjust(xi_state[z])
             _, q = pb.paired_distance(xi_state[z])  # q=dd=[[0, sqrt((dx)^2+(dy)^2)],[sqrt((dx)^2+(dy)^2),0]]
-            print('Lennard_Jones.py evaluate_xi', self._expression)   # 1.0 / q ** 6.0
-            print('Lennard_Jones.py evaluate_xi eval', eval(self._expression))  #[[inf,eval(LJ)],[eval(LJ),inf]]
+            print('lennard_jones.py evaluate_xi', self._expression)   # 1.0 / q ** 6.0
+            print('lennard_jones.py evaluate_xi eval', eval(self._expression))  #[[inf,eval(LJ)],[eval(LJ),inf]]
             LJ = eval(self._expression)
             LJ[~np.isfinite(LJ)] = 0
             term[z] = np.sum(LJ)*0.5
-            print('Lennard_Jones.py term', term[z])
+            print('lennard_jones.py term', term[z])
 
         term = term * self.parameter_term
         return term
@@ -77,21 +77,21 @@ class LJ_term(Interaction):
         p_state  = phase_space.get_p()
         dphidxi = np.zeros(xi_state.shape) #derivative of separable term in N X DIM matrix
         N, N_particle,DIM  = xi_state.shape
-        print('Lennard_Jones.py evaluate_derivative_q xi_state',xi_state)
+        print('lennard_jones.py evaluate_derivative_q xi_state',xi_state)
 
         for z in range(N):
             pb.adjust(xi_state[z])
             # delta_xi = [[x2-x1,y2-y1],[x1-x2,y1-y2]]
             # q=dd=[[0, sqrt((dx)^2+(dy)^2)],[sqrt((dx)^2+(dy)^2),0]]
             delta_xi, q = pb.paired_distance(xi_state[z])
-            print('Lennard_Jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
+            print('lennard_jones.py evaluate_derivative_q derivative_xi', self._derivative_q)
             dphidq = eval(self._derivative_q)   # -6.0*q**(-7.0) = -6.0*xi**(-7.0)
             dphidq[~np.isfinite(dphidq)] = 0
-            print('Lennard_Jones.py evaluate_derivative_q dphidq', dphidq)  #[[0,eval(derivative_LJ)],[eval(derivative_LJ),0]]
+            print('lennard_jones.py evaluate_derivative_q dphidq', dphidq)  #[[0,eval(derivative_LJ)],[eval(derivative_LJ),0]]
             dphidxi[z] = np.sum(dphidq,axis=1) * delta_xi / np.sum(q,axis=1)  # dphidxi = [[dphi/x1,dph/y1],[dphi/x2,dph/y2]]
 
         dphidxi = dphidxi * (self.parameter_term / self._boxsize )
-        print('Lennard_Jones.py evaluate_derivative_q dHdq end', dphidxi)
-        #print('Lennard_Jones.py evaluate_derivative_q dHdq end', dHdq)
+        print('lennard_jones.py evaluate_derivative_q dHdq end', dphidxi)
+        #print('lennard_jones.py evaluate_derivative_q dHdq end', dHdq)
         return dphidxi
 
