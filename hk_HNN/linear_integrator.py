@@ -5,21 +5,19 @@
 
 import numpy as np
 from tqdm import trange
-from .base_simulation import Integration
+
 import multiprocessing
 import copy
 
 
-class linear_integrator(Integration):
+class linear_integrator:
 
     def helper(self=None):
         '''print the common parameters helper'''
         for parent in linear_integrator.__bases__:
             print(help(parent))
 
-    def __init__(self, *args, **kwargs) -> object:
-
-        super(linear_integrator, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
 
         # Configuration settings
         try:
