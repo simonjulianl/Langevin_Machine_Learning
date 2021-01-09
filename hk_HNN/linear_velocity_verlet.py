@@ -35,24 +35,31 @@ def linear_velocity_verlet(**state):
     # get all the constants
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
+    print('vv', q, p)
 
-    Hamiltonian = state['generic_hamiltonian']
+    hamiltonian = state['hamiltonian']
+
     tau = state['tau']
     pb_q = state['pb_q']
     boxsize = state['BoxSize']
 
-    p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
-    state['phase_space'].set_p(p_list_dummy)
+    # p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
+    # state['phase_space'].set_p(p_list_dummy)
 
-    p = p + tau / 2 * (-Hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    p = p + tau / 2 * (-hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    print('update p', p)
+
     q = q + tau * p  # dq/dt = dK/dp = p
 
     pb_q.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
 
+    print('update q', q)
+
     pb_q.debug_pbc(q, boxsize)
 
-    p = p + tau / 2 * (-Hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    p = p + tau / 2 * (-hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    print('update p', p)
 
     state['phase_space'].set_q(q);
     state['phase_space'].set_p(p)  # update state after 1 step
