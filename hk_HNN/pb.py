@@ -41,7 +41,7 @@ class pb:
             raise ValueError('pbc reduced max distnace not applied')
 
     # HK def paired_distance_reduced(self,q,q_adj):
-    def paired_distance_reduced(self,q):
+    def paired_distance_reduced(self,q, N_particle, DIM):
 
         #print("==pb==")
         #print('dimensionless', q)
@@ -52,15 +52,20 @@ class pb:
         qt = qm.permute(1,0,2)
         #print(qt)
         dq = qt - qm
-        #print(dq)
+
         #print(dq.shape)
         indices = torch.where(torch.abs(dq)>0.5)
         #print(indices)
         #print(dq[indices])
         #dq[indices] = dq[indices] - torch.copysign(1.0, dq[indices])
         dq[indices] = dq[indices] - torch.round(dq[indices])
-        #print(dq)
+        print('pb dq',dq)
+
+        dq = dq[dq.nonzero(as_tuple=True)].reshape(N_particle, N_particle - 1, DIM)
+        print('pb dq', dq)
+        print('pb dq', dq.shape)
         dd = torch.sqrt(torch.sum(dq*dq,dim=2))
+        print('pb dd',dd)
 
         return dq, dd
 

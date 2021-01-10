@@ -29,12 +29,12 @@ class linear_integrator:
         #     raise TypeError('Integration setting error ( iterations / gamma / tau /integrator_method )')
 
         # Seed Setting
-        seed = kwargs.get('seed', 937162211)
-        np.random.seed(seed)
+        # seed = kwargs.get('seed', 937162211)
+        # np.random.seed(seed)
 
         self._configuration = kwargs
 
-    def integrate(self):
+    def integrate(self, Hamiltonian):
 
         # obtain all the constants
         N = self._configuration['N']  # total number of samples
@@ -50,14 +50,19 @@ class linear_integrator:
         p_list = torch.zeros((self._configuration['iterations'], N, particle, DIM))
 
         print('Not multicpu')
+        print(self._configuration)
 
         for i in trange(self._configuration['iterations']):
             print('iteration {}'.format(i))
-            self._configuration = integrator_method(**self._configuration)
-
+            print('inside',Hamiltonian)
+            print('integrator',integrator_method)
+            self._configuration = integrator_method(Hamiltonian, **self._configuration)
+            #print('linear update',self._configuration)
             q_list[i] = self._configuration['phase_space'].get_q()
             p_list[i] = self._configuration['phase_space'].get_p()  # sample
 
+
+        #print(q_list,p_list)
 
         if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
             raise ArithmeticError('Numerical Integration error, nan is detected')

@@ -10,7 +10,7 @@ Created on Mon Jun  8 11:34:53 2020
 import numpy as np
 
 
-def linear_velocity_verlet(**state):
+def linear_velocity_verlet(Hamiltonian, **state):
     '''
     velocity verlet integrator method
 
@@ -37,7 +37,7 @@ def linear_velocity_verlet(**state):
     p = state['phase_space'].get_p()
     print('vv', q, p)
 
-    hamiltonian = state['hamiltonian']
+    # hamiltonian = state['hamiltonian']
 
     tau = state['tau']
     pb_q = state['pb_q']
@@ -46,7 +46,7 @@ def linear_velocity_verlet(**state):
     # p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
     # state['phase_space'].set_p(p_list_dummy)
 
-    p = p + tau / 2 * (-hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    p = p + tau / 2 * (-Hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
     print('update p', p)
 
     q = q + tau * p  # dq/dt = dK/dp = p
@@ -55,12 +55,11 @@ def linear_velocity_verlet(**state):
     pb_q.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
 
-
     print('update q', q)
 
     pb_q.debug_pbc(q, boxsize)
 
-    p = p + tau / 2 * (-hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
+    p = p + tau / 2 * (-Hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
     print('update p', p)
 
     state['phase_space'].set_q(q);
