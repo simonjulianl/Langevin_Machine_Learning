@@ -104,16 +104,19 @@ class LJ_term:
 
             s12_same_term = 1. / pow(d,14)
             print('s12_same_term',s12_same_term)
+            print('s12_same_term', s12_same_term.shape)
             # s12_same_term[torch.isinf(s12_same_term)] = 0
             #print('s12_same_term',s12_same_term)
 
             s12_lxkx_lyky = (-14) * torch.pow(delta_xi,2) / torch.pow(d,2)
             print('s12_lxkx_lyky',s12_lxkx_lyky)
+            print('s12_lxkx_lyky', s12_lxkx_lyky.shape)
             # s12_lxkx_lyky[torch.isnan(s12_lxkx_lyky)] = 0
 
             s12_lxky_lykx = 1. / pow(d,16)
             # s12_lxky_lykx[torch.isinf(s12_lxky_lykx)] = 0
             print('s12_lxky_lykx',s12_lxky_lykx)
+            print('s12_lxky_lykx', s12_lxky_lykx.shape)
 
             s6_same_term = 1. / pow(d,8)
             # s6_same_term[torch.isinf(s6_same_term)] = 0
@@ -125,7 +128,7 @@ class LJ_term:
             # s6_lxky_lykx[torch.isinf(s6_lxky_lykx)] = 0
 
             for l in range(N_particle):
-                for k in range(N_particle):
+                for k in range(N_particle-1):
 
                     if l == k:
                         d2phidxi_lxkx = a12 *(-12)* (torch.sum(s12_same_term[k] * torch.unsqueeze(s12_lxkx_lyky[k,:,0],dim=-1) + s12_same_term[k],dim=0)) \
@@ -141,7 +144,7 @@ class LJ_term:
                                         - a6 *(-6)* (torch.sum(s6_same_term[k] * torch.unsqueeze(s6_lxkx_lyky[k,:,1],dim=-1) + s6_same_term[k],dim=0))
 
                         d2phidxi_lk = torch.tensor((d2phidxi_lxkx[0], d2phidxi_lxky[0], d2phidxi_lykx[0], d2phidxi_lyky[0])).reshape(2, 2)
-                        #print('l=k d2phidxi_lk',d2phidxi_lk)
+                        print('l=k d2phidxi_lk',d2phidxi_lk)
 
                     if l != k:
                         d2phidxi_lxkx = - a12 *(-12)* s12_same_term[k][l] *( s12_lxkx_lyky[k][l][0] + 1) \
@@ -157,7 +160,7 @@ class LJ_term:
                                         + a6 *(-6)* s6_same_term[k][l]  * ( s6_lxkx_lyky[k][l][1] + 1)
 
                         d2phidxi_lk = torch.tensor((d2phidxi_lxkx[0],d2phidxi_lxky[0],d2phidxi_lykx[0],d2phidxi_lyky[0])).reshape(2,2)
-                        #print('l != k d2phidxi_lk',d2phidxi_lk)
+                        print('l != k d2phidxi_lk',d2phidxi_lk)
 
                     d2phidxi2_append.append(d2phidxi_lk)
                     #print('d2phidxi2_append',d2phidxi2_append)
