@@ -52,15 +52,28 @@ class pair_wise_HNN:
         predict = predict.detach().cpu().numpy() # convert tensor to numpy
 
         print('ML', predict)
-        print(phase_space.get_q())
-        print(phase_space.get_p())
+        # print(phase_space.get_q())
+        # print(phase_space.get_p())
 
         noML_force = -self.noML_hamiltonian.dHdq(phase_space,pb)
-        #noML_force = torch.from_numpy(noML_force)
+        #noML_force = torch.from_numpy(noML_force).float().requires_grad_(True)
         print('no ML',noML_force)
+
+
+        print('==after dHdq ==') #### dimensionless ....
+        q_list = phase_space.get_q()*self._state['BoxSize']
+        p_list = phase_space.get_p()*self._state['BoxSize']
+
+        phase_space.set_q(q_list)
+        phase_space.set_p(p_list)
+
+
+        corrected_force = noML_force + predict
+
 
         corrected_force = - ( noML_force + predict )  # code in linear_vv calculates potential. so need minus
         print('corrected_force',corrected_force)
+
         # print('noML',noMLdHdq)
         # # print('ML',self.MLdHdq)
         # print('noML+ML',noMLdHdq + self.MLdHdq.detach().cpu().numpy())
@@ -75,7 +88,7 @@ class pair_wise_HNN:
         print(q_list, p_list)
 
         N, N_particle, DIM = q_list.shape
-
+        print(q_list.shape)
         delta_init_q = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
         delta_init_p = np.zeros( (N, N_particle, (N_particle - 1), DIM) )
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import torch
 import copy
 
 class phase_space :
@@ -16,20 +16,20 @@ class phase_space :
         self._p_list = None
 
     def set_p(self, p_list):
-        self._p_list = copy.deepcopy(p_list)
-        #self._p_list = p_list
+        # self._p_list = copy.deepcopy(p_list)
+        self._p_list = p_list.clone()
 
     def set_q(self, q_list):
-        self._q_list = copy.deepcopy(q_list)
-        #self._q_list = q_list
+        # self._q_list = copy.deepcopy(q_list)
+        self._q_list = q_list.clone()
     
     def get_p(self):
-        return copy.deepcopy(self._p_list) # nsamples N X particle X DIM array
-        #return  self._p_list
+        # return copy.deepcopy(self._p_list) # nsamples N X particle X DIM array
+        return self._p_list.clone()
 
     def get_q(self):
-        return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
-        #return  self._q_list
+        # return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
+        return self._q_list.clone()
 
     def read(self, filename, nsamples):
         '''function to read the phase space file, 
@@ -42,10 +42,10 @@ class phase_space :
         nsamples : int
             nsamples per file , default everything (-1)
         '''
-        phase_space = np.load(filename)
+        phase_space = torch.load(filename)
 
-        self._q_list = np.array(phase_space[0][:nsamples])
-        self._p_list = np.array(phase_space[1][:nsamples])
+        self._q_list = torch.tensor(phase_space[0][:nsamples])
+        self._p_list = torch.tensor(phase_space[1][:nsamples])
         
         try : 
             assert self._q_list.shape == self._p_list.shape

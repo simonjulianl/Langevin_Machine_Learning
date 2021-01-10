@@ -27,7 +27,7 @@ def linear_velocity_verlet(Hamiltonian, **state) :
     pb.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
 
-    pb.debug_pbc(q, boxsize)
+    #pb.debug_pbc(q, boxsize)
 
     print('vv q update',q,p,tau)
 

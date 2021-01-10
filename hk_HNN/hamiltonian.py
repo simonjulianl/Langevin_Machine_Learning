@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import torch
 
 
-class Hamiltonian:
+class hamiltonian:
     '''Class container for Hamiltonian
 
     Common Parameters
@@ -53,12 +53,13 @@ class Hamiltonian:
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
-        dHdq = np.zeros(q_list.shape)
+        print(q_list)
+        dHdq = torch.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:
-            # print(term)
+            print(term)
             dHdq += term.evaluate_derivative_q(phase_space, pb)
-            # print(dHdq)
+            print(dHdq)
         return dHdq
 
     def d2Hdq2(self, phase_space, pb):
@@ -73,7 +74,7 @@ class Hamiltonian:
         q_list = phase_space.get_q()
 
         N, N_particle, DIM = q_list.shape
-        d2Hdq2 = np.zeros((N, DIM * N_particle, DIM * N_particle))
+        d2Hdq2 = torch.zeros((N, DIM * N_particle, DIM * N_particle))
 
         for term in self.hamiltonian_terms:
             d2Hdq2 += term.evaluate_second_derivative_q(phase_space, pb)

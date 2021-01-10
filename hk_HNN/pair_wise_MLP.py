@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
 
 class pair_wise_MLP(nn.Module):
 
@@ -10,18 +9,17 @@ class pair_wise_MLP(nn.Module):
         self.correction_term = nn.Sequential(
             nn.Linear(n_input, n_hidden),
             nn.Tanh(),
-            nn.Linear(n_hidden, n_hidden),
-            nn.Tanh(),
-            nn.Linear(n_hidden, n_hidden),
-            nn.Tanh(),
             nn.Linear(n_hidden, 2)
         )
 
-    def forward(self,data): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
+    def forward(self,data, N_particle, DIM): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
 
         MLdHdq_ = self.correction_term(data)
-        MLdHdq_ = MLdHdq_.reshape(3,2,2)  # N_particle, N_particle-1, DIM
-
+        print('w 1',self.correction_term[0].weight)
+        print('w 2', self.correction_term[2].weight)
+        print('MLP',MLdHdq_)
+        MLdHdq_ = MLdHdq_.reshape(N_particle, N_particle-1, DIM)  # N_particle, N_particle-1, DIM
+        # print('MLP',MLdHdq_)
         MLdHdq = torch.sum(MLdHdq_, dim=1) # ex) a,b,c three particles;  sum Fa = Fab + Fac
-
+        print('MLP',MLdHdq)
         return MLdHdq

@@ -13,7 +13,7 @@ class LJ_term:
         except :
             raise Exception('sigma / epsilon rror')
 
-        print('Lennard_Jones.py call LJ potential')
+        print('lennard_jones.py call LJ potential')
         self._name = 'Lennard Jones Potential'
 
     def energy(self, xi_space, pb):
