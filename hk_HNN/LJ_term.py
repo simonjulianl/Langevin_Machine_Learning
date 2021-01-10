@@ -68,6 +68,7 @@ class LJ_term:
 
             delta_xi, d = pb.paired_distance_reduced(xi_state[z],N_particle,DIM)
             d = torch.unsqueeze(d,dim =2)
+            print('d expand',d)
             print(delta_xi.shape)
 
             print('delta_xi',delta_xi)
@@ -128,7 +129,8 @@ class LJ_term:
             # s6_lxky_lykx[torch.isinf(s6_lxky_lykx)] = 0
 
             for l in range(N_particle):
-                for k in range(N_particle-1):
+                j = 0
+                for k in range(N_particle):
 
                     if l == k:
                         d2phidxi_lxkx = a12 *(-12)* (torch.sum(s12_same_term[k] * torch.unsqueeze(s12_lxkx_lyky[k,:,0],dim=-1) + s12_same_term[k],dim=0)) \
@@ -147,21 +149,24 @@ class LJ_term:
                         print('l=k d2phidxi_lk',d2phidxi_lk)
 
                     if l != k:
-                        d2phidxi_lxkx = - a12 *(-12)* s12_same_term[k][l] *( s12_lxkx_lyky[k][l][0] + 1) \
-                                        + a6 *(-6)* s6_same_term[k][l] * ( s6_lxkx_lyky[k][l][0] + 1)
+                        print('j',j)
 
-                        d2phidxi_lxky = - a12 * (-12)*(-14) * (s12_lxky_lykx[k][l] * delta_xi[k][l][0] * delta_xi[k][l][1]) \
-                                        + a6 * (-6)*(-8) * (s6_lxky_lykx[k][l] * delta_xi[k][l][0] * delta_xi[k][l][1])
+                        d2phidxi_lxkx = - a12 *(-12)* s12_same_term[l][j] *( s12_lxkx_lyky[l][j][0] + 1) \
+                                        + a6 *(-6)* s6_same_term[l][j] * ( s6_lxkx_lyky[l][j][0] + 1)
 
-                        d2phidxi_lykx = - a12 * (-12)*(-14)*(s12_lxky_lykx[k][l] * delta_xi[k][l][0]* delta_xi[k][l][1]) \
-                                        + a6 * (-6)*(-8)* (s6_lxky_lykx[k][l] * delta_xi[k][l][0] * delta_xi[k][l][1])
+                        d2phidxi_lxky = - a12 * (-12)*(-14) * (s12_lxky_lykx[l][j] * delta_xi[l][j][0] * delta_xi[l][j][1]) \
+                                        + a6 * (-6)*(-8) * (s6_lxky_lykx[l][j] * delta_xi[l][j][0] * delta_xi[l][j][1])
 
-                        d2phidxi_lyky = - a12 *(-12)* s12_same_term[k][l] * ( s12_lxkx_lyky[k][l][1]  + 1) \
-                                        + a6 *(-6)* s6_same_term[k][l]  * ( s6_lxkx_lyky[k][l][1] + 1)
+                        d2phidxi_lykx = - a12 * (-12)*(-14)*(s12_lxky_lykx[l][j] * delta_xi[l][j][0]* delta_xi[l][j][1]) \
+                                        + a6 * (-6)*(-8)* (s6_lxky_lykx[l][j] * delta_xi[l][j][0] * delta_xi[l][j][1])
+
+                        d2phidxi_lyky = - a12 *(-12)* s12_same_term[l][j] * ( s12_lxkx_lyky[l][j][1]  + 1) \
+                                        + a6 *(-6)* s6_same_term[l][j]  * ( s6_lxkx_lyky[l][j][1] + 1)
 
                         d2phidxi_lk = torch.tensor((d2phidxi_lxkx[0],d2phidxi_lxky[0],d2phidxi_lykx[0],d2phidxi_lyky[0])).reshape(2,2)
                         print('l != k d2phidxi_lk',d2phidxi_lk)
 
+                        j = j + 1
                     d2phidxi2_append.append(d2phidxi_lk)
                     #print('d2phidxi2_append',d2phidxi2_append)
 
@@ -171,7 +176,7 @@ class LJ_term:
                     #print('temp', temp.shape)
                     #print('temp',temp.permute((1,0,2)))
                     temp = temp.permute((1,0,2)).reshape(2, N_particle * DIM )
-                    #print('reshape',temp)
+                    print('reshape',temp)
                     d2phidxi2_append = []
 
                 d2phidxi2_ = torch.cat((d2phidxi2_,temp),dim=0)

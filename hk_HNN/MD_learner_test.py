@@ -22,10 +22,10 @@ if __name__ == '__main__':
     # torch.backends.cudnn.benchmark = False
     torch.cuda.manual_seed_all(seed)
 
-    q_list = [[[3,2],[2.2,1.21]]]
-    p_list = [[[0.1,0.1],[0.,0.]]]
-    # q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
-    # p_list = [[[0.1,0.],[0.,0.4],[0.1, 0.3]]]
+    # q_list = [[[3,2],[2.2,1.21]]]
+    # p_list = [[[0.1,0.1],[0.,0.]]]
+    q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
+    p_list = [[[0.1,0.],[0.,0.4],[0.1, 0.3]]]
 
     q_list_tensor, p_list_tensor = torch.tensor([q_list,p_list])
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     phase_space = phase_space()
 
     nsample = 1
-    N_particle = 2
+    N_particle = 3
     DIM = 2
     mass = 1
     epsilon = 1.
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     iterations = 1
     n_input = 5
     n_hidden = 5
-    lr = 0.001
+    lr = 0.01
 
 
     NoML_hamiltonian = NoML_hamiltonian.hamiltonian()

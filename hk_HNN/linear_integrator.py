@@ -48,6 +48,7 @@ class linear_integrator:
 
         q_list = torch.zeros((self._configuration['iterations'], N, particle, DIM))
         p_list = torch.zeros((self._configuration['iterations'], N, particle, DIM))
+        print(q_list.shape)
 
         print('Not multicpu')
         print(self._configuration)
@@ -58,6 +59,8 @@ class linear_integrator:
             print('integrator',integrator_method)
             self._configuration = integrator_method(Hamiltonian, **self._configuration)
             #print('linear update',self._configuration)
+            print('integrator',self._configuration['phase_space'].get_q())
+
             q_list[i] = self._configuration['phase_space'].get_q()
             p_list[i] = self._configuration['phase_space'].get_p()  # sample
 

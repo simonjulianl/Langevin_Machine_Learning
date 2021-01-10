@@ -56,8 +56,6 @@ class pair_wise_HNN:
          q_list = phase_space.get_q()
          p_list = phase_space.get_p()
 
-         # q_list = q_list.requires_grad_(True)
-         # p_list = p_list.requires_grad_(True)
 
          print(q_list, p_list)
          N, N_particle, DIM = q_list.shape
@@ -70,9 +68,12 @@ class pair_wise_HNN:
 
              delta_init_q_, _ = pb.paired_distance_reduced(q_list[z] / self._state['BoxSize'], N_particle, DIM)  # reduce distance for pb
              delta_init_q_ = delta_init_q_ * self._state['BoxSize'] # not reduce distance
+
              delta_init_p_, _ = pb.paired_distance_reduced(p_list[z] / self._state['BoxSize'], N_particle, DIM)  # reduce distance for pb
              delta_init_p_ = delta_init_p_ * self._state['BoxSize']
 
+             delta_init_q[z] = delta_init_q_
+             delta_init_p[z] = delta_init_p_
              # print('delta_init_q',delta_init_q_)
              # print('delta_init_q',delta_init_q_.shape)
              # print('delta_init_p',delta_init_p_)
@@ -90,9 +91,9 @@ class pair_wise_HNN:
              #
              #             x = x + 1
 
-         # print('delta_init')
-         # print(delta_init_q)
-         # print(delta_init_p)
+         print('delta_init')
+         print(delta_init_q)
+         print(delta_init_p)
 
          # tau : #this is big time step to be trained
          # to add paired data array
@@ -107,6 +108,6 @@ class pair_wise_HNN:
 
          print('=== input data for ML : del_qx del_qy del_px del_py tau ===')
          print(paired_data)
-         # print(paired_data.shape)
+         print(paired_data.shape)
 
          return paired_data
