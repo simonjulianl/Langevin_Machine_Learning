@@ -9,8 +9,11 @@ import torch
 
 if __name__ == '__main__':
 
-    q_list = [[[2,1],[5,4],[1,3]]]
-    p_list = [[[0.1,0.1],[0.2,0.2],[0.2,0.2]]]
+    # q_list = [[[2,1],[5,4],[1,3]]]
+    # p_list = [[[0.1,0.1],[0.2,0.2],[0.2,0.2]]]
+    q_list = [[[3,2],[2.2,1.21]]]
+    p_list = [[[0.1,0.1],[0.1,0.1]]]
+
     q_list_tensor, p_list_tensor = torch.tensor([q_list,p_list])
     tensor_phase_space = phase_space()
 
@@ -24,7 +27,7 @@ if __name__ == '__main__':
     mass = 1
     epsilon = 1.
     sigma = 1.
-    boxsize = 2.
+    boxsize = 6.
 
     hamiltonian = hamiltonian()
     lj_term = LJ_term(epsilon=epsilon,sigma=sigma,boxsize=boxsize)
@@ -36,6 +39,7 @@ if __name__ == '__main__':
 
     tensor_energy = hamiltonian.total_energy(tensor_phase_space,pb)
     # numpy_energy = hamiltonian.total_energy(numpy_phase_space,pb) #- cannot run
+    print(tensor_energy)
 
     tensor_phase_space.set_q(q_list_tensor)
     tensor_phase_space.set_p(p_list_tensor)

@@ -22,9 +22,10 @@ class kinetic_energy:
         self._name = 'Kinetic Energy'
 
     def energy(self, phase_space, pb): # phase space is real-space-unit
-        #p = phase_space.get_p()
-        #e = np.sum(p*p / (2*self.mass))
-        return torch.zeros([]) # make zero for Monte-carlo
+        p = phase_space.get_p()
+        e = torch.sum( p*p / (2 * self.mass))
+
+        return  e # make zero for Monte-carlo ( torch.zeros([]) )
 
     def evaluate_derivative_q(self, phase_space,pb):
         return torch.zeros(phase_space.get_q().shape)
