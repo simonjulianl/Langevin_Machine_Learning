@@ -32,15 +32,15 @@ np.random.seed(seed)
 q0 = torch.tensor([1.], requires_grad=True)
 qdot0 = torch.tensor([1.], requires_grad=True)
 
-q_gt = torch.tensor([2.], requires_grad=True)
-qdot_gt = torch.tensor([1.], requires_grad=True)
+q_gt = torch.tensor([2.] )
+qdot_gt = torch.tensor([1.] )
 # print(q_gt)
 # print(p_gt)
 # quit()
 net = NN()
 print(net)
 
-nepoch = 100000
+nepoch = 10 # 100000
 lr = 0.0001
 
 #optimizer on multi-NN
@@ -51,49 +51,49 @@ for e in range(nepoch):
 
     q = q0
     qdot = qdot0
-    # print('============== ')
-    # print('epoch {}'.format(e))
-    # print('============== ')
-    #
-    # print('=== first input === ')
-    # print(q)
+    print('============== ')
+    print('epoch {}'.format(e))
+    print('============== ')
+
+    print('=== first input === ')
+    print(q)
     f_pred = net(q) #f_w
 
-    # print('=== First calc force === ')
-    # print('======== weight ======== ')
-    # print(net.fc.weight)
-    # print('========= bias ========= ')
-    # print(net.fc.bias)
-    # print('========= force ========= ')
-    # print(f_pred)
+    print('=== First calc force === ')
+    print('======== weight ======== ')
+    print(net.fc.weight)
+    print('========= bias ========= ')
+    print(net.fc.bias)
+    print('========= force ========= ')
+    print(f_pred)
 
     qdot = qdot + f_pred * tau/2
-    # print('=== update p ===')
-    # print(p)
-    # print('================')
+    print('=== update p ===')
+    print(qdot)
+    print('================')
 
     q = q + qdot * tau
-    # print('=== update q ===')
-    # print(q)
-    # print('================')
-    #
-    # print('=== second input === ')
-    # print(q)
+    print('=== update q ===')
+    print(q)
+    print('================')
+
+    print('=== second input === ')
+    print(q)
 
     f_pred = net(q)
-    # print('== second calc force === ')
-    # print('======== weight ======== ')
-    # print(net.fc.weight)
-    # print('========= bias ========= ')
-    # print(net.fc.bias)
-    # print('========= force ========= ')
-    # print(f_pred)
-    # print('============== ')
+    print('== second calc force === ')
+    print('======== weight ======== ')
+    print(net.fc.weight)
+    print('========= bias ========= ')
+    print(net.fc.bias)
+    print('========= force ========= ')
+    print(f_pred)
+    print('============== ')
 
     qdot = qdot + f_pred * tau/2
-    # print('=== update p ===')
-    # print(p)
-    # print('================')
+    print('=== update p ===')
+    print(qdot)
+    print('================')
 
     # setting gradient to zeros
     opt.zero_grad()
