@@ -51,14 +51,15 @@ state = {
 
 MLP = pair_wise_MLP(n_input, n_hidden)
 opt = optim.Adam(MLP.parameters(), lr=lr)
-pairwise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state)  # data preparation / calc f_MD, f_ML
+# pairwise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state)  # data preparation / calc f_MD, f_ML
 
 setting = {
     'opt' : opt,
-    'loss' : qp_MSE_loss
+    'loss' : qp_MSE_loss,
+    'MLP' : MLP
     }
 
 state.update(setting)
 
-MD_learner = MD_learner(linear_integrator, noML_hamiltonian, pairwise_HNN)
+MD_learner = MD_learner(linear_integrator, noML_hamiltonian, pair_wise_HNN)
 MD_learner.train(filename ='N_particle2_samples1_rho0.1_T0.04_pos_sampled.npy', **state)

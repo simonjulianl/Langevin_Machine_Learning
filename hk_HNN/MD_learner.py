@@ -21,11 +21,15 @@ class MD_learner:
         state['phase_space'].set_q(q_list)
         state['phase_space'].set_p(p_list)
 
+        # prepare label
         label = self.phase_space2label(self.linear_integrator(**state), self.NoML_hamiltonian)
 
-        self.pair_wise_HNN.train()
+        pairwise_hnn = self.pair_wise_HNN(self.NoML_hamiltonian,state['MLP'], **state)
+        pairwise_hnn.train()
         opt = state['opt']
 
+        # to prepare data at large time step, need to change tau and iterations
+        # tau = large time step 0.1 and 1 step
         state['tau'] = state['tau'] * state['iterations']  # tau = 0.1
         state['iterations'] = int(state['tau'] * state['iterations'])  # 1 step
 
@@ -34,8 +38,7 @@ class MD_learner:
             state['phase_space'].set_q(q_list)
             state['phase_space'].set_p(p_list)
 
-            prediction = self.linear_integrator(**state).integrate(self.pair_wise_HNN)
-
+            prediction = self.linear_integrator(**state).integrate(pairwise_hnn)
 
             loss = state['loss'](prediction, label)
 

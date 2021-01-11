@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
 
-    # to prepare input at large time step, need to change tau and iterations
+    # to prepare data at large time step, need to change tau and iterations
     # tau = large time step 0.1 and 1 step
     state['tau'] = state['tau'] * state['iterations']   # tau = 0.1
     state['iterations'] = int(state['tau'] * state['iterations']) # 1 step
