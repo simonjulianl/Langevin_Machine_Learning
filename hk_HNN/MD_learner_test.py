@@ -8,10 +8,20 @@ from pb import pb
 from phase_space import phase_space
 from linear_integrator import linear_integrator
 from linear_velocity_verlet import linear_velocity_verlet
-from pair_wise_HNN_test import pair_wise_HNN
+from pair_wise_HNN import pair_wise_HNN
 from pair_wise_MLP import pair_wise_MLP
 from loss import qp_MSE_loss
 import torch.optim as optim
+
+
+def phase_spacedata(MD_integrator, noML_hamiltonian, **state):
+
+    state = MD_integrator.integrate(noML_hamiltonian)
+
+    q_list_label = phase_space.get_q()
+    p_list_label = phase_space.get_p()
+
+    return (q_list_label, p_list_label)
 
 
 if __name__ == '__main__':
@@ -22,10 +32,10 @@ if __name__ == '__main__':
     # torch.backends.cudnn.benchmark = False
     torch.cuda.manual_seed_all(seed)
 
-    # q_list = [[[3,2],[2.2,1.21]]]
-    # p_list = [[[0.1,0.1],[0.,0.]]]
-    q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
-    p_list = [[[0.1,0.],[0.,0.4],[0.1, 0.3]]]
+    q_list = [[[3,2],[2.2,1.21]]]
+    p_list = [[[0.1,0.1],[0.,0.]]]
+    # q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
+    # p_list = [[[0.1,0.],[0.,0.4],[0.1, 0.3]]]
 
     q_list_tensor, p_list_tensor = torch.tensor([q_list,p_list])
 
@@ -33,7 +43,7 @@ if __name__ == '__main__':
     phase_space = phase_space()
 
     nsample = 1
-    N_particle = 3
+    N_particle = 2
     DIM = 2
     mass = 1
     epsilon = 1.
@@ -78,12 +88,14 @@ if __name__ == '__main__':
     state['phase_space'].set_q(q_list_tensor)
     state['phase_space'].set_p(p_list_tensor)
 
-    label = pairwise_HNN.phase_spacedata(state['phase_space'],pb)
+    # pair_wise_HNN.phase_space2data(state['phase_space'],pb)
+    # print(pair_wise_HNN.dHdq(state['phase_space'],pb))
+    MD_integrator = linear_integrator(**state)
+
+    label = phase_spacedata( MD_integrator, NoML_hamiltonian, **state)
     print('label', label)
 
-    #pair_wise_HNN.phase_space2data(state['phase_space'],pb)
-    #print(pair_wise_HNN.dHdq(state['phase_space'],pb))
-    MD_integrator = linear_integrator(**state)
+
     torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
 
     for e in range(nepochs):
@@ -113,6 +125,19 @@ if __name__ == '__main__':
         print('w 2 grad', MLP.correction_term[2].weight.grad)
 
 
-        print(e,train_loss)
+        print('epoch loss ',e,train_loss)
 
+    # do one step velocity verlet without ML
+    prediction_noML = phase_spacedata(MD_integrator, NoML_hamiltonian, **state )
+
+
+    print('prediction with   ML', prediction)
+    print('prediction with noML', prediction_noML)
+    q_pred, p_pred = prediction
+    q_label, p_label = prediction_noML
+    now_loss = torch.square(q_pred - q_label)  + torch.square(p_pred - p_label)
+    now_loss = torch.sum(now_loss)
+    train_loss = qp_MSE_loss(prediction, label)
+    print('previous loss', train_loss)
+    print('now      loss', now_loss)
 
