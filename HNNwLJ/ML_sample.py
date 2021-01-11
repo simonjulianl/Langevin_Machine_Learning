@@ -5,7 +5,6 @@ import integrator as integrator
 import integrator.methods as methods
 import pair_wise_HNN as pair_wise_HNN
 import pair_wise_HNN.models as models
-import pair_wise_HNN.MD_learner as MD_learner
 from pair_wise_HNN.loss import qp_MSE_loss
 import torch.optim as optim
 import torch
@@ -52,7 +51,7 @@ state = {
     'nepochs' : nepochs
 }
 
-MLP = pair_wise_MLP(n_input, n_hidden)
+MLP = models.pair_wise_MLP(n_input, n_hidden)
 opt = optim.Adam(MLP.parameters(), lr=lr)
 # pair_wise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state)  # data preparation / calc f_MD, f_ML
 
@@ -64,5 +63,5 @@ setting = {
 
 state.update(setting)
 
-MD_learner = MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN)
-MD_learner.train(filename ='N_particle2_samples1_rho0.1_T0.04_pos_sampled.npy', **state)
+MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
+MD_learner.train(filename ='./init_config/N_particle2_samples1_rho0.1_T0.04_pos_sampled.npy', **state)
