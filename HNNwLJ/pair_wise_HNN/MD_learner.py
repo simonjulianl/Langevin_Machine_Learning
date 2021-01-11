@@ -49,3 +49,24 @@ class MD_learner:
 
             print('epoch loss ', e, train_loss)
 
+        # do one step velocity verlet without ML
+        print('\n')
+        print('do one step velocity verlet without ML')
+        print(state)
+
+        state['phase_space'].set_q(q_list)
+        state['phase_space'].set_p(p_list)
+
+        prediction_noML = self.phase_space2label(self.linear_integrator(**state), self.NoML_hamiltonian)  # here label at large time step
+
+        print('prediction with   ML', prediction)
+        print('prediction with noML', prediction_noML)
+
+        q_pred, p_pred = prediction
+        q_label, p_label = prediction_noML
+
+        now_loss = (q_pred - q_label) ** 2 + (p_pred - p_label) ** 2
+        now_loss = (now_loss).sum()
+        train_loss = state['loss'](prediction, label)
+        print('previous loss', train_loss)  # label at short time step 0.01
+        print('now      loss', now_loss)  # label at large time step 0.1
