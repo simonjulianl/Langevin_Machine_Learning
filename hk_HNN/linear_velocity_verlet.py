@@ -48,7 +48,7 @@ def linear_velocity_verlet(Hamiltonian, **state):
     print('update p', p)
 
     q = q + tau * p  # dq/dt = dK/dp = p
-    print('before adjust q',q)
+    # print('before adjust q',q)
 
     pb_q.adjust_real(q, boxsize)
     state['phase_space'].set_q(q)
@@ -60,7 +60,7 @@ def linear_velocity_verlet(Hamiltonian, **state):
     p = p + tau / 2 * (-Hamiltonian.dHdq(state['phase_space'], pb_q))  # dp/dt
     print('update p', p)
 
-    state['phase_space'].set_q(q);
+    state['phase_space'].set_q(q)
     state['phase_space'].set_p(p)  # update state after 1 step
 
     return state

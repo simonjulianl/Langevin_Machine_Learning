@@ -20,11 +20,11 @@ class lennard_jones():
         return self.phi.energy(xi_space,pb)
 
     def evaluate_derivative_q(self, phase_space,pb):
-        print('eval deri ',phase_space.get_q())
+        #print('eval deri ',phase_space.get_q())
         xi_space = self.dimensionless(phase_space)
-        print('xi_space',xi_space.get_q())
+        #print('xi_space',xi_space.get_q())
         dphidq = self.phi.evaluate_derivative_q(xi_space,pb)
-        print('dphidq',dphidq)
+        #print('dphidq',dphidq)
         return dphidq
 
     def evaluate_second_derivative_q(self, phase_space,pb):

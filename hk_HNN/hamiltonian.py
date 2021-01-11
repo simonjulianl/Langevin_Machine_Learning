@@ -53,7 +53,7 @@ class hamiltonian:
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
-        print(q_list)
+        # print(q_list)
         dHdq = torch.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:

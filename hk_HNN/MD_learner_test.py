@@ -61,7 +61,7 @@ if __name__ == '__main__':
     NoML_hamiltonian.append(lennard_jones(lj_term, boxsize))
     NoML_hamiltonian.append(kinetic_energy(mass))
 
-    nepochs = 2
+    nepochs = 1
 
     state = {
         'N' : nsample,
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     print('prediction with noML', prediction_noML)
     q_pred, p_pred = prediction
     q_label, p_label = prediction_noML
-    now_loss = torch.square(q_pred - q_label)  + torch.square(p_pred - p_label)
+    now_loss = (q_pred - q_label)**2  + (p_pred - p_label)**2
     now_loss = torch.sum(now_loss)
     train_loss = qp_MSE_loss(prediction, label)
     print('previous loss', train_loss)

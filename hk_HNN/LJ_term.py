@@ -45,10 +45,8 @@ class LJ_term:
             print('d',d)
             s12 = 1 / pow(d,12)
             print('s12',s12)
-            # s12[torch.isinf(s12)] = 0
 
             s6  = 1 / pow(d,6)
-            # s6[torch.isinf(s6)] = 0
 
             term[z] = torch.sum(a12* s12 - a6* s6) * 0.5
 
@@ -68,19 +66,19 @@ class LJ_term:
 
             delta_xi, d = pb.paired_distance_reduced(xi_state[z],N_particle,DIM)
             d = torch.unsqueeze(d,dim =2)
-            print('d expand',d)
-            print(delta_xi.shape)
+            # print('d expand',d)
+            # print(delta_xi.shape)
 
-            print('delta_xi',delta_xi)
-            print('d',d.shape)
+            # print('delta_xi',delta_xi)
+            # print('d',d.shape)
 
             s12 = -12 * (delta_xi) / pow(d,14)
-            print('s12',s12)
+            # print('s12',s12)
 
             s6  = -6 * (delta_xi) / pow(d,8)
 
             dphidxi[z] = a12*torch.sum(s12,dim=1) - a6*torch.sum(s6,dim=1) # np.sum axis=1 j != k
-            print('dH/dq',dphidxi[z])
+            # print('dH/dq',dphidxi[z])
 
         return dphidxi
 
@@ -104,20 +102,20 @@ class LJ_term:
             d = torch.unsqueeze(d,dim=2)
 
             s12_same_term = 1. / pow(d,14)
-            print('s12_same_term',s12_same_term)
-            print('s12_same_term', s12_same_term.shape)
+            # print('s12_same_term',s12_same_term)
+            # print('s12_same_term', s12_same_term.shape)
             # s12_same_term[torch.isinf(s12_same_term)] = 0
             #print('s12_same_term',s12_same_term)
 
             s12_lxkx_lyky = (-14) * torch.pow(delta_xi,2) / torch.pow(d,2)
-            print('s12_lxkx_lyky',s12_lxkx_lyky)
-            print('s12_lxkx_lyky', s12_lxkx_lyky.shape)
+            # print('s12_lxkx_lyky',s12_lxkx_lyky)
+            # print('s12_lxkx_lyky', s12_lxkx_lyky.shape)
             # s12_lxkx_lyky[torch.isnan(s12_lxkx_lyky)] = 0
 
             s12_lxky_lykx = 1. / pow(d,16)
             # s12_lxky_lykx[torch.isinf(s12_lxky_lykx)] = 0
-            print('s12_lxky_lykx',s12_lxky_lykx)
-            print('s12_lxky_lykx', s12_lxky_lykx.shape)
+            # print('s12_lxky_lykx',s12_lxky_lykx)
+            # print('s12_lxky_lykx', s12_lxky_lykx.shape)
 
             s6_same_term = 1. / pow(d,8)
             # s6_same_term[torch.isinf(s6_same_term)] = 0

@@ -43,8 +43,8 @@ class pb:
     # HK def paired_distance_reduced(self,q,q_adj):
     def paired_distance_reduced(self,q, N_particle, DIM):
 
-        print("==pb==")
-        print('dimensionless', q)
+        #print("==pb==")
+        #print('dimensionless', q)
         qlen = q.shape[0]
         q0 = torch.unsqueeze(q,dim=0)
         qm = torch.repeat_interleave(q0,qlen,dim=0)
@@ -59,15 +59,16 @@ class pb:
         #print(dq[indices])
         #dq[indices] = dq[indices] - torch.copysign(1.0, dq[indices])
         dq[indices] = dq[indices] - torch.round(dq[indices])
-        print('pb dq',dq)
-        print('pb dq',dq.shape)
+        #print('pb dq',dq)
+        #print('pb dq',dq.shape)
 
         dq = dq[dq.nonzero(as_tuple=True)].reshape(N_particle, N_particle - 1, DIM)
-        print('pb dq', dq)
-        print('pb dq', dq.shape)
+
+        #print('pb dq', dq)
+        #print('pb dq', dq.shape)
         dd = torch.sqrt(torch.sum(dq*dq,dim=2))
-        print('pb dd',dd)
-        print('pb dd', dd.shape)
+        #print('pb dd',dd)
+        #print('pb dd', dd.shape)
 
         return dq, dd
 
