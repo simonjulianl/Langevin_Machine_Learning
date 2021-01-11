@@ -7,7 +7,6 @@ class MD_learner:
         self.nepoch = nepoch
         self.optimizer = ...
 
-
     # phase_space consist of minibatch data
     # pb is boundary condition
     def train(self,**state,phase_space_label,pb):

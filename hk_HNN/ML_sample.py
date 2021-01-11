@@ -1,8 +1,8 @@
-from Langevin_Machine_Learning.pair_wise_HNN.loss import qp_MSE_loss
-import Langevin_Machine_Learning.pair_wise_HNN as Pair_wise_HNN
-import Langevin_Machine_Learning.Integrator as Integrator
-import Langevin_Machine_Learning.hamiltonian as noML_hamiltonian
-import Langevin_Machine_Learning.Integrator.methods as methods
+import hamiltonian as NoML_hamiltonian
+from LJ_term import LJ_term
+from lennard_jones import lennard_jones
+from kinetic_energy import kinetic_energy
+
 
 import torch
 import torch.optim as optim
@@ -10,25 +10,29 @@ import numpy as np
 import argparse
 import os
 
-N_particle = 3
-rho= 0.1
-T = 0.04
-iterations= 10
-tau = 0.01
-lr= 0.01
+nsample = 1
+N_particle = 2
 DIM = 2
-batch_size = 1
-nsamples = 1 # not use when ML
+mass = 1
+epsilon = 1.
+sigma = 1.
+boxsize = 6.  # np.sqrt(N_particle/rho)
+tau = 0.01
+iterations = 10
+n_input = 5
+n_hidden = 5
+lr = 0.01
+nepochs = 1
+
 
 print("iterations",iterations)
 print("lr",lr)
-print("batch size",batch_size)
 
 # noML_hamiltonian
-noML_hamiltonian = noML_hamiltonian.hamiltonian()
-LJ = Hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=np.sqrt(N_particle/rho))
-noML_hamiltonian.append(Hamiltonian.Lennard_Jones(LJ, boxsize=np.sqrt(N_particle/rho)))
-noML_hamiltonian.append(Hamiltonian.kinetic_energy(mass = 1))
+noML_hamiltonian = NoML_hamiltonian.hamiltonian()
+LJ = LJ_term(epsilon = 1, sigma = 1, boxsize = boxsize)
+noML_hamiltonian.append(lennard_jones(LJ, boxsize = boxsize))
+noML_hamiltonian.append(kinetic_energy(mass = 1))
 
 energy = pairwise_HNN(noML_hamiltonian, pairwise_MLP)
 

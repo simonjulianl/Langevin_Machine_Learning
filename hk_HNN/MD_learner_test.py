@@ -50,7 +50,7 @@ if __name__ == '__main__':
     n_input = 5
     n_hidden = 5
     lr = 0.01
-    nepochs = 1
+    nepochs = 10
 
     NoML_hamiltonian = NoML_hamiltonian.hamiltonian()
     lj_term = LJ_term(epsilon=epsilon,sigma=sigma,boxsize=boxsize)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     state['phase_space'].set_q(q_list_tensor)
     state['phase_space'].set_p(p_list_tensor)
 
-    prediction_noML = phase_space2label(linear_integrator(**state), NoML_hamiltonian )
+    prediction_noML = phase_space2label(linear_integrator(**state), NoML_hamiltonian ) # here label at large time step
 
     print('prediction with   ML', prediction)
     print('prediction with noML', prediction_noML)
@@ -139,6 +139,6 @@ if __name__ == '__main__':
     now_loss = (q_pred - q_label)**2  + (p_pred - p_label)**2
     now_loss = torch.sum(now_loss)
     train_loss = qp_MSE_loss(prediction, label)
-    print('previous loss', train_loss)
-    print('now      loss', now_loss)
+    print('previous loss', train_loss)  # label at short time step 0.01
+    print('now      loss', now_loss)   # label at large time step 0.1
 
