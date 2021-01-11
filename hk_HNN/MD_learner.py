@@ -1,32 +1,48 @@
 
 class MD_learner:
 
-    def __init__(self,linear_integrator):
+    def __init__(self,linear_integrator, NoML_hamiltonian, pair_wise_HNN):
 
         self.linear_integrator = linear_integrator
-        self.nepoch = nepoch
-        self.optimizer = ...
+        self.NoML_hamiltonian =NoML_hamiltonian
+        self.pair_wise_HNN = pair_wise_HNN
+
+    def phase_space2label(self, MD_integrator, noML_hamiltonian):
+        label = MD_integrator.integrate(noML_hamiltonian)
+        return label
 
     # phase_space consist of minibatch data
     # pb is boundary condition
-    def train(self,**state,phase_space_label,pb):
+    def train(self, filename, **state):
 
-        pairwise_hnn = state['pairwise_hnn']
-        pairwise_hnn.train()
+        # load initial data
+        q_list, p_list = state['phase_space'].read(filename, nsamples=state['N'])
 
-        for e in range(self.nepoch):
+        state['phase_space'].set_q(q_list)
+        state['phase_space'].set_p(p_list)
 
-            q_list_predict, p_list_predict = self.linear_integrator.integrate(**state)
-            loss = self.loss(phase_space_label,pb,q_list_predict,p_list_predict)
+        label = self.phase_space2label(self.linear_integrator(**state), self.NoML_hamiltonian)
 
-            self._optimizer.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
+        self.pair_wise_HNN.train()
+        opt = state['opt']
+
+        state['tau'] = state['tau'] * state['iterations']  # tau = 0.1
+        state['iterations'] = int(state['tau'] * state['iterations'])  # 1 step
+
+        for e in range(state['nepochs']):
+
+            state['phase_space'].set_q(q_list)
+            state['phase_space'].set_p(p_list)
+
+            prediction = self.linear_integrator(**state).integrate(self.pair_wise_HNN)
+
+
+            loss = state['loss'](prediction, label)
+
+            opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
             loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
             train_loss = loss.item()  # get the scalar output
-            self._optimizer.step()
+            opt.step()
 
-    def step(self,phase_space,pb,tau):
-        pairwise_hnn.eval()
-        q_list_predict, p_list_predict = self.linear_integrator.integrate(**state)
-        return q_list_predict,p_list_predict
+            print('epoch loss ', e, train_loss)
 
-    def loss(self,...):

@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
     q_list = [[[3,2],[2.2,1.21]]]
     p_list = [[[0.,0.],[0.,0.]]]
+    #
     # q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
     # p_list = [[[0.2,0.],[0.,0.4],[0.1, 0.1]]]
 
@@ -37,6 +38,10 @@ if __name__ == '__main__':
 
     pb = pb()
     phase_space = phase_space()
+
+    # q_list_tensor, p_list_tensor = phase_space.read('N_particle2_samples1_rho0.1_T0.04_pos_sampled.npy',nsamples=1)
+    # print(q_list_tensor, p_list_tensor)
+
 
     nsample = 1
     N_particle = 2
@@ -50,7 +55,7 @@ if __name__ == '__main__':
     n_input = 5
     n_hidden = 5
     lr = 0.01
-    nepochs = 10
+    nepochs = 1
 
     NoML_hamiltonian = NoML_hamiltonian.hamiltonian()
     lj_term = LJ_term(epsilon=epsilon,sigma=sigma,boxsize=boxsize)
@@ -73,7 +78,7 @@ if __name__ == '__main__':
     state['phase_space'].set_q(q_list_tensor)
     state['phase_space'].set_p(p_list_tensor)
 
-    label = phase_space2label( linear_integrator(**state), NoML_hamiltonian)
+    label = phase_space2label(linear_integrator(**state), NoML_hamiltonian)
     print('label', label)
     #===== end ============================================================#
 

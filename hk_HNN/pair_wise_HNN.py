@@ -1,6 +1,5 @@
 import torch
 
-
 class pair_wise_HNN:
 
     def __init__(self, NoML_hamiltonian, network, **kwargs):
@@ -69,15 +68,9 @@ class pair_wise_HNN:
         tau = torch.tensor([self._state['tau']] * N_particle * (N_particle - 1))
         tau = tau.reshape(-1, N_particle, (N_particle - 1), 1)  # broadcasting
         # print(tau)
-        # print('tau', tau.shape)
 
         paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
-        # print('paired_data',paired_data_)
-
         paired_data = torch.cat((paired_data_, tau), dim=-1)  # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-        # print(paired_data)
-
-
         paired_data = paired_data.reshape(-1, paired_data.shape[3])  # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
 
         print('=== input data for ML : del_qx del_qy del_px del_py tau ===')
