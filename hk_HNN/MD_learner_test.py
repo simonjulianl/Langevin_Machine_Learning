@@ -121,8 +121,12 @@ if __name__ == '__main__':
         print('epoch loss ',e,train_loss)
 
     # do one step velocity verlet without ML
+    print('\n')
     print('do one step velocity verlet without ML')
     print(state)
+
+    state['phase_space'].set_q(q_list_tensor)
+    state['phase_space'].set_p(p_list_tensor)
 
     prediction_noML = phase_space2label(linear_integrator(**state), NoML_hamiltonian )
 
