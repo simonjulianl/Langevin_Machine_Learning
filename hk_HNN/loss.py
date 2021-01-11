@@ -6,7 +6,6 @@ def qp_MSE_loss(qp_quantities, label):
 
     q_label, p_label = label
 
-    print('=== loss ===')
     print('=== predict ===')
     print(q_quantity,p_quantity)
     print('=== label ===')

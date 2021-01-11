@@ -57,9 +57,9 @@ class hamiltonian:
         dHdq = torch.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:
-            print(term)
+            #print(term)
             dHdq += term.evaluate_derivative_q(phase_space, pb)
-            print(dHdq)
+            #print(dHdq)
         return dHdq
 
     def d2Hdq2(self, phase_space, pb):

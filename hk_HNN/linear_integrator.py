@@ -27,9 +27,6 @@ class linear_integrator:
 
         for i in trange(self._configuration['iterations']):
 
-            print('hamiltonian',Hamiltonian)
-            print('integrator',integrator_method)
-
             self._configuration = integrator_method(Hamiltonian, **self._configuration)
 
             print('{} iteration'.format(i), self._configuration['phase_space'].get_q())

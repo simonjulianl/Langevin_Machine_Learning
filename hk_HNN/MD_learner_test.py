@@ -1,4 +1,3 @@
-# train model
 import hamiltonian as NoML_hamiltonian
 from LJ_term import LJ_term
 from lennard_jones import lennard_jones
@@ -14,14 +13,11 @@ from loss import qp_MSE_loss
 import torch.optim as optim
 
 
-def phase_spacedata(MD_integrator, noML_hamiltonian, **state):
+def phase_space2label(MD_integrator, noML_hamiltonian):
 
-    state = MD_integrator.integrate(noML_hamiltonian)
+    label = MD_integrator.integrate(noML_hamiltonian)
 
-    q_list_label = phase_space.get_q()
-    p_list_label = phase_space.get_p()
-
-    return (q_list_label, p_list_label)
+    return label
 
 
 if __name__ == '__main__':
@@ -33,9 +29,9 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(seed)
 
     q_list = [[[3,2],[2.2,1.21]]]
-    p_list = [[[0.1,0.1],[0.,0.]]]
+    p_list = [[[0.,0.],[0.,0.]]]
     # q_list = [[[2.3945972, 0.79560974], [1.29235072, 0.64889931], [1.66907468, 1.693532]]]
-    # p_list = [[[0.1,0.],[0.,0.4],[0.1, 0.3]]]
+    # p_list = [[[0.2,0.],[0.,0.4],[0.1, 0.1]]]
 
     q_list_tensor, p_list_tensor = torch.tensor([q_list,p_list])
 
@@ -49,19 +45,17 @@ if __name__ == '__main__':
     epsilon = 1.
     sigma = 1.
     boxsize = 6.
-    tau = 0.1
-    iterations = 1
+    tau = 0.01
+    iterations = 10
     n_input = 5
     n_hidden = 5
     lr = 0.01
-
+    nepochs = 1
 
     NoML_hamiltonian = NoML_hamiltonian.hamiltonian()
     lj_term = LJ_term(epsilon=epsilon,sigma=sigma,boxsize=boxsize)
     NoML_hamiltonian.append(lennard_jones(lj_term, boxsize))
     NoML_hamiltonian.append(kinetic_energy(mass))
-
-    nepochs = 1
 
     state = {
         'N' : nsample,
@@ -75,42 +69,41 @@ if __name__ == '__main__':
         'pb_q' : pb
         }
 
+    #=== prepare label ====================================================#
+    state['phase_space'].set_q(q_list_tensor)
+    state['phase_space'].set_p(p_list_tensor)
+
+    label = phase_space2label( linear_integrator(**state), NoML_hamiltonian)
+    print('label', label)
+    #===== end ============================================================#
+
+    torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
+
+    # to prepare input at large time step, need to change tau and iterations
+    # tau = large time step 0.1 and 1 step
+    state['tau'] = state['tau'] * state['iterations']   # tau = 0.1
+    state['iterations'] = int(state['tau'] * state['iterations']) # 1 step
+
     MLP = pair_wise_MLP(n_input,n_hidden)
-    print('model',MLP)
     pairwise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state) # data preparation / calc f_MD, f_ML
-    print('pairwise_HNN',pairwise_HNN)
+
     # print(pair_wise_HNN.network(n_input,n_hidden) )
     # print(pair_wise_HNN.noML_hamiltonian)
 
     pairwise_HNN.train()
     opt = optim.Adam(MLP.parameters(), lr=lr)
 
-    state['phase_space'].set_q(q_list_tensor)
-    state['phase_space'].set_p(p_list_tensor)
-
     # pair_wise_HNN.phase_space2data(state['phase_space'],pb)
     # print(pair_wise_HNN.dHdq(state['phase_space'],pb))
-    MD_integrator = linear_integrator(**state)
-
-    label = phase_spacedata( MD_integrator, NoML_hamiltonian, **state)
-    print('label', label)
-
-
-    torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
 
     for e in range(nepochs):
-
-        # q_list_tensor = q_list_tensor
-        # p_list_tensor = p_list_tensor
 
         state['phase_space'].set_q(q_list_tensor)
         state['phase_space'].set_p(p_list_tensor)
 
-        q_list_predict_, p_list_predict_ = MD_integrator.integrate(pairwise_HNN)  # general hamiltonain ( MD + ML)
-        q_list_predict = q_list_predict_.reshape(-1, q_list_predict_.shape[2], q_list_predict_.shape[3])
-        p_list_predict = p_list_predict_.reshape(-1, p_list_predict_.shape[2], p_list_predict_.shape[3])
+        prediction = linear_integrator(**state).integrate(pairwise_HNN)  # general hamiltonain ( MD + ML)
 
-        prediction = (q_list_predict, p_list_predict)
+        print(prediction)
 
         loss = qp_MSE_loss(prediction, label)
 
@@ -128,13 +121,17 @@ if __name__ == '__main__':
         print('epoch loss ',e,train_loss)
 
     # do one step velocity verlet without ML
-    prediction_noML = phase_spacedata(MD_integrator, NoML_hamiltonian, **state )
+    print('do one step velocity verlet without ML')
+    print(state)
 
+    prediction_noML = phase_space2label(linear_integrator(**state), NoML_hamiltonian )
 
     print('prediction with   ML', prediction)
     print('prediction with noML', prediction_noML)
-    q_pred, p_pred = prediction
+
+    q_pred,  p_pred  = prediction
     q_label, p_label = prediction_noML
+
     now_loss = (q_pred - q_label)**2  + (p_pred - p_label)**2
     now_loss = torch.sum(now_loss)
     train_loss = qp_MSE_loss(prediction, label)

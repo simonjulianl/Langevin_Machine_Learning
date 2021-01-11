@@ -64,8 +64,8 @@ if __name__ == '__main__':
     state['phase_space'].set_p(p_list_tensor)
 
     # tau = large time step 0.1 and 1 step
-    state['tau'] = state['tau'] * state['iterations']
-    state['iterations'] = int(state['tau'] * state['iterations'])
+    state['tau'] = state['tau'] * state['iterations']   # tau = 0.1
+    state['iterations'] = int(state['tau'] * state['iterations']) # 1 step
     print('large time step {}'.format(state['tau']))
     print('test', state)
     q_list, p_list = linear_integrator(**state).integrate(NoML_hamiltonian)
