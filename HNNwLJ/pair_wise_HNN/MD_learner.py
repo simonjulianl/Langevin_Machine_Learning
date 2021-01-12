@@ -13,8 +13,7 @@ class MD_learner:
         return label
 
     # phase_space consist of minibatch data
-    # pb is boundary condition
-    def train(self, filename, **state):
+    def trainer(self, filename, **state):
 
         # print('===== load initial data =====')
         q_list, p_list = state['phase_space'].read(filename, nsamples=state['nsamples'])

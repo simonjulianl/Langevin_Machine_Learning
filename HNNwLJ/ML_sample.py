@@ -38,7 +38,7 @@ noML_hamiltonian.append(hamiltonian.lennard_jones(LJ, boxsize = boxsize))
 noML_hamiltonian.append(hamiltonian.kinetic_energy(mass = 1))
 
 phase_space = phase_space.phase_space()
-pb = pb()
+pb = pb()     # pb is boundary condition
 
 state = {
     'nsamples': nsamples,
@@ -66,4 +66,4 @@ setting = {
 state.update(setting)
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.train(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.npy'.format(nparticle,nsamples), **state)
+MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.npy'.format(nparticle,nsamples), **state)
