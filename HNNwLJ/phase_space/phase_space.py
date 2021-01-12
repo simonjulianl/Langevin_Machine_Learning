@@ -42,7 +42,8 @@ class phase_space :
         nsamples : int
             nsamples per file , default everything (-1)
         '''
-        phase_space = torch.from_numpy(np.load(filename))
+        # phase_space = torch.from_numpy(np.load(filename))
+        phase_space = torch.load(filename)
         # print(phase_space.shape)
         self._q_list =  phase_space[0][:nsamples]
         self._p_list =  phase_space[1][:nsamples]

@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch
 import math
 
-nsamples = 1
+nsamples = 2
 nparticle = 2
 DIM = 2
 mass = 1
@@ -68,4 +68,4 @@ setting = {
 state.update(setting)
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.npy'.format(nparticle,nsamples), **state)
+MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle,nsamples), **state)

@@ -59,29 +59,29 @@ class MD_learner:
         plt.ylabel('loss', fontsize=20)
         plt.plot(loss_, linewidth=2)
         plt.grid()
-        plt.show()
+        # plt.show()
 
 
-        # do one step velocity verlet without ML
-        print('do one step velocity verlet without ML')
-        print(state)
-
-        state['phase_space'].set_q(q_list)
-        state['phase_space'].set_p(p_list)
-
-        prediction_noML = label
-
-        print('prediction with   ML', prediction)
-        print('prediction with noML', prediction_noML)
-
-        q_pred, p_pred = prediction
-        q_label, p_label = prediction_noML
-
-        now_loss = (q_pred - q_label) ** 2 + (p_pred - p_label) ** 2
-        now_loss = (now_loss).sum()
-        train_loss = state['loss'](prediction, label)
-        print('previous loss', train_loss.item())  # label at short time step 0.01
-        print('now      loss', now_loss.item())  # label at large time step 0.1
+        # # do one step velocity verlet without ML
+        # print('do one step velocity verlet without ML')
+        # print(state)
+        #
+        # state['phase_space'].set_q(q_list)
+        # state['phase_space'].set_p(p_list)
+        #
+        # prediction_noML = label
+        #
+        # print('prediction with   ML', prediction)
+        # print('prediction with noML', prediction_noML)
+        #
+        # q_pred, p_pred = prediction
+        # q_label, p_label = prediction_noML
+        #
+        # now_loss = (q_pred - q_label) ** 2 + (p_pred - p_label) ** 2
+        # now_loss = (now_loss).sum()
+        # train_loss = state['loss'](prediction, label)
+        # print('previous loss', train_loss.item())  # label at short time step 0.01
+        # print('now      loss', now_loss.item())  # label at large time step 0.1
 
 
     def step(self,phase_space,pb,tau):

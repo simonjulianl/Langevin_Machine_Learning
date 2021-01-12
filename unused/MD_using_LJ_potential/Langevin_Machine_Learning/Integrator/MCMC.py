@@ -149,7 +149,7 @@ class MCMC(Integration):
         q_list = np.zeros((iterations,self._configuration['particle'],self._configuration['DIM']))
         U = np.zeros(iterations)
 
-        #print('MCMC.py integrate q_list',q_list)
+        #print('metropolis_mc.py integrate q_list',q_list)
         for i in trange(0, self._intSetting['iterations'], desc = "simulating"):
             for _ in range(self._configuration['DIM']):
                 self.mcmove()
