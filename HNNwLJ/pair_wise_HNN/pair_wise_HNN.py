@@ -44,7 +44,7 @@ class pair_wise_HNN:
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
 
-        # print(q_list, p_list)
+        print(q_list.shape, p_list.shape)
         nsamples, nparticle, DIM = q_list.shape
 
         delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
@@ -63,6 +63,8 @@ class pair_wise_HNN:
         tau = torch.tensor([self._state['tau_cur']] * nparticle * (nparticle - 1))
         tau = tau.reshape(-1, nparticle, (nparticle - 1), 1)  # broadcasting
         # print(tau)
+
+        print(delta_init_q.shape,delta_init_p.shape)
 
         paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
         paired_data = torch.cat((paired_data_, tau), dim=-1)  # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
