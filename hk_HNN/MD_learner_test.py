@@ -118,10 +118,8 @@ if __name__ == '__main__':
         train_loss = loss.item()  # get the scalar output
         opt.step()
 
-
-        print('w 1 grad',MLP.correction_term[0].weight.grad)
-        print('w 2 grad', MLP.correction_term[2].weight.grad)
-
+        # print('w 1 grad',MLP.correction_term[0].weight.grad)
+        # print('w 2 grad', MLP.correction_term[2].weight.grad)
 
         print('epoch loss ',e,train_loss)
 
@@ -144,6 +142,6 @@ if __name__ == '__main__':
     now_loss = (q_pred - q_label)**2  + (p_pred - p_label)**2
     now_loss = torch.sum(now_loss)
     train_loss = qp_MSE_loss(prediction, label)
-    print('previous loss', train_loss)  # label at short time step 0.01
-    print('now      loss', now_loss)   # label at large time step 0.1
+    print('previous loss', train_loss.item())  # label at short time step 0.01
+    print('now      loss', now_loss.item())   # label at large time step 0.1
 

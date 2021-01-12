@@ -32,6 +32,7 @@ class MD_learner:
         pairwise_hnn = self.pair_wise_HNN(self.NoML_hamiltonian,state['MLP'], **state)
         pairwise_hnn.train()
         opt = state['opt']
+        loss = state['loss']
 
         for e in range(state['nepochs']):
 
@@ -40,7 +41,7 @@ class MD_learner:
 
             prediction = self.linear_integrator(**state).integrate(pairwise_hnn)
 
-            loss = state['loss'](prediction, label)
+            loss = loss(prediction, label)
 
             opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
             loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
