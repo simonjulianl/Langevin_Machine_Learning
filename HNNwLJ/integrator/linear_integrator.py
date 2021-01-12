@@ -26,9 +26,6 @@ class linear_integrator:
 
             self._configuration = integrator_method(Hamiltonian, **self._configuration)
 
-            # print('{} iteration'.format(i), self._configuration['phase_space'].get_q())
-            # print('{} iteration'.format(i), self._configuration['phase_space'].get_p())
-
             q_list[i] = self._configuration['phase_space'].get_q()
             p_list[i] = self._configuration['phase_space'].get_p()  # sample
 

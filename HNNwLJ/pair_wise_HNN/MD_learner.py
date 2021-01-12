@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 
 class MD_learner:
 
@@ -15,13 +16,13 @@ class MD_learner:
     # pb is boundary condition
     def train(self, filename, **state):
 
-        # load initial data
+        # print('===== load initial data =====')
         q_list, p_list = state['phase_space'].read(filename, nsamples=state['nsamples'])
 
         state['phase_space'].set_q(q_list)
         state['phase_space'].set_p(p_list)
 
-        # prepare label
+        # print('===== state at short time step 0.01 =====')
         label = self.phase_space2label(self.linear_integrator(**state), self.noML_hamiltonian)
 
         # to prepare data at large time step, need to change tau and iterations
@@ -32,26 +33,34 @@ class MD_learner:
         pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
         pairwise_hnn.train()
         opt = state['opt']
-        loss = state['loss']
+
+        loss_ = []
 
         for e in range(state['nepochs']):
 
             state['phase_space'].set_q(q_list)
             state['phase_space'].set_p(p_list)
 
+            # print('======= train combination of MD and ML =======')
             prediction = self.linear_integrator(**state).integrate(pairwise_hnn)
 
-            loss = loss(prediction, label)
+            loss = state['loss'](prediction, label)
 
             opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
             loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
             train_loss = loss.item()  # get the scalar output
             opt.step()
 
-            print('epoch loss ', e, train_loss)
+            #print('epoch loss ', e, train_loss)
+            loss_.append(train_loss)
+
+        plt.xlabel('epoch', fontsize=20)
+        plt.ylabel('loss', fontsize=20)
+        plt.plot(loss_, linewidth=2)
+        plt.show()
+
 
         # do one step velocity verlet without ML
-        print('\n')
         print('do one step velocity verlet without ML')
         print(state)
 
@@ -69,5 +78,11 @@ class MD_learner:
         now_loss = (q_pred - q_label) ** 2 + (p_pred - p_label) ** 2
         now_loss = (now_loss).sum()
         train_loss = state['loss'](prediction, label)
-        print('previous loss', train_loss)  # label at short time step 0.01
-        print('now      loss', now_loss)  # label at large time step 0.1
+        print('previous loss', train_loss.item())  # label at short time step 0.01
+        print('now      loss', now_loss.item())  # label at large time step 0.1
+
+
+    def step(self,phase_space,pb,tau):
+        pairwise_hnn.eval()
+        q_list_predict, p_list_predict = self.linear_integrator.integrate(**state)
+        return q_list_predict,p_list_predict

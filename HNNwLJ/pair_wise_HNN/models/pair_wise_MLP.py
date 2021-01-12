@@ -21,7 +21,6 @@ class pair_wise_MLP(nn.Module):
         # print('ML output',MLdHdq_)
 
         MLdHdq_ = MLdHdq_.reshape(nparticle, nparticle - 1, DIM)  # N_particle, N_particle-1, DIM
-        # print('output reshape',MLdHdq_)
         MLdHdq = torch.sum(MLdHdq_, dim=1) # ex) a,b,c three particles;  sum Fa = Fab + Fac
-        # print('output sum',MLdHdq)
+
         return MLdHdq

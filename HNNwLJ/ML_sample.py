@@ -23,7 +23,7 @@ iterations = 10 # n times short time step to pair data at one large time step
 n_input = 5
 n_hidden = 5
 lr = 0.01
-nepochs = 1
+nepochs = 50
 
 seed = 9372211
 torch.manual_seed(seed)
@@ -66,4 +66,4 @@ setting = {
 state.update(setting)
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.train(filename ='./init_config/N_particle2_samples1_rho0.1_T0.04_pos_sampled.npy', **state)
+MD_learner.train(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.npy'.format(nparticle,nsamples), **state)
