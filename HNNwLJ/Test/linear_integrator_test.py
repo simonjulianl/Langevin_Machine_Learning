@@ -1,12 +1,12 @@
-from hamiltonian import hamiltonian
-from kinetic_energy import kinetic_energy
-from lennard_jones import lennard_jones
-from LJ_term import LJ_term
-from pb import pb
-from phase_space import phase_space
+from HNNwLJ.hamiltonian import hamiltonian
+from HNNwLJ.hamiltonian.kinetic_energy import kinetic_energy
+from HNNwLJ.hamiltonian.lennard_jones import lennard_jones
+from HNNwLJ.hamiltonian.LJ_term import LJ_term
+from HNNwLJ.hamiltonian.pb import pb
+from HNNwLJ.phase_space.phase_space import phase_space
 import torch
-from linear_integrator import linear_integrator
-from linear_velocity_verlet import linear_velocity_verlet
+from HNNwLJ.integrator import linear_integrator
+from HNNwLJ.integrator.methods import linear_velocity_verlet
 
 if __name__ == '__main__':
 

@@ -1,15 +1,15 @@
-import hamiltonian as NoML_hamiltonian
-from LJ_term import LJ_term
-from lennard_jones import lennard_jones
-from kinetic_energy import kinetic_energy
+import HNNwLJ.hamiltonian as NoML_hamiltonian
+from HNNwLJ.hamiltonian.LJ_term import LJ_term
+from HNNwLJ.hamiltonian.lennard_jones import lennard_jones
+from HNNwLJ.hamiltonian.kinetic_energy import kinetic_energy
 import torch
-from pb import pb
-from phase_space import phase_space
-from linear_integrator import linear_integrator
-from linear_velocity_verlet import linear_velocity_verlet
-from pair_wise_HNN import pair_wise_HNN
-from pair_wise_MLP import pair_wise_MLP
-from loss import qp_MSE_loss
+from HNNwLJ.hamiltonian.pb import pb
+from HNNwLJ.phase_space.phase_space import phase_space
+from HNNwLJ.integrator import linear_integrator
+from HNNwLJ.integrator.methods import linear_velocity_verlet
+from HNNwLJ.pair_wise_HNN import pair_wise_HNN
+from HNNwLJ.pair_wise_HNN.models import pair_wise_MLP
+from HNNwLJ.pair_wise_HNN.loss import qp_MSE_loss
 import torch.optim as optim
 
 

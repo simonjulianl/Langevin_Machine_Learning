@@ -1,10 +1,10 @@
 
 class MD_learner:
 
-    def __init__(self,linear_integrator, NoML_hamiltonian, pair_wise_HNN):
+    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN):
 
         self.linear_integrator = linear_integrator
-        self.NoML_hamiltonian =NoML_hamiltonian
+        self.noML_hamiltonian =noML_hamiltonian
         self.pair_wise_HNN = pair_wise_HNN
 
     def phase_space2label(self, MD_integrator, noML_hamiltonian):
@@ -22,14 +22,14 @@ class MD_learner:
         state['phase_space'].set_p(p_list)
 
         # prepare label
-        label = self.phase_space2label(self.linear_integrator(**state), self.NoML_hamiltonian)
+        label = self.phase_space2label(self.linear_integrator(**state), self.noML_hamiltonian)
 
         # to prepare data at large time step, need to change tau and iterations
         # tau = large time step 0.1 and 1 step
         state['tau'] = state['tau'] * state['iterations']  # tau = 0.1
         state['iterations'] = int(state['tau'] * state['iterations'])  # 1 step
 
-        pairwise_hnn = self.pair_wise_HNN(self.NoML_hamiltonian, state['MLP'], **state)
+        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
         pairwise_hnn.train()
         opt = state['opt']
 
@@ -57,7 +57,7 @@ class MD_learner:
         state['phase_space'].set_q(q_list)
         state['phase_space'].set_p(p_list)
 
-        prediction_noML = self.phase_space2label(self.linear_integrator(**state), self.NoML_hamiltonian)  # here label at large time step
+        prediction_noML = self.phase_space2label(self.linear_integrator(**state), self.noML_hamiltonian)  # here label at large time step
 
         print('prediction with   ML', prediction)
         print('prediction with noML', prediction_noML)

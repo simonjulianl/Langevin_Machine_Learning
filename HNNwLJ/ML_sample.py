@@ -1,4 +1,4 @@
-import hamiltonian as NoML_hamiltonian
+import hamiltonian as hamiltonian
 from hamiltonian.pb import pb
 from phase_space import phase_space
 import integrator as integrator
@@ -30,10 +30,10 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
 # noML_hamiltonian
-noML_hamiltonian = NoML_hamiltonian.hamiltonian()
-LJ = NoML_hamiltonian.LJ_term(epsilon = 1, sigma = 1, boxsize = boxsize)
-noML_hamiltonian.append(NoML_hamiltonian.lennard_jones(LJ, boxsize = boxsize))
-noML_hamiltonian.append(NoML_hamiltonian.kinetic_energy(mass = 1))
+noML_hamiltonian = hamiltonian.hamiltonian()
+LJ = hamiltonian.LJ_term(epsilon = epsilon, sigma = sigma, boxsize = boxsize)
+noML_hamiltonian.append(hamiltonian.lennard_jones(LJ, boxsize = boxsize))
+noML_hamiltonian.append(hamiltonian.kinetic_energy(mass = 1))
 
 phase_space = phase_space.phase_space()
 pb = pb()
