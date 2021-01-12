@@ -41,7 +41,7 @@ def linear_velocity_verlet(Hamiltonian, **state):
     print('vv input, tau', q, p, tau)
 
     pb_q = state['pb_q']
-    boxsize = state['BoxSize']
+    boxsize = state['boxsize']
 
     # p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
     # state['phase_space'].set_p(p_list_dummy)

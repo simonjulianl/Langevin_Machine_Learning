@@ -29,7 +29,7 @@ class pair_wise_HNN:
         data = data.requires_grad_(True)
         print('input for ML', data)
 
-        predict = self.network(data, self._state['particle'], self._state['DIM'])
+        predict = self.network(data, self._state['nparticle'], self._state['DIM'])
         print('pred', predict)
 
         corrected_dHdq = noML_dHdq + predict  # in linear_vv code, it calculates grad potential.
@@ -44,16 +44,16 @@ class pair_wise_HNN:
         p_list = phase_space.get_p()
 
         print(q_list, p_list)
-        N, N_particle, DIM = q_list.shape
+        nsamples, nparticle, DIM = q_list.shape
 
-        delta_init_q = torch.zeros((N, N_particle, (N_particle - 1), DIM))
-        delta_init_p = torch.zeros((N, N_particle, (N_particle - 1), DIM))
+        delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
+        delta_init_p = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
 
-        for z in range(N):
+        for z in range(nsamples):
 
-            delta_init_q_ = self.delta_qp(q_list[z], N_particle, DIM)
+            delta_init_q_ = self.delta_qp(q_list[z], nparticle, DIM)
             print('delta q ',delta_init_q_)
-            delta_init_p_ = self.delta_qp(p_list[z], N_particle, DIM)
+            delta_init_p_ = self.delta_qp(p_list[z], nparticle, DIM)
             print('delta p ',delta_init_p_)
 
             delta_init_q[z] = delta_init_q_
@@ -65,8 +65,8 @@ class pair_wise_HNN:
 
         # tau : #this is big time step to be trained
         # to add paired data array, reshape
-        tau = torch.tensor([self._state['tau']] * N_particle * (N_particle - 1))
-        tau = tau.reshape(-1, N_particle, (N_particle - 1), 1)  # broadcasting
+        tau = torch.tensor([self._state['tau']] * nparticle * (nparticle - 1))
+        tau = tau.reshape(-1, nparticle, (nparticle - 1), 1)  # broadcasting
         # print(tau)
 
         paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
@@ -79,7 +79,7 @@ class pair_wise_HNN:
 
         return paired_data
 
-    def delta_qp(self, qp_list, N_particle, DIM):
+    def delta_qp(self, qp_list, nparticle, DIM):
 
         qp_len = qp_list.shape[0]
         qp0 = torch.unsqueeze(qp_list,dim=0)
@@ -89,11 +89,11 @@ class pair_wise_HNN:
         #print(qpt)
         dqp_ = qpt - qpm
 
-        dqp = torch.zeros((N_particle,(N_particle-1),DIM))
+        dqp = torch.zeros((nparticle,(nparticle - 1),DIM))
 
-        for i in range(N_particle):
+        for i in range(nparticle):
             x=0
-            for j in range(N_particle):
+            for j in range(nparticle):
                 if i != j:
                     dqp[i][x] = dqp_[i,j,:]
 

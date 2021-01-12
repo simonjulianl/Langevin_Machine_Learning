@@ -31,5 +31,5 @@ class kinetic_energy:
         return torch.zeros(phase_space.get_q().shape)
 
     def evaluate_second_derivative_q(self, phase_space,pb):
-        N, N_particle, DIM  = phase_space.get_q().shape
-        return torch.zeros((N, DIM * N_particle, DIM * N_particle))
+        nsamples, nparticle, DIM  = phase_space.get_q().shape
+        return torch.zeros((nsamples, DIM * nparticle, DIM * nparticle))

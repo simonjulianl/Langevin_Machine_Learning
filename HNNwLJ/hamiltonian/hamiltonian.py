@@ -73,8 +73,8 @@ class hamiltonian:
         '''
         q_list = phase_space.get_q()
 
-        N, N_particle, DIM = q_list.shape
-        d2Hdq2 = torch.zeros((N, DIM * N_particle, DIM * N_particle))
+        nsamples, nparticle, DIM = q_list.shape
+        d2Hdq2 = torch.zeros((nsamples, DIM * nparticle, DIM * nparticle))
 
         for term in self.hamiltonian_terms:
             d2Hdq2 += term.evaluate_second_derivative_q(phase_space, pb)

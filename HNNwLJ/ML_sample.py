@@ -8,16 +8,18 @@ import pair_wise_HNN.models as models
 from pair_wise_HNN.loss import qp_MSE_loss
 import torch.optim as optim
 import torch
+import math
 
 nsamples = 1
-N_particle = 2
+nparticle = 2
 DIM = 2
 mass = 1
 epsilon = 1.
 sigma = 1.
-boxsize = 6.  # np.sqrt(N_particle/rho)
-tau = 0.01
-iterations = 10
+rho = 0.1
+boxsize = math.sqrt(nparticle/rho)
+tau = 0.01 # short time step for label
+iterations = 10 # n times short time step to pair data at one large time step
 n_input = 5
 n_hidden = 5
 lr = 0.01
@@ -39,10 +41,10 @@ phase_space = phase_space.phase_space()
 pb = pb()
 
 state = {
-    'N': nsamples,
-    'particle': N_particle,
+    'nsamples': nsamples,
+    'nparticle': nparticle,
     'DIM': DIM,
-    'BoxSize': boxsize,
+    'boxsize': boxsize,
     'iterations': iterations,
     'tau': tau,
     'integrator_method': methods.linear_velocity_verlet,

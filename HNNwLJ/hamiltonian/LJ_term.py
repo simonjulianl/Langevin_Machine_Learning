@@ -20,14 +20,14 @@ class LJ_term:
         xi_state = xi_space.get_q()
         term = torch.zeros(xi_state.shape[0])
 
-        N, N_particle, DIM  = xi_state.shape
+        nsamples, nparticle, DIM  = xi_state.shape
 
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
 
-        for z in range(N):
+        for z in range(nsamples):
 
-            _, d = pb.paired_distance_reduced(xi_state[z],N_particle,DIM)
+            _, d = pb.paired_distance_reduced(xi_state[z], nparticle, DIM)
 
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
@@ -41,14 +41,14 @@ class LJ_term:
 
         xi_state = xi_space.get_q()
         dphidxi = torch.zeros(xi_state.shape) # derivative terms of nsamples
-        N, N_particle, DIM  = xi_state.shape
+        nsamples, nparticle, DIM  = xi_state.shape
 
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 13)
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 7)
 
-        for z in range(N):
+        for z in range(nsamples):
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],N_particle,DIM)
+            delta_xi, d = pb.paired_distance_reduced(xi_state[z],nparticle,DIM)
             d = torch.unsqueeze(d,dim =2)
 
             s12 = -12 * (delta_xi) / pow(d,14)
@@ -63,18 +63,18 @@ class LJ_term:
         xi_state = xi_space.get_q()
         d2phidxi2_append = []
 
-        N, N_particle, DIM  = xi_state.shape
-        d2phidxi2 = torch.zeros((N, N_particle * DIM, N_particle * DIM)) # second derivative terms of nsamples
+        nsamples, nparticle, DIM  = xi_state.shape
+        d2phidxi2 = torch.zeros((nsamples, nparticle * DIM, nparticle * DIM)) # second derivative terms of nsamples
         d2phidxi_lk = torch.zeros((2,2))
 
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 14)
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 8)
 
-        for z in range(N):
+        for z in range(nsamples):
 
-            d2phidxi2_ = torch.empty((0, N_particle * DIM))
+            d2phidxi2_ = torch.empty((0, nparticle * DIM))
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],N_particle,DIM)
+            delta_xi, d = pb.paired_distance_reduced(xi_state[z],nparticle,DIM)
             d = torch.unsqueeze(d,dim=2)
 
             s12_same_term = 1. / pow(d,14)
@@ -85,9 +85,9 @@ class LJ_term:
             s6_lxkx_lyky = (-8) * torch.pow(delta_xi,2) / torch.pow(d,2)
             s6_lxky_lykx = 1. / pow(d,10)
 
-            for l in range(N_particle):
+            for l in range(nparticle):
                 j = 0
-                for k in range(N_particle):
+                for k in range(nparticle):
 
                     if l == k:
                         d2phidxi_lxkx = a12 *(-12)* (torch.sum(s12_same_term[k] * torch.unsqueeze(s12_lxkx_lyky[k,:,0],dim=-1) + s12_same_term[k],dim=0)) \
@@ -126,9 +126,9 @@ class LJ_term:
                         j = j + 1
                     d2phidxi2_append.append(d2phidxi_lk)
 
-                if k == N_particle-1:
+                if k == nparticle - 1:
                     temp = torch.stack(d2phidxi2_append,dim=0)
-                    temp = temp.permute((1,0,2)).reshape(2, N_particle * DIM )
+                    temp = temp.permute((1,0,2)).reshape(2, nparticle * DIM )
                     print('reshape',temp)
                     d2phidxi2_append = []
 

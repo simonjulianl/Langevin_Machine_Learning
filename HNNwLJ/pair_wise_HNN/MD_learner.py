@@ -16,7 +16,7 @@ class MD_learner:
     def train(self, filename, **state):
 
         # load initial data
-        q_list, p_list = state['phase_space'].read(filename, nsamples=state['N'])
+        q_list, p_list = state['phase_space'].read(filename, nsamples=state['nsamples'])
 
         state['phase_space'].set_q(q_list)
         state['phase_space'].set_p(p_list)

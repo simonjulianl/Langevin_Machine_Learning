@@ -14,23 +14,20 @@ class linear_integrator:
     def integrate(self, Hamiltonian):
 
         # obtain all the constants
-        N = self._configuration['N']  # total number of samples
-        particle = self._configuration['particle']  # ADD
+        nsamples = self._configuration['nsamples']
+        nparticle = self._configuration['nparticle']
         DIM = self._configuration['DIM']
         integrator_method = self._configuration['integrator_method']
 
-        q_list = torch.zeros((self._configuration['iterations'], N, particle, DIM))
-        p_list = torch.zeros((self._configuration['iterations'], N, particle, DIM))
-
-        print('Not multicpu')
-        # print(self._configuration)
+        q_list = torch.zeros((self._configuration['iterations'], nsamples, nparticle, DIM))
+        p_list = torch.zeros((self._configuration['iterations'], nsamples, nparticle, DIM))
 
         for i in trange(self._configuration['iterations']):
 
             self._configuration = integrator_method(Hamiltonian, **self._configuration)
 
-            print('{} iteration'.format(i), self._configuration['phase_space'].get_q())
-            print('{} iteration'.format(i), self._configuration['phase_space'].get_p())
+            # print('{} iteration'.format(i), self._configuration['phase_space'].get_q())
+            # print('{} iteration'.format(i), self._configuration['phase_space'].get_p())
 
             q_list[i] = self._configuration['phase_space'].get_q()
             p_list[i] = self._configuration['phase_space'].get_p()  # sample

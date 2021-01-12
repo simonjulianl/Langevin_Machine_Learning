@@ -38,7 +38,7 @@ class pb:
             print('debug_pbc_max_distance',q)
             raise ValueError('pbc reduced max distnace not applied')
 
-    def paired_distance_reduced(self,q, N_particle, DIM):
+    def paired_distance_reduced(self,q, nparticle, DIM):
 
         #print("==pb==")
 
@@ -52,7 +52,7 @@ class pb:
         indices = torch.where(torch.abs(dq)>0.5)
         dq[indices] = dq[indices] - torch.round(dq[indices])
 
-        dq = dq[dq.nonzero(as_tuple=True)].reshape(N_particle, N_particle - 1, DIM)
+        dq = dq[dq.nonzero(as_tuple=True)].reshape(nparticle, nparticle - 1, DIM)
 
         dd = torch.sqrt(torch.sum(dq*dq,dim=2))
 
