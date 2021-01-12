@@ -19,10 +19,10 @@ class linear_integrator:
         DIM = self._configuration['DIM']
         integrator_method = self._configuration['integrator_method']
 
-        q_list = torch.zeros((self._configuration['iterations'], nsamples, nparticle, DIM))
-        p_list = torch.zeros((self._configuration['iterations'], nsamples, nparticle, DIM))
+        q_list = torch.zeros((self._configuration['MD_iterations'], nsamples, nparticle, DIM))
+        p_list = torch.zeros((self._configuration['MD_iterations'], nsamples, nparticle, DIM))
 
-        for i in trange(self._configuration['iterations']):
+        for i in trange(self._configuration['MD_iterations']):
 
             self._configuration = integrator_method(Hamiltonian, **self._configuration)
 

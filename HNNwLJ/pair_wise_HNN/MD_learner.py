@@ -22,12 +22,14 @@ class MD_learner:
         state['phase_space'].set_p(p_list)
 
         # print('===== state at short time step 0.01 =====')
+        state['tau_cur'] = state['tau_short']
+        state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
         label = self.phase_space2label(self.linear_integrator(**state), self.noML_hamiltonian)
 
         # to prepare data at large time step, need to change tau and iterations
         # tau = large time step 0.1 and 1 step
-        state['tau'] = state['tau'] * state['iterations']  # tau = 0.1
-        state['iterations'] = int(state['tau'] * state['iterations'])  # 1 step
+        state['tau_cur'] = state['tau_long']  # tau = 0.1
+        state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
 
         pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
         pairwise_hnn.train()
@@ -56,6 +58,7 @@ class MD_learner:
         plt.xlabel('epoch', fontsize=20)
         plt.ylabel('loss', fontsize=20)
         plt.plot(loss_, linewidth=2)
+        plt.grid()
         plt.show()
 
 
@@ -66,7 +69,7 @@ class MD_learner:
         state['phase_space'].set_q(q_list)
         state['phase_space'].set_p(p_list)
 
-        prediction_noML = self.phase_space2label(self.linear_integrator(**state), self.noML_hamiltonian)  # here label at large time step
+        prediction_noML = label
 
         print('prediction with   ML', prediction)
         print('prediction with noML', prediction_noML)

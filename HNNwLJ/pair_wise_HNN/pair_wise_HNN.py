@@ -60,7 +60,7 @@ class pair_wise_HNN:
 
         # tau : #this is big time step to be trained
         # to add paired data array, reshape
-        tau = torch.tensor([self._state['tau']] * nparticle * (nparticle - 1))
+        tau = torch.tensor([self._state['tau_cur']] * nparticle * (nparticle - 1))
         tau = tau.reshape(-1, nparticle, (nparticle - 1), 1)  # broadcasting
         # print(tau)
 

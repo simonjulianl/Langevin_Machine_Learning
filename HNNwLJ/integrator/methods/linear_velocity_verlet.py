@@ -36,7 +36,7 @@ def linear_velocity_verlet(Hamiltonian, **state):
     q = state['phase_space'].get_q()
     p = state['phase_space'].get_p()
 
-    tau = state['tau']
+    tau = state['tau_cur']
 
     # print('vv input, tau', q, p, tau)
 

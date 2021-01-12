@@ -18,8 +18,8 @@ epsilon = 1.
 sigma = 1.
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
-tau = 0.01 # short time step for label
-iterations = 10 # n times short time step to pair data at one large time step
+tau_short = 0.01 # short time step for label
+tau_long = 0.1
 n_input = 5
 n_hidden = 5
 lr = 0.01
@@ -45,8 +45,10 @@ state = {
     'nparticle': nparticle,
     'DIM': DIM,
     'boxsize': boxsize,
-    'iterations': iterations,
-    'tau': tau,
+    'MD_iterations': 0,
+    'tau_cur': 0.0,
+    'tau_long' : tau_long,  # for MD
+    'tau_short' : tau_short,# for label (gold standard)
     'integrator_method': methods.linear_velocity_verlet,
     'phase_space': phase_space,
     'pb_q': pb,
