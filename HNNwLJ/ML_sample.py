@@ -10,8 +10,8 @@ import torch.optim as optim
 import torch
 import math
 
-nsamples_label = 2
-nsamples_data = 1
+nsamples_label = 50
+nsamples_ML = 1
 nparticle = 2
 DIM = 2
 mass = 1
@@ -44,7 +44,7 @@ pb = pb()     # pb is boundary condition
 state = {
     'nsamples_cur': 0,
     'nsamples_label': nsamples_label,
-    'nsamples_data': nsamples_data,
+    'nsamples_ML': nsamples_ML,
     'nparticle': nparticle,
     'DIM': DIM,
     'boxsize': boxsize,
@@ -60,15 +60,16 @@ state = {
 
 MLP = models.pair_wise_MLP(n_input, n_hidden)
 opt = optim.Adam(MLP.parameters(), lr=lr)
-# pair_wise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state)  # data preparation / calc f_MD, f_ML
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 setting = {
     'opt' : opt,
     'loss' : qp_MSE_loss,
-    'MLP' : MLP
+    'MLP' : MLP,
+    '_device' : device
     }
 
 state.update(setting)
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle,nsamples_label), **state)
+MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label), **state)

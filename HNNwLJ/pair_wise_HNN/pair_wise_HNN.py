@@ -3,6 +3,7 @@ import torch
 class pair_wise_HNN:
 
     def __init__(self, NoML_hamiltonian, network, **kwargs):
+
         self.network = network
         self.noML_hamiltonian = NoML_hamiltonian
         self._state = kwargs
@@ -28,7 +29,7 @@ class pair_wise_HNN:
 
         # print('===== data for preparing ML input =====')
         data = self.phase_space2data(phase_space)
-        data = data.requires_grad_(True)
+        # data = data.requires_grad_(True)
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
         # print(data.shape)
