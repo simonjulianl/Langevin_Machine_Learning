@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch
 import math
 
-nsamples_label = 10
+nsamples_label = 50
 nsamples_ML = 1
 nparticle = 2
 DIM = 2
@@ -24,7 +24,7 @@ tau_long = 0.1
 n_input = 5
 n_hidden = 40
 lr = 0.0001
-nepochs = 5000
+nepochs = 100000
 
 seed = 9372211
 torch.manual_seed(seed)

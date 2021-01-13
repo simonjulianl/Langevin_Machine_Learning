@@ -46,6 +46,7 @@ class MD_learner:
 
         loss_ = []
         n_batches = q_list.shape[0]
+        text = ''
 
         for e in range(state['nepochs']):
 
@@ -94,6 +95,11 @@ class MD_learner:
             train_loss_avg = train_loss / n_batches
             end = time.time()
             print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
+            text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
+            with open('loss.txt', 'w') as fp:
+                fp.write(text)
+            fp.close()
+
             loss_.append(train_loss_avg)
 
         plt.xlabel('epoch', fontsize=20)
