@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
+import time
 
 class MD_learner:
 
@@ -58,6 +59,7 @@ class MD_learner:
             q_list_shuffle, p_list_shuffle = q_list[idx], p_list[idx]
 
             train_loss = 0
+            start = time.time()
 
             for i in range(n_batches):
 
@@ -90,7 +92,8 @@ class MD_learner:
                 # print('loss each batch',loss.item())
 
             train_loss_avg = train_loss / n_batches
-            print('{} epoch:'.format(e),train_loss_avg)
+            end = time.time()
+            print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
             loss_.append(train_loss_avg)
 
         plt.xlabel('epoch', fontsize=20)
