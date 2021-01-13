@@ -23,8 +23,8 @@ tau_short = 0.01 # short time step for label
 tau_long = 0.1
 n_input = 5
 n_hidden = 5
-lr = 0.01
-nepochs = 4
+lr = 0.001
+nepochs = 100
 
 seed = 9372211
 torch.manual_seed(seed)
@@ -70,6 +70,12 @@ setting = {
     }
 
 state.update(setting)
+
+print('__Number CUDA Devices:', torch.cuda.device_count())
+print('__Devices')
+print('Active CUDA Device: GPU', torch.cuda.current_device())
+print ('Available devices ', torch.cuda.device_count())
+print ('Current cuda device ', torch.cuda.current_device())
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
 MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label), **state)

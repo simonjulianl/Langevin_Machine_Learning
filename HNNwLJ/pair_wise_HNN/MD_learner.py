@@ -59,6 +59,7 @@ class MD_learner:
 
             for i in range(n_batches):
 
+                print('batch',i)
                 q_list_batch, p_list_batch = q_list_shuffle[idx[i]], p_list_shuffle[idx[i]]
                 q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device']).requires_grad_(True)
                 p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device']).requires_grad_(True)
