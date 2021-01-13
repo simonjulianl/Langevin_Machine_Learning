@@ -22,7 +22,8 @@ class linear_integrator:
         q_list = torch.zeros((self._state['MD_iterations'], nsamples, nparticle, DIM))
         p_list = torch.zeros((self._state['MD_iterations'], nsamples, nparticle, DIM))
 
-        for i in trange(self._state['MD_iterations']):
+        # for i in trange(self._state['MD_iterations']):
+        for i in range(self._state['MD_iterations']):
 
             self._state = integrator_method(Hamiltonian, **self._state)
 

@@ -9,6 +9,8 @@ class pair_wise_MLP(nn.Module):
         self.correction_term = nn.Sequential(
             nn.Linear(n_input, n_hidden),
             nn.Tanh(),
+            nn.Linear(n_hidden, n_hidden),
+            nn.Tanh(),
             nn.Linear(n_hidden, 2)
         )
 

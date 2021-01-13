@@ -37,7 +37,7 @@ class MD_learner:
         state['nsamples_cur'] = state['nsamples_ML']
         state['tau_cur'] = state['tau_long']  # tau = 0.1
         state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
-        state['MLP'] = state['MLP'].to(state['_device'])
+        # state['MLP'] = state['MLP'].to(state['_device'])
 
         pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
         pairwise_hnn.train()
@@ -50,19 +50,22 @@ class MD_learner:
 
             # shuffle based on epoch
             g = torch.Generator()
-            g.manual_seed(e)
+            # g.manual_seed(e)
 
+            # all same shuffle idx each epoch
             idx = torch.randperm(q_list.shape[0], generator=g)
+            # print('each epoch idx', idx)
             q_list_shuffle, p_list_shuffle = q_list[idx], p_list[idx]
 
             train_loss = 0
 
             for i in range(n_batches):
 
-                print('batch',i)
                 q_list_batch, p_list_batch = q_list_shuffle[idx[i]], p_list_shuffle[idx[i]]
-                q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device']).requires_grad_(True)
-                p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device']).requires_grad_(True)
+                # q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device']).requires_grad_(True)
+                # p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device']).requires_grad_(True)
+                q_list_batch = torch.unsqueeze(q_list_batch, dim=0).requires_grad_(True)
+                p_list_batch = torch.unsqueeze(p_list_batch, dim=0).requires_grad_(True)
 
                 state['phase_space'].set_q(q_list_batch)
                 state['phase_space'].set_p(p_list_batch)
@@ -71,8 +74,10 @@ class MD_learner:
                 prediction = self.linear_integrator(**state).integrate(pairwise_hnn)
 
                 q_label_batch, p_label_batch = q_list_label[idx[i]], p_list_label[idx[i]]
-                q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(state['_device'])
-                p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(state['_device'])
+                # q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(state['_device'])
+                # p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(state['_device'])
+                q_label_batch = torch.unsqueeze(q_label_batch, dim=0)
+                p_label_batch = torch.unsqueeze(p_label_batch, dim=0)
 
                 label = (q_label_batch, p_label_batch)
 
@@ -82,16 +87,17 @@ class MD_learner:
                 loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
                 train_loss += loss.item()  # get the scalar output
                 opt.step()
+                # print('loss each batch',loss.item())
 
             train_loss_avg = train_loss / n_batches
-            print(train_loss_avg)
+            print('{} epoch:'.format(e),train_loss_avg)
             loss_.append(train_loss_avg)
 
         plt.xlabel('epoch', fontsize=20)
         plt.ylabel('loss', fontsize=20)
         plt.plot(loss_, linewidth=2)
         plt.grid()
-        # plt.show()
+        plt.show()
 
 
         # # do one step velocity verlet without ML

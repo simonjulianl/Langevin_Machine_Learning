@@ -12,7 +12,7 @@ seed = 23645 # for test
 
 text=''
 
-nsamples = 50
+nsamples = 1
 nparticle = 2
 DIM = 2
 mass = 1
@@ -55,6 +55,13 @@ metropolis_mc = integrator.metropolis_mc(noML_hamiltonian, **state)
 q_hist, PE, ACCRatio, spec = metropolis_mc.integrate()
 
 base_library = os.path.abspath('init_config')
+
+text = text +  "{0:.3f}".format(state["temperature"]) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
+plt.title('T={}; AccRatio={:.3f}'.format(state["temperature"],ACCRatio),fontsize=15)
+plt.plot(PE,'k-')
+plt.xlabel('mcs',fontsize=20)
+plt.ylabel(r'$U_{ij}$',fontsize=20)
+plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle,q_hist[0::40].shape[0],rho,T) +'.png')
 
 # momentum sampler
 momentum_sampler = integrator.momentum_sampler(**state)
