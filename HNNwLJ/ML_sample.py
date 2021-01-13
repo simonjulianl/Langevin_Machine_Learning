@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch
 import math
 
-nsamples_label = 50
+nsamples_label = 10
 nsamples_ML = 1
 nparticle = 2
 DIM = 2
