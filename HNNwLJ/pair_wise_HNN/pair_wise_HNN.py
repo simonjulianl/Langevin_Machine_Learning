@@ -27,7 +27,7 @@ class pair_wise_HNN:
         phase_space.set_p(p_list)
 
         # print('===== data for preparing ML input =====')
-        data = self.phase_space2data(phase_space, pb)
+        data = self.phase_space2data(phase_space)
         data = data.requires_grad_(True)
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
@@ -39,12 +39,12 @@ class pair_wise_HNN:
 
         return corrected_dHdq
 
-    def phase_space2data(self, phase_space, pb):
+    def phase_space2data(self, phase_space):
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
 
-        print(q_list.shape, p_list.shape)
+        print('phase_space2data',q_list.shape, p_list.shape)
         nsamples, nparticle, DIM = q_list.shape
 
         delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
@@ -52,8 +52,8 @@ class pair_wise_HNN:
 
         for z in range(nsamples):
 
-            delta_init_q_ = self.delta_qp(q_list[z], nparticle, DIM)
-            delta_init_p_ = self.delta_qp(p_list[z], nparticle, DIM)
+            delta_init_q_ = self.delta_qorp(q_list[z], nparticle, DIM)
+            delta_init_p_ = self.delta_qorp(p_list[z], nparticle, DIM)
 
             delta_init_q[z] = delta_init_q_
             delta_init_p[z] = delta_init_p_
@@ -72,25 +72,25 @@ class pair_wise_HNN:
 
         return paired_data
 
-    def delta_qp(self, qp_list, nparticle, DIM):
+    def delta_qorp(self, qorp_list, nparticle, DIM):
 
-        qp_len = qp_list.shape[0]
-        qp0 = torch.unsqueeze(qp_list,dim=0)
-        qpm = torch.repeat_interleave(qp0,qp_len,dim=0)
+        qorp_len = qorp_list.shape[0]
+        qorp0 = torch.unsqueeze(qorp_list, dim=0)
+        qorpm = torch.repeat_interleave(qorp0, qorp_len, dim=0)
 
-        qpt = qpm.permute(1,0,2)
+        qorpt = qorpm.permute(1,0,2)
 
-        dqp_ = qpt - qpm
+        dqorp_ = qorpt - qorpm
 
-        dqp = torch.zeros((nparticle,(nparticle - 1),DIM))
+        dqorp = torch.zeros((nparticle,(nparticle - 1),DIM))
 
         for i in range(nparticle):
             x=0
             for j in range(nparticle):
                 if i != j:
-                    dqp[i][x] = dqp_[i,j,:]
+                    dqorp[i][x] = dqorp_[i,j,:]
 
                     x = x + 1
 
-        return dqp
+        return dqorp
 
