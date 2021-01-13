@@ -12,7 +12,10 @@ def qp_MSE_loss(qp_quantities, label):
     # print(q_label,p_label)
 
     if q_quantity.shape != q_label.shape or p_quantity.shape != p_label.shape:
+        print('q pred, label',q_quantity.shape,q_label.shape)
+        print('p pred, label',p_quantity.shape, p_label.shape)
         print('error shape not match ')
+        quit()
 
     _reduction = 'sum' # to amplify the loss magnitude
     criterion = nn.MSELoss(reduction = _reduction)

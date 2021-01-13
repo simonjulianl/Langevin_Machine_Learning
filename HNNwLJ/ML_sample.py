@@ -10,7 +10,8 @@ import torch.optim as optim
 import torch
 import math
 
-nsamples = 2
+nsamples_label = 2
+nsamples_data = 1
 nparticle = 2
 DIM = 2
 mass = 1
@@ -23,7 +24,7 @@ tau_long = 0.1
 n_input = 5
 n_hidden = 5
 lr = 0.01
-nepochs = 50
+nepochs = 4
 
 seed = 9372211
 torch.manual_seed(seed)
@@ -41,7 +42,9 @@ phase_space = phase_space.phase_space()
 pb = pb()     # pb is boundary condition
 
 state = {
-    'nsamples': nsamples,
+    'nsamples_cur': 0,
+    'nsamples_label': nsamples_label,
+    'nsamples_data': nsamples_data,
     'nparticle': nparticle,
     'DIM': DIM,
     'boxsize': boxsize,
@@ -68,4 +71,4 @@ setting = {
 state.update(setting)
 
 MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle,nsamples), **state)
+MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle,nsamples_label), **state)

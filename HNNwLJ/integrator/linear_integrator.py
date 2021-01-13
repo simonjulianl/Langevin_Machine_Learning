@@ -9,25 +9,25 @@ class linear_integrator:
 
     def __init__(self, **kwargs):
 
-        self._configuration = kwargs
+        self._state = kwargs
 
     def integrate(self, Hamiltonian):
 
         # obtain all the constants
-        nsamples = self._configuration['nsamples']
-        nparticle = self._configuration['nparticle']
-        DIM = self._configuration['DIM']
-        integrator_method = self._configuration['integrator_method']
+        nsamples = self._state['nsamples_cur']
+        nparticle = self._state['nparticle']
+        DIM = self._state['DIM']
+        integrator_method = self._state['integrator_method']
 
-        q_list = torch.zeros((self._configuration['MD_iterations'], nsamples, nparticle, DIM))
-        p_list = torch.zeros((self._configuration['MD_iterations'], nsamples, nparticle, DIM))
+        q_list = torch.zeros((self._state['MD_iterations'], nsamples, nparticle, DIM))
+        p_list = torch.zeros((self._state['MD_iterations'], nsamples, nparticle, DIM))
 
-        for i in trange(self._configuration['MD_iterations']):
+        for i in trange(self._state['MD_iterations']):
 
-            self._configuration = integrator_method(Hamiltonian, **self._configuration)
+            self._state = integrator_method(Hamiltonian, **self._state)
 
-            q_list[i] = self._configuration['phase_space'].get_q()
-            p_list[i] = self._configuration['phase_space'].get_p()  # sample
+            q_list[i] = self._state['phase_space'].get_q()
+            p_list[i] = self._state['phase_space'].get_p()  # sample
 
         q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
 
