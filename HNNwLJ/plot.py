@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 data = np.genfromtxt('loss.txt')
 
-x = range(0,59200)
+x = range(0,1000)
 loss = data[:,1]
-loss = loss[:59200]
+loss = loss[:1000]
 
 fig2 =plt.figure()
 ax2 = fig2.add_subplot(111)

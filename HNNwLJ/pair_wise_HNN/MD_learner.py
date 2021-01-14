@@ -38,7 +38,7 @@ class MD_learner:
         state['nsamples_cur'] = state['nsamples_ML']
         state['tau_cur'] = state['tau_long']  # tau = 0.1
         state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
-        # state['MLP'] = state['MLP'].to(state['_device'])
+        state['MLP'] = state['MLP'].to(state['_device'])
 
         pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
         pairwise_hnn.train()
@@ -64,33 +64,45 @@ class MD_learner:
 
             for i in range(n_batches):
 
+                start_batch = time.time()
+    
                 q_list_batch, p_list_batch = q_list_shuffle[idx[i]], p_list_shuffle[idx[i]]
-                # q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device']).requires_grad_(True)
-                # p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device']).requires_grad_(True)
-                q_list_batch = torch.unsqueeze(q_list_batch, dim=0).requires_grad_(True)
-                p_list_batch = torch.unsqueeze(p_list_batch, dim=0).requires_grad_(True)
+                q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device'])
+                p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device'])
+                # q_list_batch = torch.unsqueeze(q_list_batch, dim=0).requires_grad_(True)
+                # p_list_batch = torch.unsqueeze(p_list_batch, dim=0).requires_grad_(True)
+
+                q_label_batch, p_label_batch = q_list_label[idx[i]], p_list_label[idx[i]]
+                q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(state['_device'])
+                p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(state['_device'])
+                #q_label_batch = torch.unsqueeze(q_label_batch, dim=0)
+                #p_label_batch = torch.unsqueeze(p_label_batch, dim=0)
+
+                label = (q_label_batch, p_label_batch)
 
                 state['phase_space'].set_q(q_list_batch)
                 state['phase_space'].set_p(p_list_batch)
 
+                end_batch = time.time()
+
+                print('data preperation time',end_batch-start)
                 # print('======= train combination of MD and ML =======')
-                prediction = self.linear_integrator(**state).integrate(pairwise_hnn)
+                q_pred, p_pred = self.linear_integrator(**state).integrate(pairwise_hnn)
+                q_pred = q_pred.to(state['_device'])
+                p_pred = p_pred.to(state['_device'])
 
-                q_label_batch, p_label_batch = q_list_label[idx[i]], p_list_label[idx[i]]
-                # q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(state['_device'])
-                # p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(state['_device'])
-                q_label_batch = torch.unsqueeze(q_label_batch, dim=0)
-                p_label_batch = torch.unsqueeze(p_label_batch, dim=0)
-
-                label = (q_label_batch, p_label_batch)
+                prediction = (q_pred, p_pred)
 
                 loss = state['loss'](prediction, label)
 
                 opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
                 loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
-                train_loss += loss.item()  # get the scalar output
                 opt.step()
                 # print('loss each batch',loss.item())
+                end2_batch = time.time()
+                print('gpu time',end2_batch-end_batch)
+
+                train_loss += loss.item()  # get the scalar output
 
             train_loss_avg = train_loss / n_batches
             end = time.time()
@@ -106,7 +118,7 @@ class MD_learner:
         plt.ylabel('loss', fontsize=20)
         plt.plot(loss_, linewidth=2)
         plt.grid()
-        plt.show()
+        # plt.show()
 
 
         # # do one step velocity verlet without ML

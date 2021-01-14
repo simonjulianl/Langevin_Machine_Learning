@@ -28,15 +28,15 @@ class pair_wise_HNN:
         phase_space.set_p(p_list)
 
         # print('===== data for preparing ML input =====')
-        data = self.phase_space2data(phase_space)
+        data = self.phase_space2data(phase_space).to(self._state['_device'])
         # data = data.requires_grad_(True)
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
         # print(data.shape)
 
-        predict = self.network(data, self._state['nparticle'], self._state['DIM'])
+        predict = self.network(data, self._state['nparticle'], self._state['DIM']).to(self._state['_device'])
 
-        corrected_dHdq = noML_dHdq + predict  # in linear_vv code, it calculates grad potential.
+        corrected_dHdq = noML_dHdq.to(self._state['_device']) + predict  # in linear_vv code, it calculates grad potential.
 
         return corrected_dHdq
 
