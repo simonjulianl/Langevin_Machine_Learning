@@ -29,6 +29,7 @@ class pair_wise_HNN:
 
         # print('===== data for preparing ML input =====')
         data = self.phase_space2data(phase_space)
+
         # data = data.requires_grad_(True)
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
@@ -36,7 +37,7 @@ class pair_wise_HNN:
 
         predict = self.network(data, self._state['nparticle'], self._state['DIM'])
 
-        corrected_dHdq = noML_dHdq + predict  # in linear_vv code, it calculates grad potential.
+        corrected_dHdq = noML_dHdq.to(self._state['_device']) + predict  # in linear_vv code, it calculates grad potential.
 
         return corrected_dHdq
 
@@ -48,8 +49,8 @@ class pair_wise_HNN:
         # print('phase_space2data',q_list.shape, p_list.shape)
         nsamples, nparticle, DIM = q_list.shape
 
-        delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
-        delta_init_p = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM))
+        delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(self._state['_device'])
+        delta_init_p = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(self._state['_device'])
 
         for z in range(nsamples):
 
@@ -61,15 +62,15 @@ class pair_wise_HNN:
 
         # tau : #this is big time step to be trained
         # to add paired data array, reshape
-        tau = torch.tensor([self._state['tau_cur']] * nparticle * (nparticle - 1))
+        tau = torch.tensor([self._state['tau_cur']] * nparticle * (nparticle - 1)).to(self._state['_device'])
         tau = tau.reshape(-1, nparticle, (nparticle - 1), 1)  # broadcasting
         # print(tau)
 
         # print(delta_init_q.shape,delta_init_p.shape)
 
-        paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # N (nsamples) x N_particle x (N_particle-1) x (del_qx, del_qy, del_px, del_py)
-        paired_data = torch.cat((paired_data_, tau), dim=-1)  # nsamples x N_particle x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
-        paired_data = paired_data.reshape(-1, paired_data.shape[3])  # (nsamples x N_particle) x (N_particle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+        paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # nsamples x nparticle x (nparticle-1) x (del_qx, del_qy, del_px, del_py)
+        paired_data = torch.cat((paired_data_, tau), dim=-1)  # nsamples x nparticle x (nparticle-1) x  (del_qx, del_qy, del_px, del_py, tau )
+        paired_data = paired_data.reshape(-1, paired_data.shape[3])  # (nsamples x nparticle) x (nparticle-1) x  (del_qx, del_qy, del_px, del_py, tau )
 
         return paired_data
 
