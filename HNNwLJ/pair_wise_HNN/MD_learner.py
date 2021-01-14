@@ -38,9 +38,9 @@ class MD_learner:
         state['nsamples_cur'] = state['nsamples_ML']
         state['tau_cur'] = state['tau_long']  # tau = 0.1
         state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
-        state['MLP'] = state['MLP'].to(state['_device'])
+        MLP = state['MLP'].to(state['_device'])
 
-        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
+        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, MLP, **state)
         pairwise_hnn.train()
         opt = state['opt']
 
@@ -102,6 +102,12 @@ class MD_learner:
             fp.close()
 
             loss_.append(train_loss_avg)
+
+        torch.save({
+                'epoch': state['nepochs'],
+                'model_state_dict' : MLP.state_dict(),
+                'optimizer': opt.state_dict()
+                },'checkpoint.pth')
 
         plt.xlabel('epoch', fontsize=20)
         plt.ylabel('loss', fontsize=20)
