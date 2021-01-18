@@ -3,7 +3,7 @@
 
 import numpy as np
 import torch
-from tqdm import trange
+#from tqdm import trange
 
 class linear_integrator:
 

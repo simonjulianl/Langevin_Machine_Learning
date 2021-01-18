@@ -27,7 +27,6 @@ class pair_wise_HNN:
         phase_space.set_q(q_list)
         phase_space.set_p(p_list)
 
-        # print('===== data for preparing ML input =====')
         data = self.phase_space2data(phase_space)
 
         # data = data.requires_grad_(True)

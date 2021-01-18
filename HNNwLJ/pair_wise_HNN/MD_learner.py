@@ -77,11 +77,12 @@ class MD_learner:
                 state['phase_space'].set_q(q_list_batch)
                 state['phase_space'].set_p(p_list_batch)
 
+
                 # print('======= train combination of MD and ML =======')
                 q_pred, p_pred = self.linear_integrator(**state).integrate(pairwise_hnn)
-                q_pred = q_pred.to(state['_device']) ; p_pred = p_pred.to(state['_device'])
+                q_pred = q_pred.to(state['_device']); p_pred = p_pred.to(state['_device'])
 
-                prediction = (q_pred,p_pred)
+                prediction = (q_pred, p_pred)
 
                 loss = state['loss'](prediction, label)
 
@@ -97,7 +98,7 @@ class MD_learner:
             end = time.time()
             print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
             text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
-            with open('nsamples{}_loss.txt'.format(state['nsamples_label']), 'w') as fp:
+            with open('nsamples{}_tau{}_loss.txt'.format(state['nsamples_label'],state['tau_cur']), 'w') as fp:
                 fp.write(text)
             fp.close()
 

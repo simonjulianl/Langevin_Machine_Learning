@@ -20,7 +20,7 @@ sigma = 1.
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 tau_short = 0.01 # short time step for label
-tau_long = 0.1
+tau_long = 0.01
 n_input = 5
 n_hidden = 40
 lr = 0.0001
@@ -60,7 +60,7 @@ state = {
 
 MLP = models.pair_wise_MLP(n_input, n_hidden)
 opt = optim.Adam(MLP.parameters(), lr=lr)
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 setting = {
     'opt' : opt,
@@ -71,6 +71,7 @@ setting = {
 
 state.update(setting)
 
+# check gpu available
 print('__Number CUDA Devices:', torch.cuda.device_count())
 print('__Devices')
 print('Active CUDA Device: GPU', torch.cuda.current_device())

@@ -7,6 +7,12 @@ x = range(0,10000)
 loss = data[:,1]
 loss = loss[:10000]
 
+data = np.genfromtxt('nsamples100_loss.txt')
+
+x = range(0,160000)
+loss = data[:,1]
+loss = loss[:160000]
+
 fig2 =plt.figure()
 ax2 = fig2.add_subplot(111)
 #ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
