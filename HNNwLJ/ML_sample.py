@@ -24,7 +24,7 @@ tau_long = 0.1
 n_input = 5
 n_hidden = 40
 lr = 0.0001
-nepochs = 10
+nepochs = 100000
 
 seed = 9372211
 torch.manual_seed(seed)
