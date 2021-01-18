@@ -38,9 +38,9 @@ class MD_learner:
         state['nsamples_cur'] = state['nsamples_ML']
         state['tau_cur'] = state['tau_long']  # tau = 0.1
         state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
-        state['MLP'] = state['MLP'].to(state['_device'])
+        MLP = state['MLP'].to(state['_device'])
 
-        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, state['MLP'], **state)
+        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, MLP, **state)
         pairwise_hnn.train()
         opt = state['opt']
 
@@ -64,32 +64,23 @@ class MD_learner:
 
             for i in range(n_batches):
 
-                start_batch = time.time()
-    
                 q_list_batch, p_list_batch = q_list_shuffle[idx[i]], p_list_shuffle[idx[i]]
                 q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(state['_device'])
                 p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(state['_device'])
-                # q_list_batch = torch.unsqueeze(q_list_batch, dim=0).requires_grad_(True)
-                # p_list_batch = torch.unsqueeze(p_list_batch, dim=0).requires_grad_(True)
 
                 q_label_batch, p_label_batch = q_list_label[idx[i]], p_list_label[idx[i]]
                 q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(state['_device'])
                 p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(state['_device'])
-                #q_label_batch = torch.unsqueeze(q_label_batch, dim=0)
-                #p_label_batch = torch.unsqueeze(p_label_batch, dim=0)
 
                 label = (q_label_batch, p_label_batch)
 
                 state['phase_space'].set_q(q_list_batch)
                 state['phase_space'].set_p(p_list_batch)
 
-                end_batch = time.time()
 
-                print('data preperation time',end_batch-start)
                 # print('======= train combination of MD and ML =======')
                 q_pred, p_pred = self.linear_integrator(**state).integrate(pairwise_hnn)
-                q_pred = q_pred.to(state['_device'])
-                p_pred = p_pred.to(state['_device'])
+                q_pred = q_pred.to(state['_device']); p_pred = p_pred.to(state['_device'])
 
                 prediction = (q_pred, p_pred)
 
@@ -97,22 +88,27 @@ class MD_learner:
 
                 opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
                 loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
+
                 opt.step()
-                # print('loss each batch',loss.item())
-                end2_batch = time.time()
-                print('gpu time',end2_batch-end_batch)
 
                 train_loss += loss.item()  # get the scalar output
+                # print('loss each batch',loss.item())
 
             train_loss_avg = train_loss / n_batches
             end = time.time()
             print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
             text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
-            with open('loss.txt', 'w') as fp:
+            with open('nsamples{}_tau{}_loss.txt'.format(state['nsamples_label'],state['tau_cur']), 'w') as fp:
                 fp.write(text)
             fp.close()
 
             loss_.append(train_loss_avg)
+
+        torch.save({
+                'epoch': state['nepochs'],
+                'model_state_dict' : MLP.state_dict(),
+                'optimizer': opt.state_dict()
+                },'checkpoint.pth')
 
         plt.xlabel('epoch', fontsize=20)
         plt.ylabel('loss', fontsize=20)

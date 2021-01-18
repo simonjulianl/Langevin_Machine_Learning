@@ -12,7 +12,7 @@ seed = 23645 # for test
 
 text=''
 
-nsamples = 1
+nsamples = 100
 nparticle = 2
 DIM = 2
 mass = 1
@@ -24,7 +24,7 @@ dq = 0.1
 boxsize = math.sqrt(nparticle/rho)
 
 interval = 40 # take mc step every interval
-iterations = 8000
+iterations = 10000
 DISCARD = iterations - ( nsamples * interval)
 
 noML_hamiltonian = hamiltonian.hamiltonian()
