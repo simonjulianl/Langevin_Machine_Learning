@@ -1,17 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = np.genfromtxt('nsamples50_loss.txt.old')
+data = np.genfromtxt('nsamples50_loss.txt')
 
-x = range(0,10000)
+x = range(0,500000)
+#x = range(400000,500000)
 loss = data[:,1]
-loss = loss[:10000]
-
-data = np.genfromtxt('nsamples100_loss.txt')
-
-x = range(0,160000)
-loss = data[:,1]
-loss = loss[:160000]
+loss = loss[:500000]
+#loss = loss[400000:500000]
 
 fig2 =plt.figure()
 ax2 = fig2.add_subplot(111)
