@@ -20,11 +20,11 @@ sigma = 1.
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 tau_short = 0.01 # short time step for label
-tau_long = 0.01
+tau_long = 0.1
 n_input = 5
 n_hidden = 40
-lr = 0.00001
-nepochs = 100000
+lr = 0.001
+nepochs = 20
 
 seed = 9372211
 torch.manual_seed(seed)
@@ -59,11 +59,10 @@ state = {
     'n_hidden' : n_hidden
 }
 
-# MLP = models.pair_wise_MLP(n_input, n_hidden)
-# opt = optim.Adam(MLP.parameters(), lr=lr)
-MLP = models.pair_wise_zero(n_input, n_hidden)
+MLP = models.pair_wise_MLP(n_input, n_hidden)
+# MLP = models.pair_wise_zero(n_input, n_hidden)
 opt = optim.Adam(MLP.parameters(), lr=lr)
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 setting = {
     'opt' : opt,
@@ -82,7 +81,6 @@ print ('Available devices ', torch.cuda.device_count())
 print ('Current cuda device ', torch.cuda.current_device())
 print('GPU available', torch.cuda.get_device_name(device))
 
-MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN)
-MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label), **state)
-# pred = MD_learner.pred_force(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label), **state)
-# print(pred)
+MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN, **state)
+MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))
+# pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))

@@ -133,7 +133,7 @@ if __name__ == '__main__':
     state['phase_space'].set_q(q_list_tensor)
     state['phase_space'].set_p(p_list_tensor)
 
-    prediction_noML = phase_space2label(linear_integrator(**state), NoML_hamiltonian ) # here label at large time step
+    prediction_noML = label
 
     print('prediction with   ML', prediction)
     print('prediction with noML', prediction_noML)
@@ -145,5 +145,4 @@ if __name__ == '__main__':
     now_loss = torch.sum(now_loss)
     train_loss = qp_MSE_loss(prediction, label)
     print('previous loss', train_loss.item())  # label at short time step 0.01
-    print('now      loss', now_loss.item())   # label at large time step 0.1
-
+    print('now      loss', now_loss.item())   # label at short time step 0.01
