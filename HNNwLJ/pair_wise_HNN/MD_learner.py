@@ -98,24 +98,23 @@ class MD_learner:
             end = time.time()
             print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
             text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
-            with open('nsamples{}_tau{}_loss.txt'.format(state['nsamples_label'],state['tau_cur']), 'w') as fp:
+            with open('nsamples{}_tau{}_test_loss.txt'.format(state['nsamples_label'],state['tau_cur']), 'w') as fp:
                 fp.write(text)
             fp.close()
 
             loss_.append(train_loss_avg)
 
-        torch.save({
-                'epoch': state['nepochs'],
-                'model_state_dict' : MLP.state_dict(),
-                'optimizer': opt.state_dict()
-                },'checkpoint.pth')
+        # torch.save({
+        #         'epoch': state['nepochs'],
+        #         'model_state_dict' : MLP.state_dict(),
+        #         'optimizer': opt.state_dict()
+        #         },'samples{}_tau{}_lr{}_8h{}_checkpoint.pth'.format(state['nsamples'],state['tau_cur'],state['opt'].param_groups[0]['lr'],state['n_hidden']))
 
         plt.xlabel('epoch', fontsize=20)
         plt.ylabel('loss', fontsize=20)
         plt.plot(loss_, linewidth=2)
         plt.grid()
-        # plt.show()
-
+        plt.show()
 
         # # do one step velocity verlet without ML
         # print('do one step velocity verlet without ML')
@@ -137,6 +136,31 @@ class MD_learner:
         # train_loss = state['loss'](prediction, label)
         # print('previous loss', train_loss.item())  # label at short time step 0.01
         # print('now      loss', now_loss.item())  # label at large time step 0.1
+
+    def pred_force(self, filename, **state):
+
+        checkpoint = torch.load('checkpoint.pth')
+        state['MLP'].load_state_dict(checkpoint['model_state_dict'])
+        state['opt'].load_state_dict(checkpoint['optimizer'])
+
+        q_list, p_list = state['phase_space'].read(filename, nsamples=state['nsamples_label'])
+        # print(q_list, p_list)
+
+        state['phase_space'].set_q(q_list)
+        state['phase_space'].set_p(p_list)
+
+        state['nsamples_cur'] = state['nsamples_ML']
+        state['tau_cur'] = state['tau_long']  # tau = 0.1
+        state['MD_iterations'] = int(state['tau_long']/state['tau_cur'])
+        MLP = state['MLP'].to(state['_device'])
+
+        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, MLP, **state)
+        pairwise_hnn.eval()
+        data = pairwise_hnn.phase_space2data(state['phase_space'])
+        predict = MLP(data, state['nparticle'], state['DIM'])
+
+        return predict
+
 
 
     def step(self,phase_space,pb,tau):

@@ -386,8 +386,7 @@ def iterative_lucas_kanade(img1, img2, keypoints,
             # Calculate for only the relevant patch as thats the only thing we need for subsequent calculations
             # Have to use v[1] for the first axis and v[0] for the second axis because in line 406 vy is defined for index 0 and vx is defined for index 1
             # And the flow vector is (vy, vx) 
-            del_Ik_patch = img1[y1 - w: y1 + w + 1,x1 - w: x1 + w + 1] 
-                - img2[y1 - w + int(gy) + int(v[1]): y1 + w + int(gy) + int(v[1]) + 1, x1 - w + int(gx) + int(v[0]): x1 + w + int(gx) + int(v[0]) + 1]
+            del_Ik_patch = img1[y1 - w: y1 + w + 1,x1 - w: x1 + w + 1]- img2[y1 - w + int(gy) + int(v[1]): y1 + w + int(gy) + int(v[1]) + 1, x1 - w + int(gx) + int(v[0]): x1 + w + int(gx) + int(v[0]) + 1]
             # Compute image mismatch vector
             bk = [ np.sum(del_Ik_patch*Ix_patch), np.sum(del_Ik_patch*Iy_patch)]
 
