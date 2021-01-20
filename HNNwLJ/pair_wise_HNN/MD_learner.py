@@ -138,12 +138,15 @@ class MD_learner:
         # load the model checkpoint
         checkpoint = torch.load('nsamples{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
             self._state['nsamples_label'], self._state['tau_long'], self._opt.param_groups[0]['lr'], self._state['n_hidden']))[0]
-
+        # print(checkpoint)
         # load model weights state_dict
         self._MLP.load_state_dict(checkpoint['model_state_dict'])
         print('Previously trained model weights state_dict loaded...')
         self._opt.load_state_dict(checkpoint['optimizer'])
         print('Previously trained optimizer state_dict loaded...')
+        # print("Optimizer's state_dict:")
+        # for var_name in self._opt.state_dict():
+        #     print(var_name, "\t", self._opt.state_dict()[var_name])
 
         # initial data
         q_list, p_list = self._state['phase_space'].read(filename, nsamples=self._state['nsamples_label'])
