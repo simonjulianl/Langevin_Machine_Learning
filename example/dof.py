@@ -24,8 +24,8 @@ def compute_dense_optical_flow(prev_image, current_image):
     # poly_sigma : standard deviation of the Gaussian that is used to smooth derivatives used as a basis for the polynomial expansion
     flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                         next=current_image, flow=flow,
-                                        pyr_scale=0.85, levels=1, winsize=3,
-                                        iterations=1, poly_n=7, poly_sigma=1.5,
+                                        pyr_scale=0.5, levels=3, winsize=1,
+                                        iterations=10, poly_n=5, poly_sigma=1.1,
                                         flags=0)
 
     # mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
@@ -34,23 +34,6 @@ def compute_dense_optical_flow(prev_image, current_image):
     # hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
     # return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     return flow
-
-def draw_flow(img, flow, step=1):
-    global arrows
-    img = img.copy()
-    h, w = img.shape[:2]
-    y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2,-1).astype(int)
-    fx, fy = flow[y,x].T
-    lines = np.vstack([x, y, x+fx, y+fy]).T.reshape(-1, 2, 2)
-    lines = np.int32(lines + 0.5)
-    # vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    print(lines)
-    cv2.polylines(img, lines, 0, (0, 255, 0))
-    print(img)
-    for (x1, y1), (x2, y2) in lines:
-        arrows.append([x1,y1, math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))])
-        cv2.circle(img, (x1, y1), 1, (0, 255, 0), -1)
-    return img
 
 frame1 = np.asarray(
     [[0, 0, 0, 0, 0, 0],
@@ -76,13 +59,7 @@ frame2 = np.expand_dims(frame2, axis=-1)  # channel 1
 # plt.show()
 
 flow_vectors = compute_dense_optical_flow(frame1, frame2)
-# print(flow_vectors)
-arrows = []
-finalImg = draw_flow(frame1, flow_vectors, step=1)
-# print(finalImg)
-# cv2.imshow('flow', finalImg)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+print(flow_vectors)
 
 def make_color_wheel():
     """
@@ -226,13 +203,13 @@ def visualize_flow_file(flow_data):
     plt.show()  # ; plt.colorbar()
 
 
-# ### This is for both U and V vectors ###
-# visualize_flow_file(flow_vectors)
-#
-# ### To separate U and V, we can zero either one ###
-# u = flow_vectors.copy()
-# u[:, :, 1] = 0  # zero the V component
-# v = flow_vectors.copy()
-# v[:, :, 0] = 0  # zero the U component
-# visualize_flow_file(u)
-# visualize_flow_file(v)
+### This is for both U and V vectors ###
+visualize_flow_file(flow_vectors)
+
+### To separate U and V, we can zero either one ###
+u = flow_vectors.copy()
+u[:, :, 1] = 0  # zero the V component
+v = flow_vectors.copy()
+v[:, :, 0] = 0  # zero the U component
+visualize_flow_file(u)
+visualize_flow_file(v)

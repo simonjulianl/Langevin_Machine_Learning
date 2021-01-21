@@ -22,7 +22,7 @@ def compute_dense_optical_flow(prev_image, current_image):
     # poly_sigma : standard deviation of the Gaussian that is used to smooth derivatives used as a basis for the polynomial expansion
     flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                         next=current_image, flow=flow,
-                                        pyr_scale=0.85, levels=1, winsize=2,
+                                        pyr_scale=0.85, levels=1, winsize=1,
                                         iterations=1, poly_n=7, poly_sigma=1.5,
                                         flags=0)
 
