@@ -12,7 +12,7 @@ import math
 
 nsamples_label = 50
 nsamples_ML = 1
-nparticle = 2
+nparticle = 4
 DIM = 2
 mass = 1
 epsilon = 1.
