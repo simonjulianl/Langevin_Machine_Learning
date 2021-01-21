@@ -69,7 +69,7 @@ def lkwop (inp1, inp2, t ):
     show()
 
 t = 0.3 # choose threshold value
-lkwop('nparticle2_f1_pos.png','nparticle2_f2_pos.png',t)
+# lkwop('nparticle2_f1_pos.png','nparticle2_f2_pos.png',t)
 # lkwop('basketball1.png','basketball2.png',t)
 # lkwop('grove1.png','grove2.png',t)
-# lkwop('teddy1.png','teddy2.png',t)
+lkwop('teddy1.png','teddy2.png',t)
