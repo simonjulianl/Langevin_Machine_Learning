@@ -105,11 +105,11 @@ class MD_learner:
             end = time.time()
             print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
 
-            self.record_best(train_loss_avg, 'nsamples{}_tau{}_lr{}_h{}_checkpoint.pth'.format(self._state['nsamples_label'], self._state['tau_cur'],
+            self.record_best(train_loss_avg, 'nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
                                                      self._opt.param_groups[0]['lr'], self._state['n_hidden']))
 
             text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
-            with open('nsamples{}_tau{}_loss.txt'.format(self._state['nsamples_label'],self._state['tau_cur']), 'w') as fp:
+            with open('nsamples{}_nparticle{}_tau{}_loss.txt'.format(self._state['nsamples_label'],self._state['nparticle'],self._state['tau_cur']), 'w') as fp:
                 fp.write(text)
             fp.close()
 
@@ -129,15 +129,15 @@ class MD_learner:
                 }, is_best), filename)
 
         if is_best:
-            shutil.copyfile(filename, 'nsamples{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format(self._state['nsamples_label'], self._state['tau_cur'],
+            shutil.copyfile(filename, 'nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
                                                      self._opt.param_groups[0]['lr'], self._state['n_hidden']))
 
 
     def pred_qnp(self, filename):
 
         # load the model checkpoint
-        checkpoint = torch.load('nsamples{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
-            self._state['nsamples_label'], self._state['tau_long'], self._opt.param_groups[0]['lr'], self._state['n_hidden']))[0]
+        checkpoint = torch.load('nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
+            self._state['nsamples_label'],self._state['nparticle'], self._state['tau_long'], self._opt.param_groups[0]['lr'], self._state['n_hidden']))[0]
         # print(checkpoint)
         # load model weights state_dict
         self._MLP.load_state_dict(checkpoint['model_state_dict'])
