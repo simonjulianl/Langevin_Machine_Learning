@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch
-#from tqdm import trange
+from tqdm import trange
 import copy
 import random
 import numpy as np
@@ -86,7 +86,7 @@ class metropolis_mc:
         # print('q_list', self._state['phase_space'].get_q())
 
         #for i in trange(0, self._state['iterations'], desc = "simulating"):
-        for i in range(0, self._state['iterations'], desc = "simulating"):
+        for i in trange(0, self._state['iterations']):
             for _ in range(self._state['DIM']):
                 self.mcmove()
             if(i >= self._state['DISCARD']):
