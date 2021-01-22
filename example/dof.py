@@ -59,7 +59,7 @@ frame2 = np.expand_dims(frame2, axis=-1)  # channel 1
 # plt.show()
 
 flow_vectors = compute_dense_optical_flow(frame1, frame2)
-print(flow_vectors)
+# print(flow_vectors)
 
 def make_color_wheel():
     """
