@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import torch
-import numpy as np
 
 class phase_space :
     '''phase space container class that have a 
@@ -14,6 +13,7 @@ class phase_space :
         '''initialize phase space container of N X particle X DIM dimension'''
         self._q_list = None
         self._p_list = None
+        self._grid_list = None
 
     def set_p(self, p_list):
         # self._p_list = copy.deepcopy(p_list)
@@ -22,6 +22,10 @@ class phase_space :
     def set_q(self, q_list):
         # self._q_list = copy.deepcopy(q_list)
         self._q_list = q_list.clone()
+
+    def set_grid(self, grid_list):
+        # self._q_list = copy.deepcopy(q_list)
+        self._grid_list = grid_list.clone()
     
     def get_p(self):
         # return copy.deepcopy(self._p_list) # nsamples N X particle X DIM array
@@ -30,6 +34,10 @@ class phase_space :
     def get_q(self):
         # return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
         return self._q_list.clone()
+
+    def get_grid(self):
+        # return copy.deepcopy(self._q_list) # nsamples N X particle X DIM array
+        return self._grid_list.clone()
 
     def read(self, filename, nsamples):
         '''function to read the phase space file, 
@@ -47,7 +55,7 @@ class phase_space :
         # print(phase_space.shape)
         self._q_list =  phase_space[0][:nsamples]
         self._p_list =  phase_space[1][:nsamples]
-        
+
         try : 
             assert self._q_list.shape == self._p_list.shape
         except : 
@@ -56,3 +64,16 @@ class phase_space :
 
         return self._q_list, self._p_list
 
+    def build_gridpoint(self, npixels, boxsize, DIM):
+
+        xvalues = torch.arange(0, npixels, dtype=torch.float64)
+        xvalues = xvalues - 0.5 * npixels
+        yvalues = torch.arange(0, npixels, dtype=torch.float64)
+        yvalues = yvalues - 0.5 * npixels
+        gridx, gridy = torch.meshgrid(xvalues * (boxsize/npixels) , yvalues * (boxsize/npixels) )
+        self._grid_list = torch.stack([gridx, gridy], dim=-1)
+        self._grid_list = self._grid_list.reshape((-1, DIM))
+
+        print(self._grid_list)
+
+        return self._grid_list

@@ -15,6 +15,35 @@ class LJ_term:
 
         self._name = 'Lennard Jones Potential'
 
+    def phi_npixels(self, xi_space, pb):
+
+        xi_state = xi_space.get_q()
+        grid_state = xi_space.get_grid()
+        term = torch.zeros((xi_state.shape[0],grid_state.shape[0])) # nsamples x npixels
+        nsamples, nparticle, DIM = xi_state.shape
+        npixels, DIM = grid_state.shape
+
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
+
+        for z in range(nsamples):
+            for j in range(npixels):
+
+                # print((grid_state[j] * self._boxsize).shape)
+                # print((xi_state[z] * self._boxsize).shape)
+                pair_wise = torch.cat((grid_state[j].unsqueeze(0), xi_state[z]), 0)
+                # print(pair_wise* self._boxsize)
+                _, d = pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat grid state so that nparticle+1
+                d_grid = d[0] # pair-wise between gird and particles
+
+                s12 = 1 / pow(d_grid, 12)
+                s6 = 1 / pow(d_grid, 6)
+
+                term[z][j] = torch.sum(a12 * s12 - a6 * s6)
+                # print(term[z][j])
+
+        return term
+
     def energy(self, xi_space, pb):
 
         xi_state = xi_space.get_q()
@@ -35,7 +64,6 @@ class LJ_term:
             term[z] = torch.sum(a12* s12 - a6* s6) * 0.5
 
         return term
-
 
     def evaluate_derivative_q(self,xi_space,pb):
 
