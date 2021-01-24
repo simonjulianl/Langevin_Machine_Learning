@@ -17,7 +17,7 @@ class MD_learner:
         self._loss = state['loss']
 
         self._current_epoch = 1
-        # initialize best model
+        # initialize best models
         self._best_validation_loss = float('inf')
 
 
@@ -28,96 +28,7 @@ class MD_learner:
     # phase_space consist of minibatch data
     def trainer(self, filename):
 
-        # print('===== load initial data =====')
-        q_list, p_list = self._state['phase_space'].read(filename, nsamples= self._state['nsamples_label'])
-
-        self._state['phase_space'].set_q(q_list)
-        self._state['phase_space'].set_p(p_list)
-
-        # print('===== state at short time step 0.01 =====')
-        self._state['nsamples_cur'] = self._state['nsamples_label']
-        self._state['tau_cur'] = self._state['tau_short']
-        self._state['MD_iterations'] = int(self._state['tau_long']/self._state['tau_cur'])
-
-        q_list_label, p_list_label = self.phase_space2label(self.linear_integrator(**self._state), self.noML_hamiltonian)
-
-        # to prepare data at large time step, need to change tau and iterations
-        # tau = large time step 0.1 and 1 step
-        # print('===== state at large time step 0.1 =====')
-
-        self._state['nsamples_cur'] = self._state['nsamples_ML']
-        self._state['tau_cur'] = self._state['tau_long']  # tau = 0.1
-        self._state['MD_iterations'] = int(self._state['tau_long']/self._state['tau_cur'])
-
-        optical_flow_hnn = self.optical_flow_HNN(self.noML_hamiltonian, self._MLP, **self._state)
-        optical_flow_hnn.train()
 
 
 
 
-    def record_best(self, validation_loss, filename):
-
-        is_best = validation_loss < self._best_validation_loss
-        self._best_validation_loss = min(validation_loss, self._best_validation_loss)
-
-        torch.save(({
-                'epoch': self._current_epoch,
-                'model_state_dict' : self._MLP.state_dict(),
-                'best_validation_loss' : self._best_validation_loss,
-                'optimizer': self._opt.state_dict()
-                }, is_best), filename)
-
-        if is_best:
-            shutil.copyfile(filename, 'nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
-                                                     self._opt.param_groups[0]['lr'], self._state['n_hidden']))
-
-
-    def pred_qnp(self, filename):
-
-        # load the model checkpoint
-        checkpoint = torch.load('nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
-            self._state['nsamples_label'],self._state['nparticle'], self._state['tau_long'], self._opt.param_groups[0]['lr'], self._state['n_hidden']))[0]
-        # print(checkpoint)
-        # load model weights state_dict
-        self._MLP.load_state_dict(checkpoint['model_state_dict'])
-        print('Previously trained model weights state_dict loaded...')
-        self._opt.load_state_dict(checkpoint['optimizer'])
-        print('Previously trained optimizer state_dict loaded...')
-        # print("Optimizer's state_dict:")
-        # for var_name in self._opt.state_dict():
-        #     print(var_name, "\t", self._opt.state_dict()[var_name])
-
-        # initial data
-        q_list, p_list = self._state['phase_space'].read(filename, nsamples=self._state['nsamples_label'])
-        # print(q_list, p_list)
-
-        self._state['phase_space'].set_q(torch.unsqueeze(q_list[0], dim=0).to(self._state['_device']))
-        self._state['phase_space'].set_p(torch.unsqueeze(p_list[0], dim=0).to(self._state['_device']))
-
-        self._state['nsamples_cur'] = self._state['nsamples_ML']
-        self._state['tau_cur'] = self._state['tau_long']  # tau = 0.1
-        self._state['MD_iterations'] = int(self._state['tau_long']/self._state['tau_cur'])
-
-        pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, self._MLP, **self._state)
-        pairwise_hnn.eval()
-
-        q_pred, p_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
-
-        self._state['tau_cur'] = self._state['tau_short']
-
-        self._state['phase_space'].set_q(torch.unsqueeze(q_list[0], dim=0))
-        self._state['phase_space'].set_p(torch.unsqueeze(p_list[0], dim=0))
-
-        q_truth, p_truth = self.phase_space2label(self.linear_integrator(**self._state), self.noML_hamiltonian)
-
-        print('predict',q_pred, p_pred)
-        print('truth', q_truth, p_truth)
-
-        return q_pred, p_pred
-
-
-
-    def step(self,phase_space,pb,tau):
-        pairwise_hnn.eval()
-        q_list_predict, p_list_predict = self.linear_integrator.integrate(**self._state)
-        return q_list_predict,p_list_predict
