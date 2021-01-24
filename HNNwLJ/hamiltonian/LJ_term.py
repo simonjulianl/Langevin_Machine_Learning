@@ -29,18 +29,15 @@ class LJ_term:
         for z in range(nsamples):
             for j in range(npixels):
 
-                # print((grid_state[j] * self._boxsize).shape)
-                # print((xi_state[z] * self._boxsize).shape)
                 pair_wise = torch.cat((grid_state[j].unsqueeze(0), xi_state[z]), 0)
-                # print(pair_wise* self._boxsize)
-                _, d = pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat grid state so that nparticle+1
+
+                _, d = pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
                 d_grid = d[0] # pair-wise between gird and particles
 
                 s12 = 1 / pow(d_grid, 12)
                 s6 = 1 / pow(d_grid, 6)
 
                 term[z][j] = torch.sum(a12 * s12 - a6 * s6)
-                # print(term[z][j])
 
         return term
 

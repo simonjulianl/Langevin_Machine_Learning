@@ -34,7 +34,7 @@ class MLP2H_Separable_Hamil_LF(nn.Module):
             
         Precaution
         ----------
-        When loading model, please set torch.manual_seed due to initialization process
+        When loading models, please set torch.manual_seed due to initialization process
 
         '''
         super(MLP2H_Separable_Hamil_LF,self).__init__()

@@ -24,8 +24,8 @@ def compute_dense_optical_flow(prev_image, current_image):
     # poly_sigma : standard deviation of the Gaussian that is used to smooth derivatives used as a basis for the polynomial expansion
     flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                         next=current_image, flow=flow,
-                                        pyr_scale=0.5, levels=3, winsize=3,
-                                        iterations=10, poly_n=5, poly_sigma=1.1,
+                                        pyr_scale=0.5, levels=1, winsize=3,
+                                        iterations=1, poly_n=7, poly_sigma=1.5,
                                         flags=0)
 
     # mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
@@ -58,11 +58,11 @@ print(frame1[x0-1:,y0-1:])
 print(frame2)
 frame1 = np.expand_dims(frame1, axis=-1)  # channel 1
 frame2 = np.expand_dims(frame2, axis=-1)  # channel 1
+
 # plt.imshow(frame1,cmap='gray')
 # plt.show()
 # plt.imshow(frame2,cmap='gray')
 # plt.show()
-# quit()
 
 flow_vectors = compute_dense_optical_flow(frame1, frame2)
 # print(flow_vectors)

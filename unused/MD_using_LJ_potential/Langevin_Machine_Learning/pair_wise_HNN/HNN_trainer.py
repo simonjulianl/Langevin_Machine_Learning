@@ -27,7 +27,7 @@ class HNN_trainer:
             seed = kwargs.get('seed', 937162211) # default seed is 9 digit prime number
 
             torch.manual_seed(seed)
-            torch.backends.cudnn.deterministic = True # Processing speed may be lower then when the model functions nondeterministically.
+            torch.backends.cudnn.deterministic = True # Processing speed may be lower then when the models functions nondeterministically.
             torch.backends.cudnn.benchmark = False
             torch.cuda.manual_seed_all(seed)
             np.random.seed(seed)
@@ -67,13 +67,13 @@ class HNN_trainer:
                                         **DataLoader_Setting)
 
         try : #architecture setting 
-            self._model = kwargs['model'].double().to(self._device)
+            self._model = kwargs['models'].double().to(self._device)
         except : 
-            raise Exception('model not found')
+            raise Exception('models not found')
 
     def train_epoch(self):
 
-        model = self._model.train() # fetch the model
+        model = self._model.train() # fetch the models
         criterion = self._loss  # fetch the loss
 
         train_loss = 0
@@ -105,7 +105,7 @@ class HNN_trainer:
             loss = criterion(pred, label)
 
             self._optimizer.zero_grad() # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
-            loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
+            loss.backward()  # backward pass : compute gradient of the loss wrt models parameters
             train_loss = loss.item()  # get the scalar output
             self._optimizer.step() # calling the step function on an optimizer makes an update to its parameters
 

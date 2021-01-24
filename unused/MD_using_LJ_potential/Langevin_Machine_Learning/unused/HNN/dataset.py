@@ -120,7 +120,7 @@ class Hamiltonian_Dataset(Dataset):
             #print(i)
             data = (init_q[i], init_p[i])
             label = (q_after[i], p_after[i])
-            #print('dataset.py',data,label)
+            #print('ljbox2gridimg.py',data,label)
 
             # only make 1 big array instead of array of np.array 
             self._dataset.append([data,label])

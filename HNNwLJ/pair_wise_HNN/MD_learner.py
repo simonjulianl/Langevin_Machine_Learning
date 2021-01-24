@@ -1,45 +1,57 @@
-import matplotlib.pyplot as plt
+from .dataset_split import dataset_split
 import torch
 import shutil
 import time
+import os
 
 class MD_learner:
 
-    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN, **state):
+    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN, filename, **state):
 
         self.linear_integrator = linear_integrator
         self.noML_hamiltonian =noML_hamiltonian
         self.pair_wise_HNN = pair_wise_HNN
+
         self._state = state
+        self._train_data, self._valid_data, self._train_label, self._valid_label = self.load_data(filename)
+        self._filename = filename
+
 
         self._MLP = state['MLP'].to(state['_device'])
         self._opt = state['opt']
         self._loss = state['loss']
 
         self._current_epoch = 1
-        # initialize best model
+        # initialize best models
         self._best_validation_loss = float('inf')
 
+    def load_data(self, filename):
 
-    def phase_space2label(self, MD_integrator, noML_hamiltonian):
-        label = MD_integrator.integrate(noML_hamiltonian)
-        return label
+        dataset_obj = dataset_split(filename, **self._state)
+        train_data, valid_data = dataset_obj.hamiltonian_dataset(ratio=0.7)
+        train_label = dataset_obj.phase_space2label(train_data, self.linear_integrator, self.noML_hamiltonian)
+        valid_label = dataset_obj.phase_space2label(valid_data, self.linear_integrator, self.noML_hamiltonian)
+
+        return train_data, valid_data, train_label, valid_label
 
     # phase_space consist of minibatch data
-    def trainer(self, filename):
+    def train_valid_epoch(self):
 
-        # print('===== load initial data =====')
-        q_list, p_list = self._state['phase_space'].read(filename, nsamples= self._state['nsamples_label'])
+        # print('===== load initial train data =====')
+        q_train = self._train_data[:,0]; p_train = self._train_data[:,1]
 
-        self._state['phase_space'].set_q(q_list)
-        self._state['phase_space'].set_p(p_list)
+        # print('===== label train data =====')
+        q_train_label = self._train_label[0]; p_train_label = self._train_label[1]
+        q_train_label = q_train_label[-1]; p_train_label = p_train_label[-1] # only take the last from the list
 
-        # print('===== state at short time step 0.01 =====')
-        self._state['nsamples_cur'] = self._state['nsamples_label']
-        self._state['tau_cur'] = self._state['tau_short']
-        self._state['MD_iterations'] = int(self._state['tau_long']/self._state['tau_cur'])
+        # print('===== load initial valid data =====')
+        q_valid = self._valid_data[:, 0]; p_valid = self._valid_data[:, 1]
+        print(q_valid, p_valid)
 
-        q_list_label, p_list_label = self.phase_space2label(self.linear_integrator(**self._state), self.noML_hamiltonian)
+        # print('===== label valid data =====')
+        q_valid_label = self._valid_label[0]; p_valid_label = self._valid_label[1]
+        q_valid_label = q_valid_label[-1]; p_valid_label = p_valid_label[-1]  # only take the last from the list
+        print(q_valid_label, p_valid_label)
 
         # to prepare data at large time step, need to change tau and iterations
         # tau = large time step 0.1 and 1 step
@@ -51,64 +63,97 @@ class MD_learner:
 
         pairwise_hnn = self.pair_wise_HNN(self.noML_hamiltonian, self._MLP, **self._state)
         pairwise_hnn.train()
+        criterion = self._loss
 
-        n_batches = q_list.shape[0]
+        n_train_batches = q_train.shape[0] # nsamples
+        n_valid_batches = q_valid.shape[0]
         text = ''
 
         for e in range(self._state['nepochs']):
 
-            # shuffle based on epoch
-            g = torch.Generator()
-            # g.manual_seed(e)
-
-            # all same shuffle idx each epoch
-            idx = torch.randperm(q_list.shape[0], generator=g)
-            # print('each epoch idx', idx)
-            q_list_shuffle, p_list_shuffle = q_list[idx], p_list[idx]
-
-            train_loss = 0
+            train_loss = 0.
+            valid_loss = 0.
             start = time.time()
 
-            for i in range(n_batches):
+            for i in range(n_train_batches):
 
-                q_list_batch, p_list_batch = q_list_shuffle[i], p_list_shuffle[i]
-                q_list_batch = torch.unsqueeze(q_list_batch, dim=0).to(self._state['_device'])
-                p_list_batch = torch.unsqueeze(p_list_batch, dim=0).to(self._state['_device'])
+                q_train_batch, p_train_batch = q_train[i], p_train[i]
+                q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._state['_device'])
+                p_train_batch = torch.unsqueeze(p_train_batch, dim=0).to(self._state['_device'])
 
-                q_label_batch, p_label_batch = q_list_label[idx[i]], p_list_label[idx[i]]
-                q_label_batch = torch.unsqueeze(q_label_batch, dim=0).to(self._state['_device'])
-                p_label_batch = torch.unsqueeze(p_label_batch, dim=0).to(self._state['_device'])
+                q_train_label_batch, p_train_label_batch = q_train_label[i], p_train_label[i]
+                q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._state['_device'])
+                p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._state['_device'])
 
-                label = (q_label_batch, p_label_batch)
+                label = (q_train_label_batch, p_train_label_batch)
 
-                self._state['phase_space'].set_q(q_list_batch)
-                self._state['phase_space'].set_p(p_list_batch)
-
+                self._state['phase_space'].set_q(q_train_batch)
+                self._state['phase_space'].set_p(p_train_batch)
 
                 # print('======= train combination of MD and ML =======')
-                q_pred, p_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
-                q_pred = q_pred.to(self._state['_device']); p_pred = p_pred.to(self._state['_device'])
+                q_train_pred, p_train_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
+                q_train_pred = q_train_pred.to(self._state['_device']); p_train_pred = p_train_pred.to(self._state['_device'])
 
-                prediction = (q_pred, p_pred)
+                prediction = (q_train_pred[-1], p_train_pred[-1])
 
-                loss = self._loss(prediction, label)
+                loss1 = criterion(prediction, label)
 
                 self._opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
-                loss.backward()  # backward pass : compute gradient of the loss wrt model parameters
+                loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
 
                 self._opt.step()
 
-                train_loss += loss.item()  # get the scalar output
-                # print('loss each batch',loss.item())
+                train_loss += loss1.item()  # get the scalar output
+                # print('loss each batch',loss1.item())
 
-            train_loss_avg = train_loss / n_batches
+            # eval model
+            pairwise_hnn.eval()
+
+            with torch.no_grad():
+
+                for j in range(n_valid_batches):
+
+                    q_valid_batch, p_valid_batch = q_valid[j], q_valid[j]
+
+                    q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._state['_device'])
+                    p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._state['_device'])
+
+                    q_valid_label_batch, p_valid_label_batch = q_valid_label[j], p_valid_label[j]
+
+                    q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._state['_device'])
+                    p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._state['_device'])
+                    # print('valid label',q_valid_label_batch, p_valid_label_batch)
+
+                    label = (q_valid_label_batch, p_valid_label_batch)
+
+                    self._state['phase_space'].set_q(q_valid_batch)
+                    self._state['phase_space'].set_p(p_valid_batch)
+
+                    # print('======= train combination of MD and ML =======')
+                    q_valid_pred, p_valid_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
+                    q_valid_pred = q_valid_pred.to(self._state['_device']); p_valid_pred = p_valid_pred.to(self._state['_device'])
+                    # print('valid pred',q_valid_pred, p_valid_pred)
+
+                    prediction = (q_valid_pred[-1], p_valid_pred[-1])
+
+                    val_loss1 = criterion(prediction, label)
+
+                    valid_loss += val_loss1.item()  # get the scalar output
+
+            train_loss_avg = train_loss / n_train_batches
+            valid_loss_avg = valid_loss / n_valid_batches
+
             end = time.time()
-            print('{} epoch:'.format(e),train_loss_avg, ' time:', end-start)
 
-            self.record_best(train_loss_avg, 'nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
-                                                     self._opt.param_groups[0]['lr'], self._state['n_hidden']))
+            print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' time:', end-start)
 
-            text = text + str(e) + ' ' + str(train_loss_avg)  + '\n'
+            if not os.path.exists('./saved_model/'):
+                os.makedirs('./saved_model/')
+
+            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
+                                                 self._opt.param_groups[0]['lr'], self._state['n_hidden']))
+
+            text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
             with open('nsamples{}_nparticle{}_tau{}_loss.txt'.format(self._state['nsamples_label'],self._state['nparticle'],self._state['tau_cur']), 'w') as fp:
                 fp.write(text)
             fp.close()
@@ -129,19 +174,20 @@ class MD_learner:
                 }, is_best), filename)
 
         if is_best:
-            shutil.copyfile(filename, 'nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
+            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format(self._state['nsamples_label'],self._state['nparticle'], self._state['tau_cur'],
                                                      self._opt.param_groups[0]['lr'], self._state['n_hidden']))
 
 
     def pred_qnp(self, filename):
 
-        # load the model checkpoint
-        checkpoint = torch.load('nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
+        # load the models checkpoint
+        checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
             self._state['nsamples_label'],self._state['nparticle'], self._state['tau_long'], self._opt.param_groups[0]['lr'], self._state['n_hidden']))[0]
-        # print(checkpoint)
-        # load model weights state_dict
+        print(checkpoint)
+        quit()
+        # load models weights state_dict
         self._MLP.load_state_dict(checkpoint['model_state_dict'])
-        print('Previously trained model weights state_dict loaded...')
+        print('Previously trained models weights state_dict loaded...')
         self._opt.load_state_dict(checkpoint['optimizer'])
         print('Previously trained optimizer state_dict loaded...')
         # print("Optimizer's state_dict:")

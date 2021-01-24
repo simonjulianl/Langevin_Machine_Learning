@@ -24,7 +24,7 @@ tau = 1
 seed =  937162211
 
 torch.manual_seed(seed)
-# torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the model functions nondeterministically.
+# torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
 # torch.backends.cudnn.benchmark = False
 torch.cuda.manual_seed_all(seed)
 np.random.seed(seed)

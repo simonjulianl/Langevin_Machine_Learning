@@ -68,7 +68,7 @@ class SHNN_retrainer:
             
             Architecture : 
             model : function
-                model to be trained 
+                models to be trained
             
         Raises
         ------
@@ -88,21 +88,21 @@ class SHNN_retrainer:
         #     raise Exception('optimizer setting error, optim/loss not found ')
 
         try:
-            # load the trained model
-            self._model = kwargs['model'].double().to(self._device) #Initialize the model
+            # load the trained models
+            self._model = kwargs['models'].double().to(self._device) #Initialize the models
             # Initialize optimizer before loading optimizer state_dict
             self._optimizer = kwargs['optim']
 
         except:
-            raise Exception('model not found')
+            raise Exception('models not found')
 
         try : #data loader and seed setting
-            # load the model checkpoint
+            # load the models checkpoint
             self._checkpoint = kwargs['checkpoint'][0]
 
-            # load model weights state_dict
+            # load models weights state_dict
             self._model.load_state_dict(self._checkpoint['state_dict'])
-            print('Previously trained model weights state_dict loaded...')
+            print('Previously trained models weights state_dict loaded...')
 
             # train for more epochs
             self._n_epochs = int(kwargs['new_epoch'])
@@ -113,7 +113,7 @@ class SHNN_retrainer:
             print('Previously trained optimizer state_dict loaded...')
             # load the criterion
             self._loss = self._checkpoint['loss']
-            print('Trained model loss function loaded...')
+            print('Trained models loss function loaded...')
             #scheduler
             self._scheduler = self._checkpoint['scheduler']
 
@@ -169,7 +169,7 @@ class SHNN_retrainer:
         # used to check the performance for higher level, avoid shallow copying
 
 
-        #initialize best model 
+        #initialize best models
         self._best_validation_loss = float('inf') # arbitrary value
         # to log all the data 
         self._writer = SummaryWriter('runs/samples{}_tau{}/{}_retrain_{}'.format(self._sample,self._time_step,folder_name,self._retrain_num)) # explicitly mention in runs folder
@@ -185,7 +185,7 @@ class SHNN_retrainer:
             train loss per epoch
 
         '''
-        model = self._model.train() # fetch the model
+        model = self._model.train() # fetch the models
         criterion = self._loss # fetch the loss
         
         train_loss = 0
@@ -239,7 +239,7 @@ class SHNN_retrainer:
             difference and validation loss per epoch
 
         '''
-        model = self._model.eval() # fetch the model
+        model = self._model.eval() # fetch the models
         criterion = self._loss # fetch the loss
         
         validation_loss = 0
@@ -349,9 +349,9 @@ class SHNN_retrainer:
         test_loss = self.validate_epoch(self._validation_loader)
         
         print('performance on test dataset : \n\t test_loss : {:.5f}'.format(test_loss))
-        #choose the best model from the previous level and pass it to the next level
+        #choose the best models from the previous level and pass it to the next level
         
-        self._model.set_n_stack(1) # set the model level
+        self._model.set_n_stack(1) # set the models level
         base_test_loss = self.validate_epoch(self._base_test_loader)
         
         print('performance on base level (1) : \n\t test_loss : {:.5f}'.format(base_test_loss))
@@ -365,9 +365,9 @@ class SHNN_retrainer:
         try:
             getattr(self._model, 'n_stack') 
         except :
-            raise Exception('This model does not support stacking, self.n_stack not found')
+            raise Exception('This models does not support stacking, self.n_stack not found')
             
-        self._model.set_n_stack(self._curr_level) # set the model level
+        self._model.set_n_stack(self._curr_level) # set the models level
         
         self._train_dataset.shift_layer()
         self._validation_dataset.shift_layer()

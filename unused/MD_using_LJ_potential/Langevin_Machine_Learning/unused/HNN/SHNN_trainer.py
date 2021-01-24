@@ -68,7 +68,7 @@ class SHNN_trainer:
             
             Architecture : 
             model : function
-                model to be trained 
+                models to be trained
             
         Raises
         ------
@@ -92,7 +92,7 @@ class SHNN_trainer:
             seed = kwargs.get('seed', 937162211) # default seed is 9 digit prime number
 
             torch.manual_seed(seed)
-            torch.backends.cudnn.deterministic = True # Processing speed may be lower then when the model functions nondeterministically.
+            torch.backends.cudnn.deterministic = True # Processing speed may be lower then when the models functions nondeterministically.
             torch.backends.cudnn.benchmark = False
             torch.cuda.manual_seed_all(seed)
             np.random.seed(seed)
@@ -142,11 +142,11 @@ class SHNN_trainer:
         # used to check the performance for higher level, avoid shallow copying
         
         try : #architecture setting 
-            self._model = kwargs['model'].double().to(self._device)
+            self._model = kwargs['models'].double().to(self._device)
         except : 
-            raise Exception('model not found')
+            raise Exception('models not found')
             
-        #initialize best model 
+        #initialize best models
         self._best_validation_loss = float('inf') # arbitrary value 
         # to log all the data 
         self._writer = SummaryWriter('runs/samples{}_tau{}/{}'.format(self._sample,self._time_step,folder_name)) # explicitly mention in runs folder
@@ -162,7 +162,7 @@ class SHNN_trainer:
             train loss per epoch
 
         '''
-        model = self._model.train() # fetch the model
+        model = self._model.train() # fetch the models
         criterion = self._loss # fetch the loss
         
         train_loss = 0
@@ -215,7 +215,7 @@ class SHNN_trainer:
             difference and validation loss per epoch
 
         '''
-        model = self._model.eval() # fetch the model
+        model = self._model.eval() # fetch the models
         criterion = self._loss # fetch the loss
         
         validation_loss = 0
@@ -326,9 +326,9 @@ class SHNN_trainer:
         test_loss = self.validate_epoch(self._validation_loader)
         
         print('performance on test dataset : \n\t test_loss : {:.5f}'.format(test_loss))
-        #choose the best model from the previous level and pass it to the next level
+        #choose the best models from the previous level and pass it to the next level
         
-        self._model.set_n_stack(1) # set the model level
+        self._model.set_n_stack(1) # set the models level
         base_test_loss = self.validate_epoch(self._base_test_loader)
         
         print('performance on base level (1) : \n\t test_loss : {:.5f}'.format(base_test_loss))
@@ -342,9 +342,9 @@ class SHNN_trainer:
         try:
             getattr(self._model, 'n_stack') 
         except :
-            raise Exception('This model does not support stacking, self.n_stack not found')
+            raise Exception('This models does not support stacking, self.n_stack not found')
             
-        self._model.set_n_stack(self._curr_level) # set the model level
+        self._model.set_n_stack(self._curr_level) # set the models level
         
         self._train_dataset.shift_layer()
         self._validation_dataset.shift_layer()

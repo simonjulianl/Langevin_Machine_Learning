@@ -61,7 +61,7 @@ loss = qp_MSE_loss
 
 NN_trainer_setting = {
     'optim': optim.Adam(MLP.parameters(), lr=lr),
-    'model' : MLP,
+    'models' : MLP,
     'loss' : loss,
     'epoch' : 3,
     'batch_size' : batch_size,

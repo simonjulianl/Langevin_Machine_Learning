@@ -74,6 +74,4 @@ class phase_space :
         self._grid_list = torch.stack([gridx, gridy], dim=-1)
         self._grid_list = self._grid_list.reshape((-1, DIM))
 
-        print(self._grid_list)
-
         return self._grid_list

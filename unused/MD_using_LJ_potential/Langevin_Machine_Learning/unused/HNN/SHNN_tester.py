@@ -79,9 +79,9 @@ class SHNN_tester:
                                              **self.DataLoader_Setting)
         
         try : #architecture setting 
-            self._model = kwargs['model'].double().to(self._device)
+            self._model = kwargs['models'].double().to(self._device)
         except : 
-            raise Exception('model not found')
+            raise Exception('models not found')
 
 
     def trajectory(self, _test_loader):
@@ -151,15 +151,15 @@ class SHNN_tester:
     def test(self,filename):
         '''overall function to train the networks for different levels'''
         checkpoint = torch.load(filename) #torch.load() gives you a dictionary. That dictionary has not an eval function.
-        print('epochs that is best model:',checkpoint[0]['epoch'])
-        print('valid loss that is best model:', checkpoint[0]['best_validation_loss'])
+        print('epochs that is best models:',checkpoint[0]['epoch'])
+        print('valid loss that is best models:', checkpoint[0]['best_validation_loss'])
         try:
             checkpoint.eval()
         except AttributeError as error:
             print ('load a dictionary')
         ### 'dict' object has no attribute 'eval'
 
-        self._model.load_state_dict(checkpoint[0]['state_dict']) #upload the weights to your model.
+        self._model.load_state_dict(checkpoint[0]['state_dict']) #upload the weights to your models.
 
         pred_q_list = np.zeros((self._iterations + 1,self._sample,self._particle*self._DIM))
         pred_p_list = np.zeros((self._iterations + 1,self._sample,self._particle*self._DIM))

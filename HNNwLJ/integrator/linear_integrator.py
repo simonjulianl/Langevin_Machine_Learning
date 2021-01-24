@@ -30,7 +30,7 @@ class linear_integrator:
             q_list[i] = self._state['phase_space'].get_q()
             p_list[i] = self._state['phase_space'].get_p()  # sample
 
-        q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
+        # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
 
         if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
             raise ArithmeticError('Numerical Integration error, nan is detected')

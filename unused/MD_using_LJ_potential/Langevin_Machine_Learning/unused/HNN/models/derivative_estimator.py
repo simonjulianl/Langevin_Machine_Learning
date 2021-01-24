@@ -23,9 +23,9 @@ def derivative_ML(q_list, p_list, H_potential, H_kinetic) -> tuple:
            
 
     H_potential : function
-        model to approximate H_potential
+        models to approximate H_potential
     H_kinetic : function
-        model to approximate H_kinetic
+        models to approximate H_kinetic
 
     Returns
     -------

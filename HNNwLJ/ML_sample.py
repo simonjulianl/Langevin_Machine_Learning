@@ -28,7 +28,7 @@ nepochs = 20
 
 seed = 9372211
 torch.manual_seed(seed)
-# torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the model functions nondeterministically.
+# torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
 # torch.backends.cudnn.benchmark = False
 torch.cuda.manual_seed_all(seed)
 
@@ -81,6 +81,8 @@ print ('Available devices ', torch.cuda.device_count())
 print ('Current cuda device ', torch.cuda.current_device())
 print('GPU available', torch.cuda.get_device_name(device))
 
-MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN, **state)
-MD_learner.trainer(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))
+filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label)
+
+MD_learner = pair_wise_HNN.MD_learner(integrator.linear_integrator, noML_hamiltonian, pair_wise_HNN.pair_wise_HNN, filename, **state)
+MD_learner.train_epoch()
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))
