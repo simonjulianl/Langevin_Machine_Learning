@@ -11,7 +11,7 @@ from HNNwLJ.integrator import linear_integrator
 from HNNwLJ.integrator.methods import linear_velocity_verlet
 from HNNwLJ.pair_wise_HNN import pair_wise_HNN
 from HNNwLJ.pair_wise_HNN.MD_learner import MD_learner
-from HNNwLJ.pair_wise_HNN.models import pair_wise_MLP
+from HNNwLJ.pair_wise_HNN.models import pair_wise_zero
 from HNNwLJ.pair_wise_HNN.loss import qp_MSE_loss
 import torch.optim as optim
 
@@ -27,11 +27,11 @@ if __name__ == '__main__':
     rho = 0.1
     boxsize = math.sqrt(nparticle / rho)
     tau_short = 0.01  # short time step for label
-    tau_long = 0.1
+    tau_long = 0.01
     n_input = 5
     n_hidden = 40
     lr = 0.001
-    nepochs = 20
+    nepochs = 5
 
     seed = 9372211
     torch.manual_seed(seed)
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         'n_hidden': n_hidden
     }
 
-    MLP = pair_wise_MLP(n_input, n_hidden)
+    MLP = pair_wise_zero(n_input, n_hidden)
     # MLP = models.pair_wise_zero(n_input, n_hidden)
     opt = optim.Adam(MLP.parameters(), lr=lr)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

@@ -16,7 +16,6 @@ class MD_learner:
         self._train_data, self._valid_data, self._train_label, self._valid_label = self.load_data(filename)
         self._filename = filename
 
-
         self._MLP = state['MLP'].to(state['_device'])
         self._opt = state['opt']
         self._loss = state['loss']
@@ -28,7 +27,11 @@ class MD_learner:
     def load_data(self, filename):
 
         dataset_obj = dataset_split(filename, **self._state)
+
+        # nsamples X qnp X nparticle X  DIM
         train_data, valid_data = dataset_obj.hamiltonian_dataset(ratio=0.7)
+
+        # qnp x iterations x nsamples x  nparticle x DIM
         train_label = dataset_obj.phase_space2label(train_data, self.linear_integrator, self.noML_hamiltonian)
         valid_label = dataset_obj.phase_space2label(valid_data, self.linear_integrator, self.noML_hamiltonian)
 
@@ -44,15 +47,16 @@ class MD_learner:
         q_train_label = self._train_label[0]; p_train_label = self._train_label[1]
         q_train_label = q_train_label[-1]; p_train_label = p_train_label[-1] # only take the last from the list
 
+        assert q_train.shape == q_train_label.shape
+
         # print('===== load initial valid data =====')
         q_valid = self._valid_data[:, 0]; p_valid = self._valid_data[:, 1]
-        print(q_valid, p_valid)
 
         # print('===== label valid data =====')
         q_valid_label = self._valid_label[0]; p_valid_label = self._valid_label[1]
         q_valid_label = q_valid_label[-1]; p_valid_label = p_valid_label[-1]  # only take the last from the list
-        print(q_valid_label, p_valid_label)
 
+        assert q_valid.shape == q_valid_label.shape
         # to prepare data at large time step, need to change tau and iterations
         # tau = large time step 0.1 and 1 step
         # print('===== state at large time step 0.1 =====')
@@ -69,7 +73,7 @@ class MD_learner:
         n_valid_batches = q_valid.shape[0]
         text = ''
 
-        for e in range(self._state['nepochs']):
+        for e in range(1, self._state['nepochs'] + 1 ):
 
             train_loss = 0.
             valid_loss = 0.
@@ -84,8 +88,9 @@ class MD_learner:
                 q_train_label_batch, p_train_label_batch = q_train_label[i], p_train_label[i]
                 q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._state['_device'])
                 p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._state['_device'])
+                # print('train label', q_train_label_batch, p_train_label_batch)
 
-                label = (q_train_label_batch, p_train_label_batch)
+                train_label = (q_train_label_batch, p_train_label_batch)
 
                 self._state['phase_space'].set_q(q_train_batch)
                 self._state['phase_space'].set_p(p_train_batch)
@@ -94,9 +99,10 @@ class MD_learner:
                 q_train_pred, p_train_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
                 q_train_pred = q_train_pred.to(self._state['_device']); p_train_pred = p_train_pred.to(self._state['_device'])
 
-                prediction = (q_train_pred[-1], p_train_pred[-1])
+                train_predict = (q_train_pred[-1], p_train_pred[-1])
+                # print('train pred', q_train_pred[-1], p_train_pred[-1])
 
-                loss1 = criterion(prediction, label)
+                loss1 = criterion(train_predict, train_label)
 
                 self._opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
                 loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
@@ -113,7 +119,7 @@ class MD_learner:
 
                 for j in range(n_valid_batches):
 
-                    q_valid_batch, p_valid_batch = q_valid[j], q_valid[j]
+                    q_valid_batch, p_valid_batch = q_valid[j], p_valid[j]
 
                     q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._state['_device'])
                     p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._state['_device'])
@@ -122,9 +128,9 @@ class MD_learner:
 
                     q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._state['_device'])
                     p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._state['_device'])
-                    # print('valid label',q_valid_label_batch, p_valid_label_batch)
+                    # print('valid label', q_valid_label_batch, p_valid_label_batch)
 
-                    label = (q_valid_label_batch, p_valid_label_batch)
+                    valid_label = (q_valid_label_batch, p_valid_label_batch)
 
                     self._state['phase_space'].set_q(q_valid_batch)
                     self._state['phase_space'].set_p(p_valid_batch)
@@ -132,11 +138,11 @@ class MD_learner:
                     # print('======= train combination of MD and ML =======')
                     q_valid_pred, p_valid_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
                     q_valid_pred = q_valid_pred.to(self._state['_device']); p_valid_pred = p_valid_pred.to(self._state['_device'])
-                    # print('valid pred',q_valid_pred, p_valid_pred)
 
-                    prediction = (q_valid_pred[-1], p_valid_pred[-1])
+                    valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
+                    # print('valid pred', q_valid_pred[-1], q_valid_pred[-1])
 
-                    val_loss1 = criterion(prediction, label)
+                    val_loss1 = criterion(valid_predict, valid_label)
 
                     valid_loss += val_loss1.item()  # get the scalar output
 
