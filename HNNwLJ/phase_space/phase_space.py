@@ -63,15 +63,3 @@ class phase_space :
          # assert they have the same 
 
         return self._q_list, self._p_list
-
-    def build_gridpoint(self, npixels, boxsize, DIM):
-
-        xvalues = torch.arange(0, npixels, dtype=torch.float64)
-        xvalues = xvalues - 0.5 * npixels
-        yvalues = torch.arange(0, npixels, dtype=torch.float64)
-        yvalues = yvalues - 0.5 * npixels
-        gridx, gridy = torch.meshgrid(xvalues * (boxsize/npixels) , yvalues * (boxsize/npixels) )
-        self._grid_list = torch.stack([gridx, gridy], dim=-1)
-        self._grid_list = self._grid_list.reshape((-1, DIM))
-
-        return self._grid_list

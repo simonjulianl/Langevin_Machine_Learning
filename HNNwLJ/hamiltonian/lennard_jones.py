@@ -22,10 +22,18 @@ class lennard_jones:
         grid_state = phase_space.get_grid()
         grid_state = grid_state / self.boxsize
         phase_space.set_grid(grid_state)
+
         return phase_space
 
-    # data for pair-wise potentials between grid and one particle
-    def phi_npixels(self,phase_space, pb):
+    def get_epsilon(self):
+        return self.phi._epsilon
+
+    def get_sigma(self):
+        return self.phi._sigma
+
+    # data for pair-wise potentials between each grid and particles
+    def phi_npixels(self,phase_space, pb, grid):
+        phase_space.set_grid(grid)
         xi_space = self.dimensionless_gridpoint(phase_space)
         return self.phi.phi_npixels(xi_space, pb)
 
