@@ -15,9 +15,6 @@ class ljbox2gridimg:
         self._mincut = -8 * self._lennard_jones.get_epsilon() # actual minccut -6 and then give margin -2 = -8
         self._grid_list = self.build_gridpoint()
 
-        # self._state_local_copy = copy.deepcopy(state)
-        # self._grid_list = self._state_local_copy['phase_space'].build_gridpoint(self._state_local_copy['npixels'], self._state_local_copy['boxsize'],
-        #                                                        self._state_local_copy['DIM'])
 
     def show_grid_nparticles(self, q_list, title):
 
@@ -26,20 +23,6 @@ class ljbox2gridimg:
         plt.plot(q_list[:,:, 0], q_list[:,:, 1], marker='x', color='r', linestyle='none', markersize=12)
         plt.show()
         plt.close()
-
-    def phi_max_min(self):
-
-        # print('maxm',torch.max(self._phi_field[0]))
-        # print('before mask', self._phi_field)
-
-        for z in range(self._nsamples):
-
-            mask = self._phi_field[z] > self._maxcut
-            self._phi_field[z][mask] = self._maxcut # cannot do that !! keep the phi field. this just show image
-
-        # print('after mask', self._phi_field)
-
-        return self._phi_field
 
     def build_gridpoint(self):
 
@@ -54,7 +37,7 @@ class ljbox2gridimg:
         return grid_list
 
 
-    def phi_field(self,phase_space,bc):
+    def phi_field(self, phase_space, bc):
 
         self._phi_field = self._lennard_jones.phi_npixels(phase_space, bc, self._grid_list)
         self._phi_field = self._phi_field.reshape((-1, self._npixels, self._npixels))
@@ -62,11 +45,23 @@ class ljbox2gridimg:
         return self._phi_field
 
 
+    def phi_max_min(self):
+
+        # print('before mask', self._phi_field)
+
+        for z in range(self._nsamples):
+
+            mask = self._phi_field[z] > self._maxcut
+            self._phi_field[z][mask] = self._maxcut # cannot do that !! keep the phi field. this just show image
+
+        # print('after mask', self._phi_field)
+
+        return self._phi_field
+
+
     def show_gridimg(self):
 
-        _phi_field = self.phi_max_min()
-
-        norm_phi_field = (_phi_field[0] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
+        norm_phi_field = (self._phi_field[0] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
 
         plt.imshow(norm_phi_field, cmap='gray') # one sample
         plt.colorbar()

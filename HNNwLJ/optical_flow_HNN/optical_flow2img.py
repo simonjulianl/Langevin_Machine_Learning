@@ -19,8 +19,8 @@ class optical_flow2img:
         flow = None
         flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                             next=current_image, flow=flow,
-                                            pyr_scale=0.5, levels=3, winsize=2, iterations=3,
-                                            poly_n=7, poly_sigma=1.5, flags=0)
+                                            pyr_scale=0.85, levels=3, winsize=3, iterations=3,
+                                            poly_n=5, poly_sigma=1.1, flags=0)
 
         return flow
 

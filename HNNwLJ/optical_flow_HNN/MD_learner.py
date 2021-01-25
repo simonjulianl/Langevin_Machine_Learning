@@ -20,11 +20,6 @@ class MD_learner:
         # initialize best models
         self._best_validation_loss = float('inf')
 
-
-    def phase_space2label(self, MD_integrator, noML_hamiltonian):
-        label = MD_integrator.integrate(noML_hamiltonian)
-        return label
-
     # phase_space consist of minibatch data
     # def trainer(self, filename):
 
