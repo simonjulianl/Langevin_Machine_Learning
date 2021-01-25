@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image as Img
 from scipy import signal
-from skimage.feature import corner_harris, corner_peaks
 import cv2
 import math
 
