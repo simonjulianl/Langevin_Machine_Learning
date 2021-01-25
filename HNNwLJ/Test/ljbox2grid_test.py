@@ -26,8 +26,8 @@ if __name__ == '__main__':
     nsamples_ML = 1
     nparticle = 2
     iterations = 10 # 10 steps to pair with large time step = 0.1
-    tau_long = 0.5 # short time step for label
-    tau_short = 0.001
+    tau_long = 0.1 # short time step for label
+    tau_short = 0.5
 
     NoML_hamiltonian = hamiltonian()
     lj_term = LJ_term(epsilon = epsilon, sigma = sigma, boxsize = boxsize)
@@ -58,7 +58,6 @@ if __name__ == '__main__':
 
         }
 
-
     def show_grid_nparticles(q_list, _grid_list):
 
         plt.plot(_grid_list[:, 0], _grid_list[:, 1], marker='.', color='k', linestyle='none', markersize=12)
@@ -74,28 +73,35 @@ if __name__ == '__main__':
     _q_list_in, _p_list_in = torch.tensor([q_list, p_list],dtype=torch.float64)
 
     ljbox2gridimg_obj = ljbox2gridimg(lennard_jones(lj_term, boxsize), nsamples=nsamples, npixels=npixels, DIM=DIM )
-
-    _grid_list = ljbox2gridimg_obj.build_gridpoint()
     # show_grid_nparticles(_q_list_in, _grid_list)
 
     phase_space.set_q(_q_list_in)
     phase_space.set_p(_p_list_in)
 
-    _phi_field = ljbox2gridimg_obj.phi_field(phase_space,pb)
+    _phi_field_in = ljbox2gridimg_obj.phi_field(phase_space,pb)
     ljbox2gridimg_obj.show_gridimg()
-    # q_list_in = phi_field._q_list_in
-    # # phi_field.show_grid_nparticles(q_list_in, 'phi field(t)')
-    #
-    # q_list_nx = phi_field._q_list_nx
-    # # phi_field.show_grid_nparticles(q_list_nx, 'phi field(t+dt)')
-    #
-    # phi_field_initial = phi_field.phi_field_initial()
-    # # phi_field.show_gridimg(phi_field_initial)
-    #
-    # phi_field_next = phi_field.phi_field_next()
-    # # phi_field.show_gridimg(phi_field_next)
-    #
-    # optical_flow2img = optical_flow2img(phi_field_initial, phi_field_next)
-    # flow_vectors = optical_flow2img.p_field()
-    # optical_flow2img.visualize_flow_file(flow_vectors)
+
+    phase_space.set_q(_q_list_in)
+    phase_space.set_p(_p_list_in)
+
+    print('q,p',phase_space.get_q(),phase_space.get_p())
+
+    state['nsamples_cur'] = state['nsamples_label']  # for one step
+    state['tau_cur'] = state['tau_short']  # tau = 0.01
+    state['MD_iterations'] = int(state['tau_short'] / state['tau_cur'])  # for one step
+    _q_list_nx, _p_list_nx = linear_integrator(**state).integrate(NoML_hamiltonian)
+
+    _q_list_nx = _q_list_nx[-1].type(torch.float64)  # only take the last from the list
+    _p_list_nx = _p_list_nx[-1].type(torch.float64)
+
+    phase_space.set_q(_q_list_nx)
+    # phase_space.set_p(_p_list_nx)
+    print('next q,p', phase_space.get_q(), phase_space.get_p())
+
+    _phi_field_nx = ljbox2gridimg_obj.phi_field(phase_space, pb)
+    ljbox2gridimg_obj.show_gridimg()
+
+    optical_flow2img = optical_flow2img(_phi_field_in, _phi_field_nx)
+    flow_vectors = optical_flow2img.p_field()
+    optical_flow2img.visualize_flow_file(flow_vectors)
 
