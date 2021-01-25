@@ -26,7 +26,7 @@ class MD_learner:
         return label
 
     # phase_space consist of minibatch data
-    def trainer(self, filename):
+    # def trainer(self, filename):
 
 
 
