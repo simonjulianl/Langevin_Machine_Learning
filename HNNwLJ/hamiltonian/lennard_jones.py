@@ -14,16 +14,9 @@ class lennard_jones:
         phase_space.set_q(q_state)
         return phase_space
 
-    def dimensionless_gridpoint(self,phase_space):
-        q_state = phase_space.get_q()
-        q_state = q_state / self.boxsize
-        phase_space.set_q(q_state)
-
-        grid_state = phase_space.get_grid()
-        grid_state = grid_state / self.boxsize
-        phase_space.set_grid(grid_state)
-
-        return phase_space
+    def dimensionless_grid(self, grid):
+        grid_state = grid / self.boxsize # dimensionless
+        return grid_state
 
     def get_epsilon(self):
         return self.phi._epsilon
@@ -33,9 +26,9 @@ class lennard_jones:
 
     # data for pair-wise potentials between each grid and particles
     def phi_npixels(self,phase_space, pb, grid):
-        phase_space.set_grid(grid)
-        xi_space = self.dimensionless_gridpoint(phase_space)
-        return self.phi.phi_npixels(xi_space, pb)
+        grid_state = self.dimensionless_grid(grid)
+        xi_space = self.dimensionless(phase_space)
+        return self.phi.phi_npixels(xi_space, pb, grid_state)
 
     def energy(self, phase_space, pb): # phase space is real-space-unit
         xi_space = self.dimensionless(phase_space)

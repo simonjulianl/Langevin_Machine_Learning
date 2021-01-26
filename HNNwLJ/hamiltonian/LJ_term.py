@@ -15,10 +15,9 @@ class LJ_term:
 
         self._name = 'Lennard Jones Potential'
 
-    def phi_npixels(self, xi_space, pb):
+    def phi_npixels(self, xi_space, pb, grid_state):
 
         xi_state = xi_space.get_q()
-        grid_state = xi_space.get_grid()
         term = torch.zeros((xi_state.shape[0],grid_state.shape[0])) # nsamples x npixels
         nsamples, nparticle, DIM = xi_state.shape
         npixels, DIM = grid_state.shape

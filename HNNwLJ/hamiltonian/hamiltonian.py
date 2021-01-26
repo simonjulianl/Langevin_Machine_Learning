@@ -16,10 +16,13 @@ class hamiltonian:
     '''
 
     def __init__(self):
+    # def __init__(self, phase_p):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
         self.hamiltonian_terms = []  # for every separable terms possible
+        # self.phase_space = phase_p (reference)
+        # self.phase_pace = phase_space() (copy)
 
     def append(self, term):
         '''
