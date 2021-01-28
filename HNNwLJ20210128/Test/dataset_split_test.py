@@ -8,6 +8,7 @@ from HNNwLJ.phase_space.phase_space import phase_space
 from HNNwLJ.pair_wise_HNN.dataset_split import dataset_split
 from HNNwLJ.integrator import linear_integrator
 from HNNwLJ.integrator.methods import linear_velocity_verlet
+from HNNwLJ20210128.parameters.ML_paramaters import ML_parameters
 from HNNwLJ.pair_wise_HNN import pair_wise_HNN
 from HNNwLJ.pair_wise_HNN.models import pair_wise_MLP
 from HNNwLJ.pair_wise_HNN.loss import qp_MSE_loss

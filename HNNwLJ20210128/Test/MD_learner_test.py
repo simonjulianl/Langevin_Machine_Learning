@@ -1,37 +1,42 @@
-import HNNwLJ.hamiltonian as noML_hamiltonian
-from HNNwLJ.hamiltonian.LJ_term import LJ_term
-from HNNwLJ.hamiltonian.lennard_jones import lennard_jones
-from HNNwLJ.hamiltonian.kinetic_energy import kinetic_energy
+from HNNwLJ20210128.hamiltonian import hamiltonian
+from HNNwLJ20210128.hamiltonian.kinetic_energy import kinetic_energy
+from HNNwLJ20210128.hamiltonian.lennard_jones import lennard_jones
+from HNNwLJ20210128.hamiltonian.LJ_term import LJ_term
+from HNNwLJ20210128.phase_space.phase_space import phase_space
+from HNNwLJ20210128.integrator import linear_integrator
+from HNNwLJ20210128.integrator.methods import linear_velocity_verlet
+from HNNwLJ20210128.parameters.MD_paramaters import MD_parameters
+from HNNwLJ20210128.parameters.ML_paramaters import ML_parameters
+from HNNwLJ20210128.pair_wise_HNN.data_io import data_io
+from HNNwLJ20210128.pair_wise_HNN import pair_wise_HNN
+from HNNwLJ20210128.pair_wise_HNN.MD_learner import MD_learner
+from HNNwLJ20210128.pair_wise_HNN.models import pair_wise_MLP
+from HNNwLJ20210128.pair_wise_HNN.loss import qp_MSE_loss
 import torch
 import math
-from HNNwLJ.hamiltonian.pb import pb
-from HNNwLJ.phase_space.phase_space import phase_space
-from HNNwLJ.pair_wise_HNN.dataset_split import dataset_split
-from HNNwLJ.integrator import linear_integrator
-from HNNwLJ.integrator.methods import linear_velocity_verlet
-from HNNwLJ.pair_wise_HNN import pair_wise_HNN
-from HNNwLJ.pair_wise_HNN.MD_learner import MD_learner
-from HNNwLJ.pair_wise_HNN.models import pair_wise_zero
-from HNNwLJ.pair_wise_HNN.loss import qp_MSE_loss
+
 import torch.optim as optim
 
 if __name__ == '__main__':
 
-    nsamples_label = 10
-    nsamples_ML = 1
-    nparticle = 2
-    DIM = 2
-    mass = 1
-    epsilon = 1.
-    sigma = 1.
-    rho = 0.1
-    boxsize = math.sqrt(nparticle / rho)
-    tau_short = 0.01  # short time step for label
-    tau_long = 0.01
-    n_input = 5
-    n_hidden = 40
-    lr = 0.001
-    nepochs = 5
+    nsamples_cur = MD_parameters.nsamples_cur
+    nsamples_label = MD_parameters.nsamples_label
+    nsamples_ML = MD_parameters.nsamples_ML
+    mass = MD_parameters.mass
+    epsilon = MD_parameters.epsilon
+    sigma = MD_parameters.sigma
+    boxsize = MD_parameters.boxsize
+    nparticle = MD_parameters.nparticle
+    DIM = MD_parameters.DIM
+    MD_iterations = MD_parameters.MD_iterations # 10 steps to pair with large time step = 0.1
+    tau_cur = MD_parameters.tau_cur
+    tau_long = MD_parameters.tau_long # short time step for label
+    tau_short = MD_parameters.tau_short
+    nepoch = ML_parameters.nepoch
+    lr = ML_parameters.lr
+    MLP_input = ML_parameters.MLP_input
+    MLP_nhidden = ML_parameters.MLP_nhidden
+
 
     seed = 9372211
     torch.manual_seed(seed)
@@ -40,33 +45,32 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(seed)
 
     # noML_hamiltonian
-    noML_hamiltonian = noML_hamiltonian.hamiltonian()
+    noML_hamiltonian = hamiltonian.hamiltonian()
     lj_term = LJ_term(epsilon=epsilon,sigma=sigma,boxsize=boxsize)
     noML_hamiltonian.append(lennard_jones(lj_term, boxsize))
     noML_hamiltonian.append(kinetic_energy(mass))
 
     phase_space = phase_space()
-    pb = pb()
 
-    state = {
-        'nsamples_cur': 0,
-        'nsamples_label': nsamples_label,
-        'nsamples_ML': nsamples_ML,
-        'nparticle': nparticle,
-        'DIM': DIM,
-        'boxsize': boxsize,
-        'MD_iterations': 0,
-        'tau_cur': 0.0,
-        'tau_long': tau_long,  # for MD
-        'tau_short': tau_short,  # for label (gold standard)
-        'integrator_method': linear_velocity_verlet,
-        'phase_space': phase_space,
-        'pb_q': pb,
-        'nepochs': nepochs,
-        'n_hidden': n_hidden
-    }
+    # state = {
+    #     'nsamples_cur': 0,
+    #     'nsamples_label': nsamples_label,
+    #     'nsamples_ML': nsamples_ML,
+    #     'nparticle': nparticle,
+    #     'DIM': DIM,
+    #     'boxsize': boxsize,
+    #     'MD_iterations': 0,
+    #     'tau_cur': 0.0,
+    #     'tau_long': tau_long,  # for MD
+    #     'tau_short': tau_short,  # for label (gold standard)
+    #     'integrator_method': linear_velocity_verlet,
+    #     'phase_space': phase_space,
+    #     'pb_q': pb,
+    #     'nepochs': nepochs,
+    #     'n_hidden': n_hidden
+    # }
 
-    MLP = pair_wise_zero(n_input, n_hidden)
+    MLP = pair_wise_MLP(MLP_input, MLP_nhidden)
     # MLP = models.pair_wise_zero(n_input, n_hidden)
     opt = optim.Adam(MLP.parameters(), lr=lr)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
