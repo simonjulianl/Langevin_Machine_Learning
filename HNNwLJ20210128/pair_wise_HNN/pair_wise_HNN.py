@@ -1,4 +1,5 @@
 import torch
+from ..hamiltonian.hamiltonian import hamiltonian
 
 class pair_wise_HNN(hamiltonian):
 
@@ -9,9 +10,8 @@ class pair_wise_HNN(hamiltonian):
 
     def __init__(self, network):
 
-        super(pair_wise_HNN, self).__init__()
+        super().__init__()
         self.network = network
-
 
     def train(self):
         self.network.train()  # pytorch network for training
@@ -19,7 +19,7 @@ class pair_wise_HNN(hamiltonian):
     def eval(self):
         self.network.eval()
 
-    def dHdq(self, phase_space, pb):
+    def dHdq(self, phase_space):
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
@@ -27,7 +27,7 @@ class pair_wise_HNN(hamiltonian):
         # print('===== data for noML dHdq =====')
         # print(q_list,p_list)
 
-        noML_dHdq = self.noML_hamiltonian.dHdq(phase_space, pb)
+        noML_dHdq = hamiltonian.dHdq(phase_space)
         # print('noML_dHdq',noML_dHdq)
 
         phase_space.set_q(q_list)

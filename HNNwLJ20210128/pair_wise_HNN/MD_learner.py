@@ -1,4 +1,4 @@
-from .dataset_split import dataset_split
+from .data_io import data_io
 import torch
 import shutil
 import time
@@ -6,13 +6,12 @@ import os
 
 class MD_learner:
 
-    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN, filename, **state):
+    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN, filename):
 
         self.linear_integrator = linear_integrator
         self.noML_hamiltonian =noML_hamiltonian
         self.pair_wise_HNN = pair_wise_HNN
 
-        self._state = state
         self._train_data, self._valid_data, self._train_label, self._valid_label = self.load_data(filename)
         self._filename = filename
 
@@ -26,7 +25,7 @@ class MD_learner:
 
     def load_data(self, filename):
 
-        dataset_obj = dataset_split(filename, **self._state)
+        dataset_obj = data_io(filename, **self._state)
 
         # nsamples X qnp X nparticle X  DIM
         train_data, valid_data = dataset_obj.hamiltonian_dataset(ratio=0.7)

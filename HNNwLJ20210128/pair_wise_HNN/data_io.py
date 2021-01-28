@@ -1,11 +1,10 @@
 import torch
 
-class dataset_split:
+class data_io:
 
-    def __init__(self, filename, **state):
+    def __init__(self, filename):
 
         self._filename =filename
-        self._state = state
 
     def hamiltonian_dataset(self, ratio : float):
 
