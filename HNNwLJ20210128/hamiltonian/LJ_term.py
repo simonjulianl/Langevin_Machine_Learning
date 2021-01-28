@@ -15,9 +15,10 @@ class LJ_term:
 
         self._name = 'Lennard Jones Potential'
 
-    def phi_npixels(self, xi_space, pb, grid_state):
+    def phi_npixels(self, xi_space, grid_state):
 
         xi_state = xi_space.get_q()
+
         term = torch.zeros((xi_state.shape[0],grid_state.shape[0])) # nsamples x npixels
         nsamples, nparticle, DIM = xi_state.shape
         npixels, DIM = grid_state.shape
@@ -30,7 +31,7 @@ class LJ_term:
 
                 pair_wise = torch.cat((grid_state[j].unsqueeze(0), xi_state[z]), 0)
 
-                _, d = pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
+                _, d = xi_space.pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
                 d_grid = d[0] # pair-wise between gird and particles
 
                 s12 = 1 / pow(d_grid, 12)
@@ -40,7 +41,7 @@ class LJ_term:
 
         return term
 
-    def energy(self, xi_space, pb):
+    def energy(self, xi_space):
 
         xi_state = xi_space.get_q()
         term = torch.zeros(xi_state.shape[0])
@@ -52,7 +53,7 @@ class LJ_term:
 
         for z in range(nsamples):
 
-            _, d = pb.paired_distance_reduced(xi_state[z], nparticle, DIM)
+            _, d = xi_space.paired_distance_reduced(xi_state[z], nparticle, DIM)
 
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
@@ -61,7 +62,7 @@ class LJ_term:
 
         return term
 
-    def evaluate_derivative_q(self,xi_space,pb):
+    def evaluate_derivative_q(self,xi_space):
 
         xi_state = xi_space.get_q()
         dphidxi = torch.zeros(xi_state.shape) # derivative terms of nsamples
@@ -72,7 +73,7 @@ class LJ_term:
 
         for z in range(nsamples):
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],nparticle,DIM)
+            delta_xi, d = xi_space.paired_distance_reduced(xi_state[z],nparticle,DIM)
             d = torch.unsqueeze(d,dim =2)
 
             s12 = -12 * (delta_xi) / pow(d,14)
@@ -82,7 +83,7 @@ class LJ_term:
 
         return dphidxi
 
-    def evaluate_second_derivative_q(self,xi_space,pb):
+    def evaluate_second_derivative_q(self,xi_space):
 
         xi_state = xi_space.get_q()
         d2phidxi2_append = []
@@ -98,7 +99,7 @@ class LJ_term:
 
             d2phidxi2_ = torch.empty((0, nparticle * DIM))
 
-            delta_xi, d = pb.paired_distance_reduced(xi_state[z],nparticle,DIM)
+            delta_xi, d = xi_space.paired_distance_reduced(xi_state[z],nparticle,DIM)
             d = torch.unsqueeze(d,dim=2)
 
             s12_same_term = 1. / pow(d,14)

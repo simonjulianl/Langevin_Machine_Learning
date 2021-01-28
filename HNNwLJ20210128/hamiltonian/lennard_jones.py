@@ -25,21 +25,21 @@ class lennard_jones:
         return self.phi._sigma
 
     # data for pair-wise potentials between each grid and particles
-    def phi_npixels(self,phase_space, pb, grid):
+    def phi_npixels(self,phase_space, grid):
         grid_state = self.dimensionless_grid(grid)
         xi_space = self.dimensionless(phase_space)
-        return self.phi.phi_npixels(xi_space, pb, grid_state)
+        return self.phi.phi_npixels(xi_space, grid_state)
 
-    def energy(self, phase_space, pb): # phase space is real-space-unit
+    def energy(self, phase_space): # phase space is real-space-unit
         xi_space = self.dimensionless(phase_space)
-        return self.phi.energy(xi_space,pb)
+        return self.phi.energy(xi_space)
 
-    def evaluate_derivative_q(self, phase_space,pb):
+    def evaluate_derivative_q(self, phase_space):
         xi_space = self.dimensionless(phase_space)
-        dphidq = self.phi.evaluate_derivative_q(xi_space,pb)
+        dphidq = self.phi.evaluate_derivative_q(xi_space)
         return dphidq
 
-    def evaluate_second_derivative_q(self, phase_space,pb):
+    def evaluate_second_derivative_q(self, phase_space):
         xi_space = self.dimensionless(phase_space)
-        d2phidq2 = self.phi.evaluate_second_derivative_q(xi_space,pb)
+        d2phidq2 = self.phi.evaluate_second_derivative_q(xi_space)
         return d2phidq2

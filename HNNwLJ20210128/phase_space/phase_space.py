@@ -2,14 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import torch
+from .pb import pb
 
-class phase_space :
+class phase_space(pb):
     '''phase space container class that have a 
     q and p configuration as well wrapper to read and write'
     q and p must be either numpy or torch 
     '''
-    
+    def helper(self = None):
+        '''print the common parameters helper'''
+        for parent in phase_space.__bases__:
+            print(help(parent))
+
     def __init__(self):
+
+        super().__init__()
         '''initialize phase space container of N X particle X DIM dimension'''
         self._q_list = None
         self._p_list = None

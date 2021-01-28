@@ -5,7 +5,7 @@ class pb:
     def adjust_reduced(self,q): # use in Lennard-Jones class
          self.adjust_real(q,boxsize=1)
 
-    def adjust_real(self,q,boxsize): #use in verlet and other classes
+    def adjust_real(self, q, boxsize): #use in verlet and other classes
 
          indices = torch.where(torch.abs(q)>0.5*boxsize)
          q[indices] = q[indices] - torch.round(q[indices] / boxsize) * boxsize

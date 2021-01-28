@@ -34,6 +34,18 @@ if __name__ == '__main__':
 
     print('initial ', q_list_tensor, p_list_tensor)
 
+    plt.cla()
+    plt.xlim(-boxsize / 2, boxsize / 2)
+    plt.ylim(-boxsize / 2, boxsize / 2)
+    # plt.title(r'boxSize={:.2f}'.format(boxsize), fontsize=15)
+    for i in range(nparticle):
+        plt.plot(q_list_tensor[:, i, 0], q_list_tensor[:, i, 1], 'o', markersize=15)
+        print(q_list_tensor[:, i, 0], q_list_tensor[:, i, 1])
+
+    # plt.show()
+    # plt.savefig(r'nparticle{}_f1_pos.png'.format(nparticle))
+    # plt.close()
+
     phase_space = phase_space()
 
     NoML_hamiltonian = hamiltonian()
@@ -43,20 +55,18 @@ if __name__ == '__main__':
 
     integrator_method = linear_velocity_verlet
 
-    # initial state
-    phase_space.set_q(q_list_tensor)
-    phase_space.set_p(p_list_tensor)
-
-    # tau = short time step 0.01 and 10 steps to pair with large time step 0.1
-    nsamples_cur = nsamples_label
-    tau_cur = tau_short
-    MD_iterations = int(tau_long / tau_cur)
-
-    print('for label : nsamples_cur, tau_cur, MD_iterations')
-    print(nsamples_cur, tau_cur, MD_iterations)
-    q_list_label, p_list_label = linear_integrator(NoML_hamiltonian, integrator_method).integrate(phase_space, MD_iterations, nsamples_cur, nparticle, DIM, tau_cur, boxsize)
-
-    print('label',q_list_label.shape, p_list_label.shape)
+    # # initial state
+    # state['phase_space'].set_q(q_list_tensor)
+    # state['phase_space'].set_p(p_list_tensor)
+    #
+    # # tau = short time step 0.01 and 10 steps to pair with large time step 0.1
+    # state['nsamples_cur'] = state['nsamples_label']
+    # state['tau_cur'] = state['tau_short']
+    # state['MD_iterations'] = int(state['tau_long'] / state['tau_cur'])
+    #
+    # q_list_label, p_list_label = linear_integrator(**state).integrate(NoML_hamiltonian)
+    #
+    # print('label',q_list_label, p_list_label)
 
     # initial state
     phase_space.set_q(q_list_tensor)
@@ -67,8 +77,20 @@ if __name__ == '__main__':
     tau_cur = tau_long  # tau = 0.1
     MD_iterations = int(tau_long / tau_cur)
 
-    print('At large time : nsamples_cur, tau_cur, MD_iterations')
-    print(nsamples_cur, tau_cur, MD_iterations)
+    print('large time step {}'.format(tau_cur))
     q_list, p_list = linear_integrator(NoML_hamiltonian, integrator_method).integrate(phase_space, MD_iterations, nsamples_cur, nparticle, DIM, tau_cur, boxsize)
 
     print('noML vv',q_list, p_list)
+
+
+    plt.cla()
+    plt.xlim(-boxsize / 2, boxsize / 2)
+    plt.ylim(-boxsize / 2, boxsize / 2)
+    # plt.title(r'boxSize={:.2f}'.format(boxsize), fontsize=15)
+    for i in range(nparticle):
+        plt.plot(q_list[:, i, 0], q_list[:, i, 1], 'o', markersize=15)
+        print(q_list[:, i, 0], q_list[:, i, 1])
+
+    # plt.show()
+    # plt.savefig(r'nparticle{}_f2_pos.png'.format(nparticle))
+    # plt.close()

@@ -30,7 +30,7 @@ class hamiltonian:
         '''
         self.hamiltonian_terms.append(term)
 
-    def total_energy(self, phase_space, pb):
+    def total_energy(self, phase_space):
         '''
         get the hamiltonian which is define as H(p,q) for every separable terms
 
@@ -42,11 +42,10 @@ class hamiltonian:
         H = 0
 
         for term in self.hamiltonian_terms:
-            H += term.energy(phase_space, pb)
-
+            H += term.energy(phase_space)
         return H
 
-    def dHdq(self, phase_space, pb):
+    def dHdq(self, phase_space):
         '''
         Function to get dHdq for every separable terms
 
@@ -56,16 +55,15 @@ class hamiltonian:
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
         q_list = phase_space.get_q()
-        # print(q_list)
         dHdq = torch.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:
-            #print(term)
-            dHdq += term.evaluate_derivative_q(phase_space, pb)
-            #print(dHdq)
+            # print('hamiltonian', term)
+            dHdq += term.evaluate_derivative_q(phase_space)
+            # print('hamiltonian', dHdq)
         return dHdq
 
-    def d2Hdq2(self, phase_space, pb):
+    def d2Hdq2(self, phase_space):
         '''
         Function to get d2Hdq2 for every separable terms
 
@@ -80,7 +78,9 @@ class hamiltonian:
         d2Hdq2 = torch.zeros((nsamples, DIM * nparticle, DIM * nparticle))
 
         for term in self.hamiltonian_terms:
-            d2Hdq2 += term.evaluate_second_derivative_q(phase_space, pb)
+            # print('hamiltonian', term)
+            d2Hdq2 += term.evaluate_second_derivative_q(phase_space)
+            # print('hamiltonian', d2Hdq2)
 
         return d2Hdq2
 
