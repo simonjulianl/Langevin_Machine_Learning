@@ -1,12 +1,11 @@
 import torch
 import math
-from metropolis_mc import metropolis_mc
-from HNNwLJ.phase_space.phase_space import phase_space
-from HNNwLJ.hamiltonian.pb import pb
-from HNNwLJ.hamiltonian import hamiltonian
-from HNNwLJ.hamiltonian.LJ_term import LJ_term
-from HNNwLJ.hamiltonian.lennard_jones import lennard_jones
-from HNNwLJ.hamiltonian.kinetic_energy import kinetic_energy
+from HNNwLJ20210128.integrator.metropolis_mc import metropolis_mc
+from HNNwLJ20210128.phase_space.phase_space import phase_space
+from HNNwLJ20210128.hamiltonian import hamiltonian
+from HNNwLJ20210128.hamiltonian.LJ_term import LJ_term
+from HNNwLJ20210128.hamiltonian.lennard_jones import lennard_jones
+from HNNwLJ20210128.hamiltonian.kinetic_energy import kinetic_energy
 
 if __name__ == '__main__':
 
