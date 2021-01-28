@@ -31,7 +31,7 @@ class LJ_term:
 
                 pair_wise = torch.cat((grid_state[j].unsqueeze(0), xi_state[z]), 0)
 
-                _, d = xi_space.pb.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
+                _, d = xi_space.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
                 d_grid = d[0] # pair-wise between gird and particles
 
                 s12 = 1 / pow(d_grid, 12)
