@@ -1,5 +1,5 @@
 import hamiltonian as hamiltonian
-from hamiltonian.pb import pb
+from HNNwLJ20210128.phase_space.pb import pb
 from phase_space import phase_space
 import integrator as integrator
 import matplotlib.pyplot as plt
