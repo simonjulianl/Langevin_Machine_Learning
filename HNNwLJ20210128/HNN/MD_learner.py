@@ -1,4 +1,8 @@
 from .data_io import data_io
+from .loss import qp_MSE_loss
+import torch.optim as optim
+from ..parameters.ML_paramaters import ML_parameters
+from .models import pair_wise_MLP
 import torch
 import shutil
 import time
@@ -6,18 +10,19 @@ import os
 
 class MD_learner:
 
-    def __init__(self,linear_integrator, noML_hamiltonian, pair_wise_HNN, filename):
+    def __init__(self,linear_integrator, pair_wise_HNN, filename):
 
         self.linear_integrator = linear_integrator
-        self.noML_hamiltonian =noML_hamiltonian
         self.pair_wise_HNN = pair_wise_HNN
 
         self._train_data, self._valid_data, self._train_label, self._valid_label = self.load_data(filename)
         self._filename = filename
 
-        self._MLP = state['MLP'].to(state['_device'])
-        self._opt = state['opt']
-        self._loss = state['loss']
+        self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        self._MLP = pair_wise_MLP(ML_parameters.MLP_input, ML_parameters.MLP_nhidden).to(self._device)
+        self._opt = optim.Adam(self._MLP.parameters(), lr = ML_parameters.lr)
+        self._loss = qp_MSE_loss
 
         self._current_epoch = 1
         # initialize best models
@@ -25,7 +30,7 @@ class MD_learner:
 
     def load_data(self, filename):
 
-        dataset_obj = data_io(filename, **self._state)
+        dataset_obj = data_io(filename)
 
         # nsamples X qnp X nparticle X  DIM
         train_data, valid_data = dataset_obj.hamiltonian_dataset(ratio=0.7)
@@ -81,12 +86,12 @@ class MD_learner:
             for i in range(n_train_batches):
 
                 q_train_batch, p_train_batch = q_train[i], p_train[i]
-                q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._state['_device'])
-                p_train_batch = torch.unsqueeze(p_train_batch, dim=0).to(self._state['_device'])
+                q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._device)
+                p_train_batch = torch.unsqueeze(p_train_batch, dim=0).to(self._device)
 
                 q_train_label_batch, p_train_label_batch = q_train_label[i], p_train_label[i]
-                q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._state['_device'])
-                p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._state['_device'])
+                q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._device)
+                p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._device)
                 # print('train label', q_train_label_batch, p_train_label_batch)
 
                 train_label = (q_train_label_batch, p_train_label_batch)
@@ -96,7 +101,7 @@ class MD_learner:
 
                 # print('======= train combination of MD and ML =======')
                 q_train_pred, p_train_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
-                q_train_pred = q_train_pred.to(self._state['_device']); p_train_pred = p_train_pred.to(self._state['_device'])
+                q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
                 # print('train pred', q_train_pred[-1], p_train_pred[-1])
@@ -120,13 +125,13 @@ class MD_learner:
 
                     q_valid_batch, p_valid_batch = q_valid[j], p_valid[j]
 
-                    q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._state['_device'])
-                    p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._state['_device'])
+                    q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._device)
+                    p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._device)
 
                     q_valid_label_batch, p_valid_label_batch = q_valid_label[j], p_valid_label[j]
 
-                    q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._state['_device'])
-                    p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._state['_device'])
+                    q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._device)
+                    p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._device)
                     # print('valid label', q_valid_label_batch, p_valid_label_batch)
 
                     valid_label = (q_valid_label_batch, p_valid_label_batch)
@@ -136,7 +141,7 @@ class MD_learner:
 
                     # print('======= train combination of MD and ML =======')
                     q_valid_pred, p_valid_pred = self.linear_integrator(**self._state).integrate(pairwise_hnn)
-                    q_valid_pred = q_valid_pred.to(self._state['_device']); p_valid_pred = p_valid_pred.to(self._state['_device'])
+                    q_valid_pred = q_valid_pred.to(self._device); p_valid_pred = p_valid_pred.to(self._device)
 
                     valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
                     # print('valid pred', q_valid_pred[-1], q_valid_pred[-1])
@@ -203,8 +208,8 @@ class MD_learner:
         q_list, p_list = self._state['phase_space'].read(filename, nsamples=self._state['nsamples_label'])
         # print(q_list, p_list)
 
-        self._state['phase_space'].set_q(torch.unsqueeze(q_list[0], dim=0).to(self._state['_device']))
-        self._state['phase_space'].set_p(torch.unsqueeze(p_list[0], dim=0).to(self._state['_device']))
+        self._state['phase_space'].set_q(torch.unsqueeze(q_list[0], dim=0).to(self._device))
+        self._state['phase_space'].set_p(torch.unsqueeze(p_list[0], dim=0).to(self._device))
 
         self._state['nsamples_cur'] = self._state['nsamples_ML']
         self._state['tau_cur'] = self._state['tau_long']  # tau = 0.1
