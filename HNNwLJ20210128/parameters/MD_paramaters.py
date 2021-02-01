@@ -12,6 +12,6 @@ class MD_parameters:
     mass = 1
     rho = 0.1
     boxsize = math.sqrt(nparticle / rho)
-    tau_short = 0.001  # short time step for label
+    tau_short = 0.01  # short time step for label
     tau_long = 0.1
     integrator_method = methods.linear_velocity_verlet
