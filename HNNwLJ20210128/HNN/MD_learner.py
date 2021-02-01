@@ -66,6 +66,7 @@ class MD_learner:
 
         self._MLP = pair_wise_MLP().to(self._device)
         self._opt = optim.Adam(self._MLP.parameters(), lr = ML_parameters.lr)
+        print(type(self._opt).__name__)
         self._loss = qp_MSE_loss
 
         self._current_epoch = 1
@@ -182,11 +183,11 @@ class MD_learner:
             if not os.path.exists('./saved_model/'):
                 os.makedirs('./saved_model/')
 
-            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur,
+            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_optim{}_lr{}_h{}_checkpoint.pth'.format( MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                  self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))
 
             text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
-            with open('nsamples{}_nparticle{}_tau{}_loss.txt'.format(MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur), 'w') as fp:
+            with open('nsamples{}_nparticle{}_tau{}_optim{}_loss.txt'.format(MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__), 'w') as fp:
                 fp.write(text)
             fp.close()
 
@@ -206,15 +207,15 @@ class MD_learner:
                 }, is_best), filename)
 
         if is_best:
-            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint_best.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur,
+            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_optim{}_lr{}_h{}_checkpoint_best.pth'.format( MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                      self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))
 
 
     def pred_qnp(self, filename):
 
         # load the models checkpoint
-        checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_lr{}_h{}_checkpoint.pth'.format(
-            MD_parameters.nsamples, MD_parameters.nparticle, MD_parameters.tau_long, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))[0]
+        checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_optim{}_lr{}_h{}_checkpoint.pth'.format(
+            MD_parameters.select_nsamples, MD_parameters.nparticle, MD_parameters.tau_long, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))[0]
         print(checkpoint)
 
         # load models weights state_dict
