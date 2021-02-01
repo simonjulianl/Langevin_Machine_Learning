@@ -1,18 +1,24 @@
 import torch
 import matplotlib.pyplot as plt
+from ..parameters.MD_paramaters import MD_parameters
+from ..hamiltonian.hamiltonian import hamiltonian
+from ..hamiltonian.lennard_jones import lennard_jones
 import copy
 
-class ljbox2gridimg:
+class phi_fields:
 
-    def __init__(self,lennard_jones,nsamples, npixels, DIM, maxcut=100):
+    def __init__(self, npixels , maxcut=100):
 
-        self._DIM = DIM
-        self._lennard_jones = lennard_jones
-        self._nsamples = nsamples
+
+
+
+        self._DIM = MD_parameters.DIM
+        self.lennard_jones = hamiltonian.append(lennard_jones())
+        self._nsamples = MD_parameters.nsamples
         self._npixels = npixels
-        self._boxsize = self._lennard_jones.boxsize
-        self._maxcut = maxcut * self._lennard_jones.get_epsilon()
-        self._mincut = -8 * self._lennard_jones.get_epsilon() # actual minccut -6 and then give margin -2 = -8
+        self._boxsize = MD_parameters.boxsize
+        self._maxcut = maxcut * self.lennard_jones.get_sigma()
+        self._mincut = -8 * self.lennard_jones.get_sigma() # actual minccut -6 and then give margin -2 = -8
         self._grid_list = self.build_gridpoint()
 
 
@@ -39,7 +45,7 @@ class ljbox2gridimg:
 
     def phi_field(self, phase_space, bc):
 
-        self._phi_field = self._lennard_jones.phi_npixels(phase_space, bc, self._grid_list)
+        self._phi_field = self.lennard_jones.phi_npixels(phase_space, bc, self._grid_list)
         self._phi_field = self._phi_field.reshape((-1, self._npixels, self._npixels))
 
         return self._phi_field
