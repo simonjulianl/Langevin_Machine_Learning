@@ -28,7 +28,7 @@ class pair_wise_MLP(nn.Module):
 
         # === get q_pred, p_pred from MLdHdq ===
         _pair_wise_HNN = pair_wise_HNN(_setting['hamiltonian'], MLdHdq)
-        _setting['pair_wise_HNN'] = _pair_wise_HNN
+        _setting['HNN'] = _pair_wise_HNN
 
         q_pred, p_pred = ML_linear_integrator(**_setting).integrate(multicpu=False)
 

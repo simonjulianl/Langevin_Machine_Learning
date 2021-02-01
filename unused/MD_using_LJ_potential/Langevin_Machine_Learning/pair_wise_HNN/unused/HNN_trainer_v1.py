@@ -103,8 +103,8 @@ class HNN_trainer:
 
             # === get q_pred, p_pred from MLdHdq ===
 
-            # _pair_wise_HNN = pair_wise_HNN(self._setting['hamiltonian'], MLdHdq)
-            # self._setting['pair_wise_HNN'] = _pair_wise_HNN
+            # _pair_wise_HNN = HNN(self._setting['hamiltonian'], MLdHdq)
+            # self._setting['HNN'] = _pair_wise_HNN
 
             # q_pred, p_pred = ML_linear_integrator(**self._setting).integrate(multicpu=False)
             # q_pred = q_pred.reshape(-1,q_pred.shape[2],q_pred.shape[3])

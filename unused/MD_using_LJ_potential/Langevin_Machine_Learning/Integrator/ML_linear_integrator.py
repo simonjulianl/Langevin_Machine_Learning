@@ -25,7 +25,7 @@ class ML_linear_integrator(Integration):
                 'gamma' : kwargs['gamma'],
                 'tau' : kwargs['tau'],
                 'ML_integrator_method': kwargs['ML_integrator_method'],
-                'pair_wise_HNN' : kwargs['pair_wise_HNN'],
+                'HNN' : kwargs['HNN'],
                 'init_config' : kwargs['init_config']
                 }
 

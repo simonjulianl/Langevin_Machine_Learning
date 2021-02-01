@@ -37,7 +37,7 @@ def pair_wise_linear_velocity_verlet(**state) :
     state['phase_space'].set_q(q)
     state['phase_space'].set_p(p)
 
-    Hamiltonian = state['pair_wise_HNN']
+    Hamiltonian = state['HNN']
     tau = state['tau'] * state['iterations'] #this is big time step to be trained
     print('pair wise vv tau',tau)
 
