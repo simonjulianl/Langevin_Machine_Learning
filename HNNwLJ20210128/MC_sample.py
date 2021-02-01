@@ -1,72 +1,46 @@
-import hamiltonian as hamiltonian
-from HNNwLJ20210128.phase_space.pb import pb
+from HNN.pair_wise_HNN import pair_wise_HNN
+from HNN.models.pair_wise_MLP import pair_wise_MLP
 from phase_space import phase_space
+from parameters.MC_paramaters import MC_parameters
 import integrator as integrator
 import matplotlib.pyplot as plt
 import torch
 import os
-import math
 
 #random.seed(43893324) # for train/valide
-seed = 23645 # for test
+seed = MC_parameters.seed # for test
 
 text=''
 
-nsamples = 50
-nparticle = 4
-DIM = 2
-mass = 1
-epsilon = 1.
-sigma = 1.
-rho= 0.1
-T = 0.04
-dq = 0.1
-boxsize = math.sqrt(nparticle/rho)
-
-interval = 40 # take mc step every interval
-iterations = 100000
-DISCARD = iterations - ( nsamples * interval)
-
-noML_hamiltonian = hamiltonian.hamiltonian()
-LJ = hamiltonian.LJ_term(epsilon =1, sigma =1, boxsize=boxsize)
-noML_hamiltonian.append(hamiltonian.lennard_jones(LJ , boxsize=boxsize)) #'density': 0.2
-noML_hamiltonian.append(hamiltonian.kinetic_energy(mass = 1))
+nsamples = MC_parameters.nsamples
+nparticle = MC_parameters.nparticle
+mass = MC_parameters.mass
+rho= MC_parameters.rho
+temp = MC_parameters.temperature
+interval = MC_parameters.interval # take mc step every interval
+DISCARD = MC_parameters.DISCARD
 
 phase_space = phase_space.phase_space()
-pb = pb()
+pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
 
-state = {
-    'seed' : seed,
-    'kB' : 1.0, # put as a constant
-    'temperature' : T,
-    'DIM' : DIM,
-    'm' : mass,
-    'nsamples' : nsamples, # for train 50000 for test 5000 each temp
-    'nparticle' : nparticle,
-    'boxsize': boxsize,
-    'phase_space': phase_space,
-    'pb_q': pb,
-    'iterations': iterations,  # for test 44000 #for train 224000 624000 62440
-    'DISCARD': DISCARD,  # for test 24000 #for train 24000  622000 62400
-    'dq': dq
-    }
+noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 
-metropolis_mc = integrator.metropolis_mc(noML_hamiltonian, **state)
-q_hist, PE, ACCRatio, spec = metropolis_mc.integrate()
+metropolis_mc = integrator.metropolis_mc(noMLhamiltonian, phase_space)
+q_hist, U, ACCRatio, spec = metropolis_mc.integrate()
 
 base_library = os.path.abspath('init_config')
 
-text = text +  "{0:.3f}".format(state["temperature"]) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
-plt.title('T={}; AccRatio={:.3f}'.format(state["temperature"],ACCRatio),fontsize=15)
-plt.plot(PE,'k-')
+text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
+plt.title('T={}; AccRatio={:.3f}'.format(temp, ACCRatio),fontsize=15)
+plt.plot(U,'k-')
 plt.xlabel('mcs',fontsize=20)
 plt.ylabel(r'$U_{ij}$',fontsize=20)
-plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle,q_hist[0::40].shape[0],rho,T) +'.png')
+plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
 
 # momentum sampler
-momentum_sampler = integrator.momentum_sampler(**state)
+momentum_sampler = integrator.momentum_sampler(temp, nsamples, nparticle, mass)
 p_hist = momentum_sampler.momentum_samples()
 
 phase_space = torch.stack((q_hist[0::interval],p_hist))
 
-torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist[0::interval].shape[0],rho,T))
+torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist[0::interval].shape[0],rho,temp))
