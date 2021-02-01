@@ -1,5 +1,9 @@
 import torch
-from ..hamiltonian.hamiltonian import hamiltonian
+from HNNwLJ20210128.parameters.MD_paramaters import MD_parameters
+from HNNwLJ20210128.parameters.ML_paramaters import ML_parameters
+from HNNwLJ20210128.hamiltonian.hamiltonian import hamiltonian
+from HNNwLJ20210128.hamiltonian.lennard_jones import lennard_jones
+from HNNwLJ20210128.hamiltonian.kinetic_energy import kinetic_energy
 
 class pair_wise_HNN(hamiltonian):
 
@@ -13,6 +17,10 @@ class pair_wise_HNN(hamiltonian):
         super().__init__()
         self.network = network
 
+        # # append term to calculate dHdq
+        super().append(lennard_jones())
+        super().append(kinetic_energy(MD_parameters.mass))
+
     def train(self):
         self.network.train()  # pytorch network for training
 
@@ -21,34 +29,35 @@ class pair_wise_HNN(hamiltonian):
 
     def dHdq(self, phase_space):
 
+        # print('call pair_wise_HNN class')
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
 
         # print('===== data for noML dHdq =====')
         # print(q_list,p_list)
 
-        noML_dHdq = hamiltonian.dHdq(phase_space)
-        # print('noML_dHdq',noML_dHdq)
+        noML_dHdq = super().dHdq(phase_space)
+        # print('noML_dHdq',noML_dHdq.device)
 
         phase_space.set_q(q_list)
         phase_space.set_p(p_list)
 
-        data = self.phase_space2data(phase_space)
+        data = self.phase_space2data(phase_space, MD_parameters.tau_long)
 
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
-        # print(data.shape)
 
-        predict = self.network(data, self._state['nparticle'], self._state['DIM'])
+        predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
         # print('nn output',predict)
+        # print(predict.device)
 
-        corrected_dHdq = noML_dHdq.to(self._state['_device']) + predict  # in linear_vv code, it calculates grad potential.
+        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
         # print('noML_dHdq diff',noML_dHdq.to(self._state['_device']) -corrected_dHdq)
         # print('corrected_dHdq',corrected_dHdq)
 
         return corrected_dHdq
 
-    def phase_space2data(self, phase_space):
+    def phase_space2data(self, phase_space, tau_cur):
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
@@ -56,8 +65,8 @@ class pair_wise_HNN(hamiltonian):
         # print('phase_space2data',q_list.shape, p_list.shape)
         nsamples, nparticle, DIM = q_list.shape
 
-        delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(self._state['_device'])
-        delta_init_p = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(self._state['_device'])
+        delta_init_q = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(ML_parameters.device)
+        delta_init_p = torch.zeros((nsamples, nparticle, (nparticle - 1), DIM)).to(ML_parameters.device)
 
         for z in range(nsamples):
 
@@ -69,7 +78,7 @@ class pair_wise_HNN(hamiltonian):
 
         # tau : #this is big time step to be trained
         # to add paired data array, reshape
-        tau = torch.tensor([self._state['tau_cur']] * nparticle * (nparticle - 1)).to(self._state['_device'])
+        tau = torch.tensor([tau_cur] * nparticle * (nparticle - 1)).to(ML_parameters.device)
         tau = tau.reshape(-1, nparticle, (nparticle - 1), 1)  # broadcasting
 
         paired_data_ = torch.cat((delta_init_q, delta_init_p), dim=-1)  # nsamples x nparticle x (nparticle-1) x (del_qx, del_qy, del_px, del_py)

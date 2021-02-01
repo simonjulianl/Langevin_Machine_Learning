@@ -1,31 +1,35 @@
 import torch
+from HNNwLJ20210128.parameters.MD_paramaters import MD_parameters
 
 class data_io:
 
-    def __init__(self, filename):
+    def __init__(self, phase_space, filename):
 
-        self._filename =filename
+        self._phase_space = phase_space
+        self._filename = filename
 
     def hamiltonian_dataset(self, ratio : float):
 
-        phase_space = self._state['phase_space'].read(self._filename, nsamples=self._state['nsamples_label'])
-        q_list, p_list = phase_space[0][:self._state['nsamples_label']], phase_space[1][:self._state['nsamples_label']]
-        # print('nsamples')
-        # print(q_list,p_list)
+        _phase_space = self._phase_space.read(self._filename, nsamples = MD_parameters.select_nsamples)
+        q_list, p_list = _phase_space[0][:MD_parameters.select_nsamples], _phase_space[1][:MD_parameters.select_nsamples]
+
+        # print('before shuffle')
+        # print(q_list.shape, p_list.shape)
 
         assert q_list.shape == p_list.shape  # shape of p and q must be the same
 
         # shuffle
         g = torch.Generator()
-        # g.manual_seed(seed)
+        g.manual_seed(MD_parameters.seed)
 
         idx = torch.randperm(q_list.shape[0], generator=g)
-        # print(idx)
+        # print('idx', idx)
 
         q_list_shuffle = q_list[idx]
         p_list_shuffle = p_list[idx]
 
-        # print(q_list_shuffle,p_list_shuffle)
+        # print('after shuffle')
+        # print(q_list_shuffle, p_list_shuffle)
 
         init_pos = torch.unsqueeze(q_list_shuffle, dim=1) #  nsamples  X 1 X nparticle X  DIM
         init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  #  nsamples  X 1 X nparticle X  DIM
@@ -45,14 +49,16 @@ class data_io:
         # print('phase_space2label input',q_list,p_list)
         # print('nsamples',nsamples)
 
-        self._state['phase_space'].set_q(q_list)
-        self._state['phase_space'].set_p(p_list)
+        self._phase_space.set_q(q_list)
+        self._phase_space.set_p(p_list)
 
         # print('===== state at short time step 0.01 =====')
-        self._state['nsamples_cur'] = nsamples # train or valid
-        self._state['tau_cur'] = self._state['tau_short']
-        self._state['MD_iterations'] = int(self._state['tau_long']/self._state['tau_cur'])
+        nsamples_cur = nsamples # train or valid
+        tau_cur = MD_parameters.tau_short
+        MD_iterations = int(MD_parameters.tau_long / tau_cur)
 
-        label = linear_integrator(**self._state).integrate(noML_hamiltonian)
+        print('prepare labels nsamples_cur, tau_cur, MD_iterations')
+        print(nsamples_cur, tau_cur, MD_iterations)
+        label = linear_integrator.integrate( noML_hamiltonian, self._phase_space, MD_iterations, nsamples_cur, tau_cur)
 
         return label

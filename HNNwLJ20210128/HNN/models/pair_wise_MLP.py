@@ -1,20 +1,24 @@
 import torch
 import torch.nn as nn
+from HNNwLJ20210128.parameters.ML_paramaters import ML_parameters
 
 class pair_wise_MLP(nn.Module):
 
-    def __init__(self, n_input, n_hidden):
-
+    def __init__(self):
         super(pair_wise_MLP, self).__init__()
+
+        MLP_input = ML_parameters.MLP_input
+        MLP_nhidden = ML_parameters.MLP_nhidden
+
         self.correction_term = nn.Sequential(
-            nn.Linear(n_input, n_hidden),
+            nn.Linear(MLP_input, MLP_nhidden),
             nn.Tanh(),
-            nn.Linear(n_hidden, n_hidden),
+            nn.Linear(MLP_nhidden, MLP_nhidden),
             nn.Tanh(),
-            nn.Linear(n_hidden, 2)
+            nn.Linear(MLP_nhidden, 2)
         )
 
-    def forward(self,data, nparticle, DIM): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
+    def forward(self, data, nparticle, DIM): # data -> del_list ( del_qx, del_qy, del_px, del_py, t )
 
         MLdHdq_ = self.correction_term(data)
 
