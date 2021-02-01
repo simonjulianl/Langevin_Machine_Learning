@@ -7,10 +7,9 @@ Created on Mon Jun  8 11:34:53 2020
 
 @author: simon
 """
-import numpy as np
+import torch
 
-
-def linear_velocity_verlet(Hamiltonian, phase_space, tau_cur, boxsize):
+def linear_velocity_verlet(hamiltonian, phase_space, tau_cur, boxsize):
     '''
     velocity verlet integrator method
 
@@ -43,7 +42,7 @@ def linear_velocity_verlet(Hamiltonian, phase_space, tau_cur, boxsize):
     # p_list_dummy = np.zeros(p.shape)  # to prevent KE from being integrated
     # state['phase_space'].set_p(p_list_dummy)
 
-    p = p + tau / 2 * (-Hamiltonian.dHdq(phase_space))  # dp/dt
+    p = p + tau / 2 * (-hamiltonian.dHdq(phase_space))  # dp/dt
     phase_space.set_p(p)
 
     # print('update p', p)
@@ -58,8 +57,9 @@ def linear_velocity_verlet(Hamiltonian, phase_space, tau_cur, boxsize):
 
     phase_space.debug_pbc(q, boxsize)
 
-    p = p + tau / 2 * (-Hamiltonian.dHdq(phase_space))  # dp/dt
+    p = p + tau / 2 * (-hamiltonian.dHdq(phase_space))  # dp/dt
 
+    # print('update p', p)
     # print('update q, update p', q, p)
 
     phase_space.set_q(q)
