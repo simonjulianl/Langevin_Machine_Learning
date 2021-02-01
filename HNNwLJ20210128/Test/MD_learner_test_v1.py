@@ -94,14 +94,14 @@ if __name__ == '__main__':
     MLP = pair_wise_MLP(n_input,n_hidden)
     pairwise_HNN = pair_wise_HNN(NoML_hamiltonian, MLP, **state) # data preparation / calc f_MD, f_ML
 
-    # print(pair_wise_HNN.network(n_input,n_hidden) )
-    # print(pair_wise_HNN.noML_hamiltonian)
+    # print(HNN.network(n_input,n_hidden) )
+    # print(HNN.noML_hamiltonian)
 
     pairwise_HNN.train()
     opt = optim.Adam(MLP.parameters(), lr=lr)
 
-    # pair_wise_HNN.phase_space2data(state['phase_space'],pb)
-    # print(pair_wise_HNN.dHdq(state['phase_space'],pb))
+    # HNN.phase_space2data(state['phase_space'],pb)
+    # print(HNN.dHdq(state['phase_space'],pb))
 
     for e in range(nepochs):
 
