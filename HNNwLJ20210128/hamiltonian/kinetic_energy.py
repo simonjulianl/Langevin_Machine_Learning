@@ -23,7 +23,8 @@ class kinetic_energy:
 
     def energy(self, phase_space): # phase space is real-space-unit
         p = phase_space.get_p()
-        e = torch.sum( p*p / (2 * self.mass))
+        e_element = torch.sum( p*p / (2 * self.mass), dim = 1) # x, y
+        e = torch.sum( e_element, dim = 1) # sum each element x, y
 
         return  e # make zero for Monte-carlo ( torch.zeros([]) )
 

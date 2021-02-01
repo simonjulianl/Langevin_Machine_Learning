@@ -20,14 +20,24 @@ class hamiltonian:
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
+
+        # print('call hamiltonian obj')
         self.hamiltonian_terms = []  # for every separable terms possible
         # self.phase_space = phase_p (reference)
         # self.phase_pace = phase_space() (copy)
+
+    def hi(self):
+        print('hi')
+        return 1
+
+    def get_terms(self):
+        return self.hamiltonian_terms
 
     def append(self, term):
         '''
         helper function to add into the hamiltonian terms
         '''
+        # print('call hamiltonian append')
         self.hamiltonian_terms.append(term)
 
     def total_energy(self, phase_space):
@@ -40,9 +50,11 @@ class hamiltonian:
             H is the hamiltonian of the states with separable terms
         '''
         H = 0
-
+        # print('call hamiltonian def energy')
         for term in self.hamiltonian_terms:
+            # print('term ', term)
             H += term.energy(phase_space)
+            # print('H ', H)
         return H
 
     def dHdq(self, phase_space):
@@ -54,13 +66,14 @@ class hamiltonian:
         dHdq : float
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
+        # print('call hamiltonian def dHdq')
         q_list = phase_space.get_q()
         dHdq = torch.zeros(q_list.shape) #- need same type as q_list
 
         for term in self.hamiltonian_terms:
-            # print('hamiltonian', term)
+            # print('hamiltonian dHdq', term)
             dHdq += term.evaluate_derivative_q(phase_space)
-            # print('hamiltonian', dHdq)
+            # print('hamiltonian dHdq', dHdq)
         return dHdq
 
     def d2Hdq2(self, phase_space):

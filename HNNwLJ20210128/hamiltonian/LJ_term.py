@@ -3,7 +3,7 @@
 import torch
 
 class LJ_term:
-    def __init__(self, epsilon : float, sigma : float, boxsize : float):
+    def __init__(self, epsilon, sigma, boxsize):
 
         try:
             self._epsilon  = float(epsilon)
@@ -19,7 +19,7 @@ class LJ_term:
 
         xi_state = xi_space.get_q()
 
-        term = torch.zeros((xi_state.shape[0],grid_state.shape[0])) # nsamples x npixels
+        term = torch.zeros((xi_state.shape[0], grid_state.shape[0])) # nsamples x npixels
         nsamples, nparticle, DIM = xi_state.shape
         npixels, DIM = grid_state.shape
 
@@ -75,11 +75,14 @@ class LJ_term:
 
             delta_xi, d = xi_space.paired_distance_reduced(xi_state[z],nparticle,DIM)
             d = torch.unsqueeze(d,dim =2)
-
+            # print('d',d)
+            # print('d*boxsize', d*self._boxsize)
             s12 = -12 * (delta_xi) / pow(d,14)
             s6  = -6 * (delta_xi) / pow(d,8)
 
-            dphidxi[z] = a12*torch.sum(s12,dim=1) - a6*torch.sum(s6,dim=1) # np.sum axis=1 j != k
+            dphidxi[z] = a12*torch.sum(s12, dim=1) - a6*torch.sum(s6, dim=1) # np.sum axis=1 j != k
+
+        # print('dphidxi', dphidxi)
 
         return dphidxi
 
