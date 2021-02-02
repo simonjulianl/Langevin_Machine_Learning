@@ -6,28 +6,24 @@ class data_io:
 
     def hamiltonian_dataset(self, filename, ratio : float):
 
-        qp_list = torch.load(filename)
-
-        q_list = qp_list[0][:MD_parameters.select_nsamples]
-        p_list = qp_list[1][:MD_parameters.select_nsamples]
-
-        try:
-            assert q_list.shape == p_list.shape
-        except:
-             raise Exception('does not have shape method or shape differs')
-
-        # print('before shuffle')
-        # print(q_list.shape, p_list.shape)
+        q_list, p_list = torch.load(filename)
 
         # shuffle
         g = torch.Generator()
         g.manual_seed(MD_parameters.seed)
 
         idx = torch.randperm(q_list.shape[0], generator=g)
-        # print('idx', idx)
 
-        q_list_shuffle = q_list[idx]
-        p_list_shuffle = p_list[idx]
+        q_list_shuffle_ = q_list[idx]
+        p_list_shuffle_ = p_list[idx]
+
+        q_list_shuffle = q_list_shuffle_[:MD_parameters.nsamples]
+        p_list_shuffle = p_list_shuffle_[:MD_parameters.nsamples]
+
+        try:
+            assert q_list_shuffle.shape == p_list_shuffle.shape
+        except:
+             raise Exception('does not have shape method or shape differs')
 
         # print('after shuffle')
         # print(q_list_shuffle, p_list_shuffle)
@@ -47,7 +43,7 @@ class data_io:
 
         q_list = qp_list[:,0]
         p_list = qp_list[:,1]
-        # print('phase_space2label input',q_list,p_list)
+        # print('phase_space2label input',q_list.shape, p_list.shape)
         # print('nsamples',nsamples)
 
         _phase_space = phase_space()

@@ -31,7 +31,7 @@ class MD_learner:
 
         # nsamples X qnp X nparticle X  DIM
         self.train_data, self.valid_data = self._data_io_obj.hamiltonian_dataset(filename, ratio = ML_parameters.ratio)
-
+        print('n. of data', self.train_data.shape, self.valid_data.shape)
         # qnp x iterations x nsamples x  nparticle x DIM
         print('===========train_label===========')
         self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self.noML_hamiltonian)
@@ -43,20 +43,24 @@ class MD_learner:
 
         # print('===== load initial train data =====')
         self._q_train = self.train_data[:,0]; self._p_train = self.train_data[:,1]
+        print('n. of train data reshape ', self._q_train.shape, self._p_train.shape)
 
         # print('===== label train data =====')
         self.q_train_label = self.train_label[0]; self.p_train_label = self.train_label[1]
         self._q_train_label = self.q_train_label[-1]; self._p_train_label = self.p_train_label[-1] # only take the last from the list
+        print('n. of train label reshape ', self._q_train_label.shape, self._p_train_label.shape)
 
         assert self._q_train.shape == self._q_train_label.shape
         assert self._p_train.shape == self._p_train_label.shape
 
         # print('===== load initial valid data =====')
         self._q_valid = self.valid_data[:, 0]; self._p_valid = self.valid_data[:, 1]
+        print('n. of valid data reshape ', self._q_valid.shape, self._p_valid.shape)
 
         # print('===== label valid data =====')
         self.q_valid_label = self.valid_label[0]; self.p_valid_label = self.valid_label[1]
         self._q_valid_label = self.q_valid_label[-1]; self._p_valid_label = self.p_valid_label[-1]  # only take the last from the list
+        print('n. of valid label reshape ', self._q_valid_label.shape, self._p_valid_label.shape)
 
         assert self._q_valid.shape == self._q_valid_label.shape
         assert self._p_valid.shape == self._p_valid_label.shape
@@ -98,7 +102,7 @@ class MD_learner:
 
         random_ordered_train_nsamples = self._q_train.shape[0] # nsamples
         random_ordered_valid_nsamples = self._q_valid.shape[0] # nsamples
-
+        print('nsample',random_ordered_train_nsamples, random_ordered_valid_nsamples)
         # n_train_batch = MD_parameters.nparticle * (MD_parameters.nparticle - 1)
         # n_valid_batch
 
@@ -192,11 +196,11 @@ class MD_learner:
             if not os.path.exists('./saved_model/'):
                 os.makedirs('./saved_model/')
 
-            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_checkpoint.pth'.format( MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
+            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_checkpoint.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                  self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))
 
             text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
-            with open('nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_loss.txt'.format(MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, MD_parameters.tau_short, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden), 'w') as fp:
+            with open('nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_loss.txt'.format(MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, MD_parameters.tau_short, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden), 'w') as fp:
                 fp.write(text)
             fp.close()
 
@@ -216,7 +220,7 @@ class MD_learner:
                 }, is_best), filename)
 
         if is_best:
-            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_checkpoint_best.pth'.format( MD_parameters.select_nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
+            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_checkpoint_best.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                      self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))
 
 
@@ -224,7 +228,7 @@ class MD_learner:
 
         # load the models checkpoint
         checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_checkpoint.pth'.format(
-            MD_parameters.select_nsamples, MD_parameters.nparticle, MD_parameters.tau_long, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))[0]
+            MD_parameters.nsamples, MD_parameters.nparticle, MD_parameters.tau_long, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden))[0]
         print(checkpoint)
 
         # load models weights state_dict
@@ -237,7 +241,7 @@ class MD_learner:
         #     print(var_name, "\t", self._opt.state_dict()[var_name])
 
         # initial data
-        q_list, p_list = self._phase_space.read(filename, nsamples= MD_parameters.nsamples)
+        q_list, p_list = self._phase_space.read(filename, nsamples= MD_parameters.gen_nsamples)
         # print(q_list, p_list)
 
         self._phase_space.set_q(torch.unsqueeze(q_list[0], dim=0).to(self._device))
@@ -257,7 +261,7 @@ class MD_learner:
         self._phase_space.set_q(torch.unsqueeze(q_list[0], dim=0))
         self._phase_space.set_p(torch.unsqueeze(p_list[0], dim=0))
 
-        test_data = self._phase_space.read( filename, nsamples=MD_parameters.select_nsamples)
+        test_data = self._phase_space.read( filename, nsamples=MD_parameters.nsamples)
         q_truth, p_truth = self._data_io_obj.phase_space2label( test_data, self.linear_integrator, self.noML_hamiltonian)
 
         print('predict',q_pred, p_pred)
