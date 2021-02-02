@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from .LJ_term import LJ_term
-from LJ_parameters import LJ_parameters
+from MD_paramaters import MD_parameters
 
 class lennard_jones:
     def __init__(self):
 
-        self.epsilon = LJ_parameters.epsilon
-        self.sigma = LJ_parameters.sigma
-        self.boxsize = LJ_parameters.boxsize
+        self.epsilon = MD_parameters.epsilon
+        self.sigma = MD_parameters.sigma
+        self.boxsize = MD_parameters.boxsize
 
         self.phi = LJ_term(self.epsilon, self.sigma, self.boxsize)
 
