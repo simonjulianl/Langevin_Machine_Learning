@@ -37,15 +37,15 @@ q_hist, U, ACCRatio, spec = metropolis_mc.integrate(noMLhamiltonian, phase_space
 
 base_library = os.path.abspath('init_config')
 
-text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
-plt.title('T={}; AccRatio={:.3f}'.format(temp, ACCRatio),fontsize=15)
-plt.plot(U,'k-')
-plt.xlabel('mcs',fontsize=20)
-plt.ylabel(r'$U_{ij}$',fontsize=20)
-plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
+# text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
+# plt.title('T={}; AccRatio={:.3f}'.format(temp, ACCRatio),fontsize=15)
+# plt.plot(U,'k-')
+# plt.xlabel('mcs',fontsize=20)
+# plt.ylabel(r'$U_{ij}$',fontsize=20)
+# plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
 
 # momentum sampler
-momentum_sampler = integrator.momentum_sampler()
+momentum_sampler = integrator.momentum_sampler(q_hist[0::interval].shape[0])
 p_hist = momentum_sampler.momentum_samples()
 
 phase_space = torch.stack((q_hist[0::interval],p_hist))

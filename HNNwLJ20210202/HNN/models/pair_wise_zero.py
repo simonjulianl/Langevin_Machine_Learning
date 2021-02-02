@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from HNNwLJ20210128.parameters.ML_paramaters import ML_parameters
+from ML_paramaters import ML_parameters
 
 class pair_wise_zero(nn.Module):
 

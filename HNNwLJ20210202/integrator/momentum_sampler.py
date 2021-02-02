@@ -4,9 +4,9 @@ from parameters.MD_paramaters import MD_parameters
 
 class momentum_sampler:
 
-    def __init__(self):
+    def __init__(self, interval_nsamples):
 
-        self.vel = np.zeros((MD_parameters.nsamples, MD_parameters.nparticle, MD_parameters.DIM))
+        self.vel = np.zeros((interval_nsamples, MD_parameters.nparticle, MD_parameters.DIM))
 
     def momentum_samples(self):
         # 'generate': 'maxwell'

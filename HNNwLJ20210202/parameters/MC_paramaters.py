@@ -11,7 +11,7 @@ class MC_parameters:
     mass = 1
     rho = 0.1
     boxsize = math.sqrt(nparticle / rho)
-    interval = 1 # take mc step every interval
+    interval = 2 # take mc step every interval
     iterations = 10
     DISCARD = iterations - (nsamples * interval)
     dq = 0.1

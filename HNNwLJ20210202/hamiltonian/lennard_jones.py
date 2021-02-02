@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from .LJ_term import LJ_term
-from HNNwLJ20210128.parameters.LJ_parameters import LJ_parameters
+from LJ_parameters import LJ_parameters
 
 class lennard_jones:
     def __init__(self):
