@@ -49,5 +49,6 @@ momentum_sampler = integrator.momentum_sampler(q_hist[0::interval].shape[0])
 p_hist = momentum_sampler.momentum_samples()
 
 phase_space = torch.stack((q_hist[0::interval],p_hist))
+q, p = phase_space
 
 torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist[0::interval].shape[0],rho,temp))

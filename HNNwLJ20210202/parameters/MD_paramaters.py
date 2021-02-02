@@ -4,10 +4,10 @@ import math
 class MD_parameters:
 
     seed = 42657
-    nsamples = 5
-    select_nsamples = 3
+    nsamples = 500
+    select_nsamples = 500
     nsamples_ML = 1
-    nparticle = 2
+    nparticle = 4
     DIM = 2
     mass = 1
     temp = 0.4
