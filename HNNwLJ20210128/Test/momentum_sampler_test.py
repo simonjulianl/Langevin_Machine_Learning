@@ -1,22 +1,13 @@
-from momentum_sampler import momentum_sampler
+from HNNwLJ20210128.integrator.momentum_sampler import momentum_sampler
+import numpy as np
 
-if __name__ == '__main__' :
+temp = 0.4
+nsamples = 5
+nparticle = 2
+mass = 1.
 
-    nsamples = 4
-    nparticle = 2
-    DIM = 2
-    epsilon = 1.
-    sigma = 1.
-    mass = 1
-    T = 0.04
-
-    state = {
-        'nsamples': nsamples,
-        'temperature' : T,
-        'nparticle': nparticle,
-        'm' : mass
-    }
-
-    momentum_sampler = momentum_sampler(**state)
-    p_list = momentum_sampler.momentum_samples()
-    print(p_list)
+np.random.seed(0)
+momentum_sampler = momentum_sampler(temp, nsamples, nparticle, mass)
+p_list = momentum_sampler.momentum_samples()
+print(p_list)
+print(p_list.shape)

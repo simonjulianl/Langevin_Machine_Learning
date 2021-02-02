@@ -59,7 +59,6 @@ class MD_learner:
 
         assert self._q_valid.shape == self._q_valid_label.shape
         assert self._p_valid.shape == self._p_valid_label.shape
-
         print("===========end data prepared===============")
 
         self._device = ML_parameters.device

@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 import torch
 import os
 
-#random.seed(43893324) # for train/valide
-seed = MC_parameters.seed # for test
+import numpy as np
+import random
+np.random.seed(0)
+random.seed(43893324)
 
 text=''
 
@@ -27,7 +29,7 @@ noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 
 metropolis_mc = integrator.metropolis_mc(noMLhamiltonian, phase_space)
 q_hist, U, ACCRatio, spec = metropolis_mc.integrate()
-
+quit()
 base_library = os.path.abspath('init_config')
 
 text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
