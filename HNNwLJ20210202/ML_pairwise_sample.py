@@ -11,7 +11,7 @@ from phase_space import phase_space
 from integrator import linear_integrator
 import torch
 
-nsamples = MD_parameters.nsamples
+gen_nsamples = MD_parameters.gen_nsamples
 nparticle = MD_parameters.nparticle
 
 seed = 9372211
@@ -32,7 +32,7 @@ print ('Available devices ', torch.cuda.device_count())
 print ('Current cuda device ', torch.cuda.current_device())
 # print('GPU available', torch.cuda.get_device_name(device))
 
-filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples)
+filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, gen_nsamples)
 
 torch.autograd.set_detect_anomaly(True)
 
