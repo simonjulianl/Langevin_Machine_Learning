@@ -18,7 +18,6 @@ class MD_learner:
         self.linear_integrator = linear_integrator_obj
         self.any_HNN = any_HNN_obj
         self.any_network =  any_HNN_obj.network
-        self.any_HNN_class = type(any_HNN_obj)
         self.noML_hamiltonian = super(type(any_HNN_obj), any_HNN_obj)
 
         print('-- hi terms -- ',self.noML_hamiltonian.hi())
@@ -67,7 +66,6 @@ class MD_learner:
         print("===========end data prepared===============")
 
         self._device = ML_parameters.device
-        self.any_network = self.any_network.to(self._device)
 
         if ML_parameters.optimizer == 'Adam':
             self._opt = optim.Adam(self.any_network.parameters(), lr = ML_parameters.lr)
@@ -106,8 +104,8 @@ class MD_learner:
         # n_train_batch = MD_parameters.nparticle * (MD_parameters.nparticle - 1)
         # n_valid_batch
 
-        any_hnn = self.any_HNN_class(self.any_network)
-        any_hnn.train()
+        # any_hnn = self.any_HNN
+        self.any_HNN.train()
         criterion = self._loss
 
         text = ''
@@ -135,7 +133,7 @@ class MD_learner:
                 self._phase_space.set_p(p_train_batch)
 
                 # print('======= train combination of MD and ML =======')
-                q_train_pred, p_train_pred = self.linear_integrator.integrate( any_hnn, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
                 q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
@@ -153,7 +151,7 @@ class MD_learner:
 
             # eval model
 
-            any_hnn.eval()
+            self.any_HNN.eval()
 
             with torch.no_grad():
 
@@ -176,7 +174,7 @@ class MD_learner:
                     self._phase_space.set_p(p_valid_batch)
 
                     # print('======= valid combination of MD and ML =======')
-                    q_valid_pred, p_valid_pred = self.linear_integrator.integrate( any_hnn, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                    q_valid_pred, p_valid_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
                     q_valid_pred = q_valid_pred.to(self._device); p_valid_pred = p_valid_pred.to(self._device)
 
                     valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
@@ -251,10 +249,9 @@ class MD_learner:
         self._tau_cur = MD_parameters.tau_long  # tau = 0.1
         MD_iterations = int( MD_parameters.tau_long / self._tau_cur)
 
-        any_hnn = self.any_HNN_class(self.any_network)
-        any_hnn.eval()
+        self.any_HNN.eval()
 
-        q_pred, p_pred = self.linear_integrator.integrate( any_hnn, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+        q_pred, p_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
 
         self._tau_cur = MD_parameters.tau_short
 
@@ -273,5 +270,5 @@ class MD_learner:
 
     def step(self,phase_space,pb,tau):
         pairwise_hnn.eval()
-        q_list_predict, p_list_predict = self.linear_integrator.integrate(**self._state)
+        q_list_predict, p_list_predict = self.linear_integrator.step(**self._state)
         return q_list_predict,p_list_predict

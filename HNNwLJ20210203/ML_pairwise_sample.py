@@ -7,6 +7,7 @@ from HNN.models import pair_wise_MLP
 # from HNN.models import pair_wise_zero
 from HNN.MD_learner import MD_learner
 from parameters.MD_paramaters import MD_parameters
+from parameters.ML_paramaters import ML_parameters
 from phase_space import phase_space
 from integrator import linear_integrator
 import torch
@@ -22,7 +23,7 @@ torch.cuda.manual_seed_all(seed)
 
 phase_space = phase_space.phase_space()
 linear_integrator_obj = linear_integrator( MD_parameters.integrator_method )
-pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
+pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP().to(ML_parameters.device))
 
 # check gpu available
 print('__Number CUDA Devices:', torch.cuda.device_count())

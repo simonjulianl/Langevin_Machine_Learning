@@ -13,15 +13,14 @@ class linear_integrator:
 
         self._integrator_method = integrator_method
 
-    def step(self, hamiltonian, phase_space, MD_iterations, tau_cur):
+    def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
-        nsamples = MD_parameters.nsamples
         nparticle = MD_parameters.nparticle
         DIM =  MD_parameters.DIM
         boxsize =  MD_parameters.boxsize
 
-        q_list = torch.zeros((MD_iterations, nsamples, nparticle, DIM))
-        p_list = torch.zeros((MD_iterations, nsamples, nparticle, DIM))
+        q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
+        p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
 
         # for i in trange(self._state['MD_iterations']):
         for i in range(MD_iterations):

@@ -57,6 +57,6 @@ class data_io:
 
         print('prepare labels nsamples_cur, tau_cur, MD_iterations')
         print(nsamples_cur, tau_cur, MD_iterations)
-        label = linear_integrator.integrate( noML_hamiltonian, _phase_space, MD_iterations, nsamples_cur, tau_cur)
+        label = linear_integrator.step( noML_hamiltonian, _phase_space, MD_iterations, nsamples_cur, tau_cur)
 
         return label

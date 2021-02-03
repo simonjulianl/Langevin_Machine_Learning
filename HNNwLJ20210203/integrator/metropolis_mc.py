@@ -77,7 +77,7 @@ class metropolis_mc:
                 phase_space.set_q(curr_q)
 
 
-    def integrate(self, hamiltonian, phase_space):
+    def step(self, hamiltonian, phase_space):
 
         self.ACCsum = 0.
         self.ACCNsum = 0.

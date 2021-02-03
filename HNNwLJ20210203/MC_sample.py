@@ -33,7 +33,7 @@ pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
 noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 
 metropolis_mc = integrator.metropolis_mc()
-q_hist, U, ACCRatio, spec = metropolis_mc.integrate(noMLhamiltonian, phase_space)
+q_hist, U, ACCRatio, spec = metropolis_mc.step(noMLhamiltonian, phase_space)
 
 base_library = os.path.abspath('init_config')
 
