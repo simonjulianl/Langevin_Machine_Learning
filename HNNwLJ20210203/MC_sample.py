@@ -26,6 +26,8 @@ rho= MC_parameters.rho
 temp = MC_parameters.temperature
 interval = MC_parameters.interval # take mc step every interval
 DISCARD = MC_parameters.DISCARD
+print('nsamples nparticle interval DISCARD iterations iterations - DISCARD')
+print(nsamples, nparticle, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval)
 
 phase_space = phase_space.phase_space()
 pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
@@ -43,6 +45,8 @@ base_library = os.path.abspath('init_config')
 # plt.xlabel('mcs',fontsize=20)
 # plt.ylabel(r'$U_{ij}$',fontsize=20)
 # plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
+
+print('q_hist interval shape',q_hist[0::interval].shape[0])
 
 # momentum sampler
 momentum_sampler = integrator.momentum_sampler(q_hist[0::interval].shape[0])

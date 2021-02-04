@@ -6,6 +6,7 @@ class ML_parameters:
     lr = 0.01
     nepoch = 20
     optimizer = 'Adam'
+    activation = 'relu'
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # MLP network parameters

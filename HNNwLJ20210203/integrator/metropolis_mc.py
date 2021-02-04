@@ -102,12 +102,18 @@ class metropolis_mc:
 
                 q_list[i- MC_parameters.DISCARD] = copy.deepcopy(phase_space.get_q())
                 # print('save enn_q',self.enn_q)
+
+                if self.enn_q > MC_parameters.nparticle * 10**4:
+
+                    print('potential energy too high')
+                    quit()
+
                 U[i - MC_parameters.DISCARD] = self.enn_q
                 TE1sum += self.enn_q
                 TE2sum += (self.enn_q * self.enn_q)
                 Nsum += 1.0
 
-        print('u', U)
+        # print('u', U)
         spec = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature  / MC_parameters.nparticle
 
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit

@@ -12,7 +12,7 @@ class MD_parameters:
     epsilon = 1.
     sigma = 1.
     mass = 1
-    temp = 0.4
+    # temp = 0.4
     rho = 0.1
     boxsize = math.sqrt(nparticle / rho)
     tau_short = 0.001  # short time step for label
