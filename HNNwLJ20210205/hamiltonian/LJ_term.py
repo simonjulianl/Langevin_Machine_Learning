@@ -8,6 +8,9 @@ class LJ_term:
 
     def __init__(self, epsilon, sigma, boxsize):
 
+        LJ_term._obj_count += 1
+        assert (LJ_term._obj_count == 1),type(self).__name__ + " has more than one object"
+
         try:
             self._epsilon  = float(epsilon)
             self._sigma    = float(sigma)

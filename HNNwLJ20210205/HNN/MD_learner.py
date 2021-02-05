@@ -38,11 +38,11 @@ class MD_learner:
         print('n. of data', self.train_data.shape, self.valid_data.shape)
         # qnp x iterations x nsamples x  nparticle x DIM
         print('===========train_label===========')
-        self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self.noML_hamiltonian)
+        self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
         print('===========end train_label===========')
 
         print('===========valid_label===========')
-        self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self.noML_hamiltonian)
+        self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
         print('===========end valid_label===========')
 
         # print('===== load initial train data =====')

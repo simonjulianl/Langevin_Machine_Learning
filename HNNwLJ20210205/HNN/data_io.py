@@ -1,6 +1,5 @@
 import torch
 from MD_paramaters import MD_parameters
-from phase_space.phase_space import phase_space
 
 class data_io:
 
@@ -46,7 +45,7 @@ class data_io:
 
         return train_data, valid_data
 
-    def phase_space2label(self, qp_list, linear_integrator, noML_hamiltonian):
+    def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
 
         nsamples, qnp, nparticles, DIM = qp_list.shape
 
@@ -55,9 +54,8 @@ class data_io:
         # print('phase_space2label input',q_list.shape, p_list.shape)
         # print('nsamples',nsamples)
 
-        _phase_space = phase_space()
-        _phase_space.set_q(q_list)
-        _phase_space.set_p(p_list)
+        phase_space.set_q(q_list)
+        phase_space.set_p(p_list)
 
         # print('===== state at short time step 0.01 =====')
         nsamples_cur = nsamples # train or valid
@@ -66,6 +64,6 @@ class data_io:
 
         print('prepare labels nsamples_cur, tau_cur, MD_iterations')
         print(nsamples_cur, tau_cur, MD_iterations)
-        label = linear_integrator.step( noML_hamiltonian, _phase_space, MD_iterations, nsamples_cur, tau_cur)
+        label = linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur)
 
         return label

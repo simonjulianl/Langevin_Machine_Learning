@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath("./parameters"))
 from HNN import pair_wise_HNN
 from HNN.models import pair_wise_MLP
 # from HNN.models import pair_wise_zero
-from HNN.MD_learner import MD_learner
+from HNN.MD_relearner import MD_relearner
 from parameters.MD_paramaters import MD_parameters
 from parameters.ML_paramaters import ML_parameters
 from phase_space import phase_space
@@ -37,6 +37,6 @@ filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.for
 
 torch.autograd.set_detect_anomaly(True)
 
-MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename)
+MD_learner = MD_relearner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename)
 MD_learner.train_valid_epoch()
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))

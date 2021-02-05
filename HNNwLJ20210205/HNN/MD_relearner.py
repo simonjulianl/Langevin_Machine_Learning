@@ -11,14 +11,14 @@ import os
 import sys
 
 
-class MD_learner:
+class MD_relearner:
 
     _obj_count = 0
 
     def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, filename):
 
-        MD_learner._obj_count += 1
-        assert (MD_learner._obj_count == 1), type(self).__name__ + " has more than one object"
+        MD_relearner._obj_count += 1
+        assert (MD_relearner._obj_count == 1), type(self).__name__ + " has more than one object"
 
         self.linear_integrator = linear_integrator_obj
         self.any_HNN = any_HNN_obj
@@ -83,9 +83,21 @@ class MD_learner:
 
         print(type(self._opt).__name__)
 
+        checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format(
+            MD_parameters.nsamples, MD_parameters.nparticle, MD_parameters.tau_long, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))[0]
+        # print(checkpoint)
+
+        # load models weights state_dict
+        self.any_network.load_state_dict(checkpoint['model_state_dict'])
+        print('Previously trained models weights state_dict loaded...')
+        self._opt.load_state_dict(checkpoint['optimizer'])
+        print('Previously trained optimizer state_dict loaded...')
+        self._current_epoch = checkpoint['epoch']
+        print('Previously trained optimizer state_dict loaded...')
+        print('current_epoch', self._current_epoch)
+
         self._loss = qp_MSE_loss
 
-        self._current_epoch = 1
         # initialize best models
         self._best_validation_loss = float('inf')
 
@@ -196,14 +208,14 @@ class MD_learner:
 
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' time:', end-start)
 
-            if not os.path.exists('./saved_model/'):
-                os.makedirs('./saved_model/')
+            if not os.path.exists('./retrained_saved_model/'):
+                os.makedirs('./retrained_saved_model/')
 
-            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
+            self.record_best(valid_loss_avg, './retrained_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                  self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))
 
             text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
-            with open('nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, MD_parameters.tau_short, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation), 'w') as fp:
+            with open('nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_retrain_loss.txt'.format(MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, MD_parameters.tau_short, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation), 'w') as fp:
                 fp.write(text)
             fp.close()
 
@@ -223,7 +235,7 @@ class MD_learner:
                 }, is_best), filename)
 
         if is_best:
-            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
+            shutil.copyfile(filename, './retrained_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
                                                      self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))
 
 

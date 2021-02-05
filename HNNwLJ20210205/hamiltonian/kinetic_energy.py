@@ -5,6 +5,9 @@ import torch
 
 class kinetic_energy:
     '''Implemented class for total kinetic energy of p^2/2m'''
+
+    _obj_count = 0
+
     def __init__(self, mass : float):
         '''
         Parameters
@@ -12,6 +15,10 @@ class kinetic_energy:
         mass : float
             mass of the particles, taken to be constant for all
         '''
+
+        kinetic_energy._obj_count += 1
+        assert (kinetic_energy._obj_count == 1),type(self).__name__ + " has more than one object"
+
         try : 
             str_mass = str(float(mass))
         except : 

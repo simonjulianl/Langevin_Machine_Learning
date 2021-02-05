@@ -4,7 +4,13 @@ from .LJ_term import LJ_term
 from MD_paramaters import MD_parameters
 
 class lennard_jones:
+
+    _obj_count = 0
+
     def __init__(self):
+
+        lennard_jones._obj_count += 1
+        assert (lennard_jones._obj_count == 1),type(self).__name__ + " has more than one object"
 
         self.epsilon = MD_parameters.epsilon
         self.sigma = MD_parameters.sigma

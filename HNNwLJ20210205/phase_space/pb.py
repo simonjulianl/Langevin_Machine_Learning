@@ -2,6 +2,13 @@ import torch
 
 class pb:
 
+    _obj_count = 0
+
+    def __init__(self):
+
+        pb._obj_count += 1
+        assert(pb._obj_count == 1), type(self).__name__ + ' has more than one object'
+
     def adjust_reduced(self,q): # use in Lennard-Jones class
          self.adjust_real(q,boxsize=1)
 

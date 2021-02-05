@@ -3,7 +3,6 @@
 
 import torch
 
-
 class hamiltonian:
     '''Class container for Hamiltonian
 
