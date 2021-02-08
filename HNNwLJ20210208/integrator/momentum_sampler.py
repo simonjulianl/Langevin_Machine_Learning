@@ -19,7 +19,7 @@ class momentum_sampler:
         # vx = np.random.normal(0.0, sigma, nparticle)
         # vy = np.random.normal(0.0, sigma, nparticle)
         # vel_xy = np.stack((vx, vy), axis=-1)
-        self.vel = np.random.normal(0, 1, (self.vel.shape[0], self.vel.shape[1],self.vel.shape[2])) * sigma # make sure shape correct
+        self.vel = np.random.normal(0, 1, (self.vel.shape)) * sigma # make sure shape correct
         momentum = torch.tensor(self.vel) * MC_parameters.mass
 
         return momentum

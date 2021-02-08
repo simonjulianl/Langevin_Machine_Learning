@@ -21,13 +21,16 @@ text=''
 
 nsamples = MC_parameters.nsamples
 nparticle = MC_parameters.nparticle
+boxsize = MC_parameters.boxsize
 mass = MC_parameters.mass
 rho= MC_parameters.rho
 temp = MC_parameters.temperature
 interval = MC_parameters.interval # take mc step every interval
 DISCARD = MC_parameters.DISCARD
-print('nsamples nparticle interval DISCARD iterations iterations - DISCARD')
-print(nsamples, nparticle, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval)
+new_mcs = MC_parameters.new_mcs
+
+print('new_mcs nparticle boxsize interval DISCARD iterations iterations - DISCARD')
+print(new_mcs, nparticle, boxsize, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval)
 
 phase_space = phase_space.phase_space()
 pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
@@ -46,13 +49,17 @@ base_library = os.path.abspath('init_config')
 # plt.ylabel(r'$U_{ij}$',fontsize=20)
 # plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
 
-print('q_hist interval shape',q_hist[0::interval].shape[0])
+# take q every interval
+q_hist = q_hist[:, 0::interval] # shape new_mcs X mc step X nparticle X DIM
+q_hist = torch.reshape(q_hist, (-1, q_hist.shape[2], q_hist.shape[3]))
+# print(q_hist.shape)
 
 # momentum sampler
-momentum_sampler = integrator.momentum_sampler(q_hist[0::interval].shape[0])
+momentum_sampler = integrator.momentum_sampler(q_hist.shape[0])
 p_hist = momentum_sampler.momentum_samples()
+# print(p_hist)
 
-phase_space = torch.stack((q_hist[0::interval],p_hist))
+phase_space = torch.stack((q_hist,p_hist))
 q, p = phase_space
 
-torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist[0::interval].shape[0],rho,temp))
+torch.save(phase_space,base_library+ "/N_particle{}_new_step{}_rho{}_T{}_pos_sampled.pt".format(nparticle,new_mcs,rho,temp))

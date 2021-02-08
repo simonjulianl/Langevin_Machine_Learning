@@ -8,7 +8,7 @@ import random
 import numpy as np
 import warnings
 from MC_paramaters import MC_parameters
-
+import time
 import math
 
 class metropolis_mc:
@@ -57,10 +57,12 @@ class metropolis_mc:
 
         old_q = curr_q[:,trial].clone()
         # print('old_q', old_q)
-        #perform random step with proposed uniform distribution
-        curr_q[:,trial] = old_q + (torch.rand(1, MC_parameters.DIM)-0.5) * MC_parameters.dq
 
+        #perform random step with proposed uniform distribution
+        curr_q[:, trial] = old_q + (torch.rand(1, MC_parameters.DIM) - 0.5) * MC_parameters.boxsize * MC_parameters.dq
+        # print('curr_q before adjust', curr_q)
         phase_space.adjust_real(curr_q, MC_parameters.boxsize)
+        # print('curr_q adjust', curr_q)
         phase_space.set_q(curr_q)
 
         self.enn_q = hamiltonian.total_energy(phase_space)
@@ -72,6 +74,7 @@ class metropolis_mc:
         #accept with probability proportional di e ^ -beta * delta E
         self.ACCsum += 1.0
         self.ACCNsum += 1.0
+
         if (dU > 0):
             if (torch.rand([]) > math.exp( -dU / MC_parameters.temperature )):
                 self.ACCsum -= 1.0 # rejected
@@ -84,51 +87,56 @@ class metropolis_mc:
 
     def step(self, hamiltonian, phase_space):
 
-        self.ACCsum = 0.
-        self.ACCNsum = 0.
-        # specific heat calc
-        TE1sum = 0.0
-        TE2sum = 0.0
-        Nsum = 0.0
         MC_iterations = MC_parameters.iterations - MC_parameters.DISCARD
-        q_list = torch.zeros((MC_iterations, MC_parameters.nparticle, MC_parameters.DIM), dtype = torch.float64)
-        U = torch.zeros(MC_iterations)
+        q_list = torch.zeros((MC_parameters.new_mcs, MC_iterations, MC_parameters.nparticle, MC_parameters.DIM), dtype = torch.float64)
+        U = torch.zeros(MC_parameters.new_mcs, MC_iterations)
+        ACCRatio = torch.zeros(MC_parameters.new_mcs)
+        spec = torch.zeros(MC_parameters.new_mcs)
 
-        phase_space.set_q(self.position_sampler())
-        phase_space.set_p(self.momentum_dummy_sampler())
         # print('q_list', self.phase_space.get_q())
 
         #for i in trange(0, self._state['iterations'], desc = "simulating"):
-        for i in trange(0, MC_parameters.iterations):
-            for _ in range(MC_parameters.DIM):
-                self.mcmove(hamiltonian, phase_space)
+        for z in range(0, MC_parameters.new_mcs):
 
-            if(i >= MC_parameters.DISCARD):
+            self.ACCsum = 0.
+            self.ACCNsum = 0.
 
-                q_list[i- MC_parameters.DISCARD] = copy.deepcopy(phase_space.get_q())
-                # print('save enn_q',self.enn_q)
+            TE1sum = 0.0
+            TE2sum = 0.0
+            Nsum = 0.0
 
-                if self.enn_q > MC_parameters.nparticle * 10**3:
+            phase_space.set_q(self.position_sampler())
+            phase_space.set_p(self.momentum_dummy_sampler())
+            # print('q, p for new mcs', self.position_sampler(), self.momentum_dummy_sampler())
 
-                    print('potential energy too high')
-                    quit()
+            start = time.time()
 
-                U[i - MC_parameters.DISCARD] = self.enn_q
-                TE1sum += self.enn_q
-                TE2sum += (self.enn_q * self.enn_q)
-                Nsum += 1.0
+            for i in range(0, MC_parameters.iterations):
 
-        # print('u', U)
-        spec = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature  / MC_parameters.nparticle
+                for _ in range(MC_parameters.DIM):
+                    self.mcmove(hamiltonian, phase_space)
+
+                if(i >= MC_parameters.DISCARD):
+
+                    q_list[z,i- MC_parameters.DISCARD] = copy.deepcopy(phase_space.get_q())
+                    # print('q_list', q_list[z])
+
+                    if self.enn_q > MC_parameters.nparticle * 10**3:
+
+                        print('potential energy too high')
+                        quit()
+
+                    U[z,i- MC_parameters.DISCARD] = self.enn_q
+                    TE1sum += self.enn_q
+                    TE2sum += (self.enn_q * self.enn_q)
+                    Nsum += 1.0
+
+            ACCRatio[z] = self.ACCsum / self.ACCNsum
+            spec[z] = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature / MC_parameters.nparticle
+
+            end = time.time()
+
+            print('finished taking {} configuration, '.format(z), 'Accratio :', ACCRatio[z], 'spec :', spec[z], 'time: ', end-start)
 
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
-        
-        return q_list, U, self.ACCsum/ self.ACCNsum, spec
-    
-    def __repr__(self):
-        state = super().__repr__() 
-        state += '\nIntegration Setting : \n'
-        for key, value in self._state.items():
-            state += str(key) + ': ' +  str(value) + '\n' 
-        return state
-
+        return q_list, U, ACCRatio, spec
