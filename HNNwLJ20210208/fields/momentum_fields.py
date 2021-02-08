@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-class optical_flow2img:
+class momentum_fields:
 
     def __init__(self, phi_field_in, phi_field_nx):
 

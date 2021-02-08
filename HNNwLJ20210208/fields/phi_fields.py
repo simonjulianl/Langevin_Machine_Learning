@@ -1,16 +1,13 @@
 import torch
 import matplotlib.pyplot as plt
-from ..parameters.MD_paramaters import MD_parameters
-from ..hamiltonian.hamiltonian import hamiltonian
-from ..hamiltonian.lennard_jones import lennard_jones
+from MD_paramaters import MD_parameters
+from hamiltonian.hamiltonian import hamiltonian
+from hamiltonian.lennard_jones import lennard_jones
 import copy
 
 class phi_fields:
 
     def __init__(self, npixels , maxcut=100):
-
-
-
 
         self._DIM = MD_parameters.DIM
         self.lennard_jones = hamiltonian.append(lennard_jones())
@@ -18,7 +15,7 @@ class phi_fields:
         self._npixels = npixels
         self._boxsize = MD_parameters.boxsize
         self._maxcut = maxcut * self.lennard_jones.get_sigma()
-        self._mincut = -8 * self.lennard_jones.get_sigma() # actual minccut -6 and then give margin -2 = -8
+        self._mincut = -8 * self.lennard_jones.get_sigma() # actual minccut -6 and then give margin -2 = -8 when nparticle 4
         self._grid_list = self.build_gridpoint()
 
 
