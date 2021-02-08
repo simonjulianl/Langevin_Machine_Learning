@@ -58,7 +58,8 @@ class metropolis_mc:
         old_q = curr_q[:,trial].clone()
         # print('old_q', old_q)
         #perform random step with proposed uniform distribution
-        curr_q[:,trial] = old_q + (torch.rand(1, MC_parameters.DIM)-0.5) * MC_parameters.dq
+        #curr_q[:,trial] = old_q + (torch.rand(1, MC_parameters.DIM)-0.5) * MC_parameters.dq -- wrong
+        curr_q[:, trial] = old_q + (torch.rand(1, MC_parameters.DIM) - 0.5) * MC_parameters.boxsize * MC_parameters.dq
 
         phase_space.adjust_real(curr_q, MC_parameters.boxsize)
         phase_space.set_q(curr_q)
@@ -90,13 +91,14 @@ class metropolis_mc:
         TE1sum = 0.0
         TE2sum = 0.0
         Nsum = 0.0
+
         MC_iterations = MC_parameters.iterations - MC_parameters.DISCARD
         q_list = torch.zeros((MC_iterations, MC_parameters.nparticle, MC_parameters.DIM), dtype = torch.float64)
         U = torch.zeros(MC_iterations)
 
         phase_space.set_q(self.position_sampler())
         phase_space.set_p(self.momentum_dummy_sampler())
-        # print('q_list', self.phase_space.get_q())
+        print('q, p for mcs', self.position_sampler(), self.momentum_dummy_sampler())
 
         #for i in trange(0, self._state['iterations'], desc = "simulating"):
         for i in trange(0, MC_parameters.iterations):
@@ -121,6 +123,7 @@ class metropolis_mc:
         # print('u', U)
         spec = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature  / MC_parameters.nparticle
 
+        print('Accratio', self.ACCsum/ self.ACCNsum, spec)
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
         
         return q_list, U, self.ACCsum/ self.ACCNsum, spec

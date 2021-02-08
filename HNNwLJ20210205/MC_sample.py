@@ -46,13 +46,15 @@ base_library = os.path.abspath('init_config')
 # plt.ylabel(r'$U_{ij}$',fontsize=20)
 # plt.savefig(base_library + '/N_particle{}_samples{}_rho{}_T{}'.format(nparticle, q_hist[0::interval].shape[0], rho, temp) +'.png')
 
-print('q_hist interval shape',q_hist[0::interval].shape[0])
+q_hist = q_hist[0::interval]
+print('q_hist interval',q_hist.shape)
 
 # momentum sampler
-momentum_sampler = integrator.momentum_sampler(q_hist[0::interval].shape[0])
+momentum_sampler = integrator.momentum_sampler(q_hist.shape[0])
 p_hist = momentum_sampler.momentum_samples()
+print('p_hist ', p_hist)
 
-phase_space = torch.stack((q_hist[0::interval],p_hist))
+phase_space = torch.stack((q_hist,p_hist))
 q, p = phase_space
 
-torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist[0::interval].shape[0],rho,temp))
+# torch.save(phase_space,base_library+ "/N_particle{}_samples{}_rho{}_T{}_pos_sampled.pt".format(nparticle,q_hist.shape[0],rho,temp))
