@@ -4,64 +4,31 @@ sys.path.append(os.path.abspath(".."))
 sys.path.append(os.path.abspath("../parameters"))
 
 import numpy as np
-from hamiltonian import hamiltonian
-from hamiltonian.kinetic_energy import kinetic_energy
-from hamiltonian.lennard_jones import lennard_jones
-from hamiltonian.LJ_term import LJ_term
-from hamiltonian.pb import pb
+from HNN.field_HNN import field_HNN
+from fields import phi_fields
+from HNN.models import pair_wise_MLP
 from phase_space.phase_space import phase_space
-from optical_flow_HNN.ljbox2gridimg import ljbox2gridimg
-from optical_flow_HNN.optical_flow2img import optical_flow2img
+from parameters.MD_paramaters import MD_parameters
 from integrator import linear_integrator
-from integrator.methods import linear_velocity_verlet
 import matplotlib.pyplot as plt
 import torch
 
 if __name__ == '__main__':
 
-    mass = 1
-    epsilon = 1.
-    sigma = 1.
-    boxsize = 6.
-    DIM = 2
-    nsamples = 1
-    npixels = 32
 
-    nsamples_label = 1
-    nsamples_ML = 1
-    nparticle = 2
-    iterations = 10 # 10 steps to pair with large time step = 0.1
-    tau_long = 0.1 # short time step for label
-    tau_short = 0.5
-
-    NoML_hamiltonian = hamiltonian()
-    lj_term = LJ_term(epsilon = epsilon, sigma = sigma, boxsize = boxsize)
-    NoML_hamiltonian.append(lennard_jones(lj_term, boxsize))
-    NoML_hamiltonian.append(kinetic_energy(mass))
+    gen_nsamples = MD_parameters.gen_nsamples
+    nsamples = MD_parameters.nsamples
+    mass = MD_parameters.mass
+    boxsize = MD_parameters.boxsize
+    nparticle = MD_parameters.nparticle
+    DIM = MD_parameters.DIM
+    npixels = MD_parameters.npixels
 
     phase_space = phase_space()
-    pb = pb()
 
-    state = {
+    pair_wise_HNN_obj = field_HNN(pair_wise_MLP())
+    linear_integrator_obj = linear_integrator(MD_parameters.integrator_method)
 
-        'nsamples_cur': 0,
-        'nsamples_label': nsamples_label,
-        'nsamples_ML': nsamples_ML,
-        'nparticle' : nparticle,
-        'epsilon' : 1.,
-        'sigma' : 1.,
-        'DIM' : DIM,
-        'boxsize' : boxsize,
-        'iterations' : iterations,
-        'MD_iterations': 0,
-        'tau_cur': 0.0,
-        'tau_long': tau_long,  # for MD
-        'tau_short': tau_short,  # for label (gold standard)
-        'integrator_method' : linear_velocity_verlet,
-        'phase_space' : phase_space,
-        'pb_q' : pb
-
-        }
 
     def show_grid_nparticles(q_list, _grid_list):
 
@@ -77,14 +44,16 @@ if __name__ == '__main__':
 
     _q_list_in, _p_list_in = torch.tensor([q_list, p_list],dtype=torch.float64)
 
-    ljbox2gridimg_obj = ljbox2gridimg(lennard_jones(lj_term, boxsize), nsamples=nsamples, npixels=npixels, DIM=DIM )
+    phi_fields_obj = phi_fields(npixels)
     # show_grid_nparticles(_q_list_in, _grid_list)
 
     phase_space.set_q(_q_list_in)
     phase_space.set_p(_p_list_in)
 
-    _phi_field_in = ljbox2gridimg_obj.phi_field(phase_space,pb)
-    ljbox2gridimg_obj.show_gridimg()
+    _phi_field_in = phi_fields_obj.show_grid_nparticles(_q_list_in, 'hi')
+
+    quit()
+
 
     phase_space.set_q(_q_list_in)
     phase_space.set_p(_p_list_in)

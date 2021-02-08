@@ -4,8 +4,8 @@ import math
 class MD_parameters:
 
     seed = 4662570 # index for preparing data
-    gen_nsamples = 120
-    nsamples = 120
+    gen_nsamples = 5
+    nsamples = 5
     nsamples_ML = 1
     nparticle = 4
     DIM = 2
@@ -14,6 +14,7 @@ class MD_parameters:
     mass = 1
     # temp = 0.4
     rho = 0.1
+    npixels = 32
     boxsize = math.sqrt(nparticle / rho)
     tau_short = 0.001  # short time step for label
     tau_long = 0.1
