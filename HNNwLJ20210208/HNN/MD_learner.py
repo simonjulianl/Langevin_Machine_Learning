@@ -84,14 +84,53 @@ class MD_learner:
         print(type(self._opt).__name__)
 
         self._loss = qp_MSE_loss
-
         self._current_epoch = 1
         # initialize best models
         self._best_validation_loss = float('inf')
 
+    def load_checkpoint(self, load_path):
+
+        if os.path.isfile(load_path):
+            print("=> loading checkpoint '{}'".format(load_path))
+            checkpoint = torch.load(load_path)[0]
+            # print(checkpoint)
+            # load models weights state_dict
+            self.any_network.load_state_dict(checkpoint['model_state_dict'])
+            print('Previously trained models weights state_dict loaded...')
+            self._opt.load_state_dict(checkpoint['optimizer'])
+            print('Previously trained optimizer state_dict loaded...')
+            self._current_epoch = checkpoint['epoch'] + 1
+            print('Previously trained optimizer state_dict loaded...')
+            print('current_epoch', self._current_epoch)
+
+            if not os.path.exists('./retrain_saved_model/'):
+                os.makedirs('./retrain_saved_model/')
+
+        else:
+            print("=> no checkpoint found at '{}'".format(load_path))
+
+            if not os.path.exists('./saved_model/'):
+                os.makedirs('./saved_model/')
+            # # epoch, best_precision, loss_train
+            # return 1, 0, []
+
+    def save_checkpoint(self, validation_loss, save_path, best_model_path):
+
+        is_best = validation_loss < self._best_validation_loss
+        self._best_validation_loss = min(validation_loss, self._best_validation_loss)
+
+        torch.save(({
+                'epoch': self._current_epoch,
+                'model_state_dict' : self.any_network.state_dict(),
+                'best_validation_loss' : self._best_validation_loss,
+                'optimizer': self._opt.state_dict()
+                }, is_best), save_path)
+
+        if is_best:
+            shutil.copyfile(save_path, best_model_path)
 
     # phase_space consist of minibatch data
-    def train_valid_epoch(self):
+    def train_valid_epoch(self, save_path, best_model_path, loss_curve):
 
         # to prepare data at large time step, need to change tau and iterations
         # tau = large time step 0.1 and 1 step
@@ -196,35 +235,14 @@ class MD_learner:
 
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' time:', end-start)
 
-            if not os.path.exists('./saved_model/'):
-                os.makedirs('./saved_model/')
-
-            self.record_best(valid_loss_avg, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
-                                                 self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))
+            self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
 
             text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
-            with open('nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, MD_parameters.tau_short, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation), 'w') as fp:
+            with open(loss_curve, 'w') as fp:
                 fp.write(text)
             fp.close()
 
             self._current_epoch += 1
-
-
-    def record_best(self, validation_loss, filename):
-
-        is_best = validation_loss < self._best_validation_loss
-        self._best_validation_loss = min(validation_loss, self._best_validation_loss)
-
-        torch.save(({
-                'epoch': self._current_epoch,
-                'model_state_dict' : self.any_network.state_dict(),
-                'best_validation_loss' : self._best_validation_loss,
-                'optimizer': self._opt.state_dict()
-                }, is_best), filename)
-
-        if is_best:
-            shutil.copyfile(filename, './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( MD_parameters.nsamples, MD_parameters.nparticle, self._tau_cur, type(self._opt).__name__,
-                                                     self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))
 
 
     def pred_qnp(self, filename):

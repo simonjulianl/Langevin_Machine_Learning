@@ -6,7 +6,12 @@ from hamiltonian.kinetic_energy import kinetic_energy
 
 class field_HNN(hamiltonian):
 
+    _obj_count = 0
+
     def __init__(self, network):
+
+        field_HNN._obj_count += 1
+        assert (field_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
 
         super().__init__()
         self.network = network
@@ -21,9 +26,7 @@ class field_HNN(hamiltonian):
     def eval(self):
         self.network.eval()
 
-
     def dHdq(self, phase_space):
-
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
