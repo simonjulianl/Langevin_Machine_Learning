@@ -7,7 +7,7 @@ import copy
 
 class phi_fields:
 
-    def __init__(self, npixels , maxcut=100):
+    def __init__(self, npixels, hamiltonian, maxcut=100):
 
         self._DIM = MD_parameters.DIM
         self.lennard_jones = hamiltonian.append(lennard_jones())

@@ -2,7 +2,6 @@ import torch
 
 class ML_parameters:
 
-    ratio = 0.8
     lr = 0.01
     nepoch = 5
     optimizer = 'Adam'

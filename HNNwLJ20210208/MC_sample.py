@@ -62,4 +62,4 @@ p_hist = momentum_sampler.momentum_samples()
 phase_space = torch.stack((q_hist,p_hist))
 q, p = phase_space
 
-torch.save(phase_space,base_library+ "/N_particle{}_new_step{}_rho{}_T{}_pos_sampled.pt".format(nparticle,new_mcs,rho,temp))
+torch.save(phase_space,base_library+ "/nparticle{}_new_nsim{}_rho{}_T{}_pos_sampled.pt".format(nparticle,new_mcs,rho,temp))

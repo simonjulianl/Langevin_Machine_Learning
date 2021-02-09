@@ -33,10 +33,12 @@ if __name__ == '__main__':
 
     # noMLhamiltonian = super(pair_wise_HNN, pair_wise_HNN_obj)
 
-    filename = '../init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples)
+    uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+    base_dir = uppath(__file__, 2)
+    init_path = base_dir + '/init_config/'
 
     torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
 
-    MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename)
-    MD_learner.train_valid_epoch()
+    MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+    # MD_learner.train_valid_epoch()
     # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples))

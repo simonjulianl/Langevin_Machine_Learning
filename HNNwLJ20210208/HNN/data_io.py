@@ -1,33 +1,58 @@
 import torch
+import os
+from MC_paramaters import MC_parameters
 from MD_paramaters import MD_parameters
 
 class data_io:
 
     _obj_count = 0
 
-    def __init__(self):
+    def __init__(self, init_path):
 
         super().__init__()
 
         data_io._obj_count += 1
         assert(data_io._obj_count == 1), type(self).__name__ + ' has more than one object'
 
-    def hamiltonian_dataset(self, filename, ratio : float):
+        self.init_path = init_path
 
-        q_list, p_list = torch.load(filename)
+    def loadq_p(self, mode):
 
+        if not os.path.exists(self.init_path) :
+            raise Exception('path doesnt exist')
+
+        file_format = self.init_path + 'nparticle' + str(MD_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
+
+        q_list = None
+        p_list = None
+
+        for i, temp in enumerate(MD_parameters.temp_list):
+
+            print('temp', temp)
+            q_curr, p_curr = torch.load(file_format.format(MC_parameters.rho, temp))
+
+            if i == 0:
+                q_list = q_curr
+                p_list = p_curr
+            else:
+                q_list = torch.cat((q_list, q_curr))
+                p_list = torch.cat((p_list, p_curr))
+
+            assert q_list.shape == p_list.shape
+
+        return (q_list, p_list)
+
+    def hamiltonian_dataset(self, mode_qp_list):
+
+        q_list, p_list = mode_qp_list
         # shuffle
         g = torch.Generator()
         g.manual_seed(MD_parameters.seed)
 
         idx = torch.randperm(q_list.shape[0], generator=g)
-        print('idx',idx)
 
-        q_list_shuffle_ = q_list[idx]
-        p_list_shuffle_ = p_list[idx]
-
-        q_list_shuffle = q_list_shuffle_[:MD_parameters.nsamples]
-        p_list_shuffle = p_list_shuffle_[:MD_parameters.nsamples]
+        q_list_shuffle = q_list[idx]
+        p_list_shuffle = p_list[idx]
 
         try:
             assert q_list_shuffle.shape == p_list_shuffle.shape
@@ -41,10 +66,7 @@ class data_io:
         init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  #  nsamples  X 1 X nparticle X  DIM
         init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
 
-        train_data = init[:int(ratio*init.shape[0])]
-        valid_data = init[int(ratio*init.shape[0]):]
-
-        return train_data, valid_data
+        return init
 
     def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
 

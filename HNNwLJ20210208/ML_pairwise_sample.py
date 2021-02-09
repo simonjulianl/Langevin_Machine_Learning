@@ -52,9 +52,13 @@ save_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoin
 #change path when retrain
 loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation)
 
+uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+base_dir = uppath(__file__, 1)
+init_path = base_dir + '/init_config/'
+
 torch.autograd.set_detect_anomaly(True)
 
-MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename)
+MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
 MD_learner.load_checkpoint(load_path)
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))
