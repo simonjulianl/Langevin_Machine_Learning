@@ -50,7 +50,7 @@ class metropolis_mc:
     def mcmove(self, hamiltonian, phase_space) :
 
         curr_q = phase_space.get_q()
-        # print('curr_q', curr_q)
+
         self.eno_q = hamiltonian.total_energy(phase_space)
 
         trial = random.randint(0, curr_q.shape[1] - 1) # randomly pick one particle from the state
@@ -70,6 +70,7 @@ class metropolis_mc:
 
         dU = self.enn_q - self.eno_q
         phase_space.set_q(curr_q)
+
 
         #accept with probability proportional di e ^ -beta * delta E
         self.ACCsum += 1.0
@@ -121,6 +122,7 @@ class metropolis_mc:
                     q_list[z,i- MC_parameters.DISCARD] = copy.deepcopy(phase_space.get_q())
                     # print('q_list', q_list[z])
 
+                    print(self.enn_q)
                     if self.enn_q > MC_parameters.nparticle * 10**3:
 
                         print('potential energy too high')
