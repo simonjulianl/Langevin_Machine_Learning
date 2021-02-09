@@ -33,10 +33,11 @@ print ('Available devices ', torch.cuda.device_count())
 print ('Current cuda device ', torch.cuda.current_device())
 # print('GPU available', torch.cuda.get_device_name(device))
 
-filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, gen_nsamples)
+filename1 = './init_config/nparticle{}_new_nsim_rho0.1_T0.04_pos_train_sampled.pt'.format(nparticle)
+filename2 = './init_config/nparticle{}_new_nsim_rho0.1_T0.04_pos_valid_sampled.pt'.format(nparticle)
 
 torch.autograd.set_detect_anomaly(True)
 
-MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename)
+MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, filename1, filename2)
 MD_learner.train_valid_epoch()
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))

@@ -3,7 +3,7 @@ import math
 
 class MD_parameters:
 
-    seed = 4662 # index for preparing data
+    seed = 4662570 # index for preparing data
     gen_nsamples = 20000
     nsamples = 20000
     nsamples_ML = 1

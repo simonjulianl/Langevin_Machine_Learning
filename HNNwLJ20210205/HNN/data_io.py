@@ -12,7 +12,7 @@ class data_io:
         data_io._obj_count += 1
         assert(data_io._obj_count == 1), type(self).__name__ + ' has more than one object'
 
-    def hamiltonian_dataset(self, filename, ratio : float):
+    def hamiltonian_dataset(self, filename):
 
         q_list, p_list = torch.load(filename)
 
@@ -21,13 +21,9 @@ class data_io:
         g.manual_seed(MD_parameters.seed)
 
         idx = torch.randperm(q_list.shape[0], generator=g)
-        print('idx',idx)
 
-        q_list_shuffle_ = q_list[idx]
-        p_list_shuffle_ = p_list[idx]
-
-        q_list_shuffle = q_list_shuffle_[:MD_parameters.nsamples]
-        p_list_shuffle = p_list_shuffle_[:MD_parameters.nsamples]
+        q_list_shuffle = q_list[idx]
+        p_list_shuffle = p_list[idx]
 
         try:
             assert q_list_shuffle.shape == p_list_shuffle.shape
@@ -41,10 +37,7 @@ class data_io:
         init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  #  nsamples  X 1 X nparticle X  DIM
         init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
 
-        train_data = init[:int(ratio*init.shape[0])]
-        valid_data = init[int(ratio*init.shape[0]):]
-
-        return train_data, valid_data
+        return init
 
     def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
 

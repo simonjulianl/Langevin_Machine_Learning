@@ -15,7 +15,7 @@ class MD_learner:
 
     _obj_count = 0
 
-    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, filename):
+    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, filename1, filename2):
 
         MD_learner._obj_count += 1
         assert (MD_learner._obj_count == 1), type(self).__name__ + " has more than one object"
@@ -34,13 +34,15 @@ class MD_learner:
         self._data_io_obj = data_io()
 
         # nsamples X qnp X nparticle X  DIM
-        self.train_data, self.valid_data = self._data_io_obj.hamiltonian_dataset(filename, ratio = ML_parameters.ratio)
-        print('n. of data', self.train_data.shape, self.valid_data.shape)
+        self.train_data = self._data_io_obj.hamiltonian_dataset(filename1)
+        print('n. of data', self.train_data.shape)
         # qnp x iterations x nsamples x  nparticle x DIM
         print('===========train_label===========')
         self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
         print('===========end train_label===========')
 
+        self.valid_data = self._data_io_obj.hamiltonian_dataset(filename2)
+        print('n. of data', self.valid_data.shape)
         print('===========valid_label===========')
         self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
         print('===========end valid_label===========')
