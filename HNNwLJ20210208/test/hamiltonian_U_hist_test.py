@@ -4,11 +4,11 @@ sys.path.append(os.path.abspath(".."))
 sys.path.append(os.path.abspath("../parameters"))
 
 from HNN.pair_wise_HNN import pair_wise_HNN
+from HNN.models import pair_wise_MLP
 from phase_space.phase_space import phase_space
 from integrator import linear_integrator
 from parameters.MC_paramaters import MC_parameters
 from parameters.MD_paramaters import MD_parameters
-from HNN.models import pair_wise_MLP
 import torch
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
