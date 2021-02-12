@@ -1,0 +1,48 @@
+from MD_paramaters import MD_parameters
+from ML_paramaters import ML_parameters
+from hamiltonian import hamiltonian
+from hamiltonian.lennard_jones import lennard_jones
+from hamiltonian.kinetic_energy import kinetic_energy
+
+class field_HNN(hamiltonian):
+
+    _obj_count = 0
+
+    def __init__(self, network):
+
+        field_HNN._obj_count += 1
+        assert (field_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
+
+        super().__init__()
+        self.network = network
+
+        # # append term to calculate dHdq
+        super().append(lennard_jones())
+        super().append(kinetic_energy(MD_parameters.mass))
+
+    def train(self):
+        self.network.train()  # pytorch network for training
+
+    def eval(self):
+        self.network.eval()
+
+    def dHdq(self, phase_space):
+
+        q_list = phase_space.get_q()
+        p_list = phase_space.get_p()
+
+        noML_dHdq = super().dHdq(phase_space)
+
+        phase_space.set_q(q_list)
+        phase_space.set_p(p_list)
+
+        data = self.phase_space2data(phase_space, MD_parameters.tau_long)
+        predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
+        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
+
+        return corrected_dHdq
+
+    def phase_space2data(self, phase_space, tau_cur):
+
+        q_list = phase_space.get_q()
+        p_list = phase_space.get_p()
