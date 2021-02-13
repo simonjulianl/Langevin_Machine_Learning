@@ -12,7 +12,6 @@ from phase_space import phase_space
 from integrator import linear_integrator
 import torch
 
-gen_nsamples = MD_parameters.gen_nsamples
 nsamples = MD_parameters.nsamples
 nparticle = MD_parameters.nparticle
 tau_long = MD_parameters.tau_long
@@ -40,7 +39,6 @@ print ('Available devices ', torch.cuda.device_count())
 print ('Current cuda device ', torch.cuda.current_device())
 # print('GPU available', torch.cuda.get_device_name(device))
 
-filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, gen_nsamples)
 load_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
                                                  lr, MLP_nhidden, activation)
 best_model_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,

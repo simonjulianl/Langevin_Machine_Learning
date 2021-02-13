@@ -1,21 +1,20 @@
 import torch
 import matplotlib.pyplot as plt
-from MD_paramaters import MD_parameters
-from hamiltonian.hamiltonian import hamiltonian
-from hamiltonian.lennard_jones import lennard_jones
+from MD_parameters import MD_parameters
 import copy
 
 class phi_fields:
 
     def __init__(self, npixels, hamiltonian, maxcut=100):
 
+        terms = hamiltonian.get_terms()
+        self.lennard_jones = terms[0]
         self._DIM = MD_parameters.DIM
-        self.lennard_jones = hamiltonian.append(lennard_jones())
         self._nsamples = MD_parameters.nsamples
         self._npixels = npixels
         self._boxsize = MD_parameters.boxsize
-        self._maxcut = maxcut * self.lennard_jones.get_sigma()
-        self._mincut = -8 * self.lennard_jones.get_sigma() # actual minccut -6 and then give margin -2 = -8 when nparticle 4
+        self._maxcut = maxcut * MD_parameters.sigma
+        self._mincut = -8 * MD_parameters.sigma # actual minccut -6 and then give margin -2 = -8 when nparticle 4
         self._grid_list = self.build_gridpoint()
 
 
@@ -40,31 +39,23 @@ class phi_fields:
         return grid_list
 
 
-    def phi_field(self, phase_space, bc):
+    def phi_field(self, phase_space):
 
-        self._phi_field = self.lennard_jones.phi_npixels(phase_space, bc, self._grid_list)
+        self._phi_field = self.lennard_jones.phi_npixels(phase_space, self._grid_list)
         self._phi_field = self._phi_field.reshape((-1, self._npixels, self._npixels))
 
-        return self._phi_field
-
-
-    def phi_max_min(self):
-
-        # print('before mask', self._phi_field)
-
+        # phi_max_min
         for z in range(self._nsamples):
 
             mask = self._phi_field[z] > self._maxcut
-            self._phi_field[z][mask] = self._maxcut # cannot do that !! keep the phi field. this just show image
-
-        # print('after mask', self._phi_field)
+            self._phi_field[z][mask] = self._maxcut
 
         return self._phi_field
 
 
-    def show_gridimg(self):
+    def show_gridimg(self, phi_field):
 
-        norm_phi_field = (self._phi_field[0] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
+        norm_phi_field = (phi_field[0] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
 
         plt.imshow(norm_phi_field, cmap='gray') # one sample
         plt.colorbar()

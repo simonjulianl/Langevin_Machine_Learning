@@ -3,25 +3,33 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .conv2d_PBC import compute_PBC_constants, compute_PBC
 
-
-class optical_flow_unet_parts(nn.Module):
+class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.optical_flow_unet_parts = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
+
+        self.PBC_constant = compute_PBC_constants(initial_size=32, batch_size=1, initial_channels=2)
+
+        self.double_conv_first = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3),
+            nn.ReLU(inplace=True))
+
+        self.double_conv_second = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels, kernel_size=3),
             nn.ReLU(inplace=True)
         )
 
     def forward(self, x):
-        return self.double_conv(x)
 
+        x = compute_PBC(x, self.PBC_constant)
+        x = self.double_conv_first(x)
+        x = compute_PBC(x, self.PBC_constant)
+        out = self.double_conv_second(x)
+
+        return out
 
 class Down(nn.Module):
     """Downscaling with maxpool then double conv"""
@@ -54,14 +62,13 @@ class Up(nn.Module):
     def forward(self, x1, x2):
         x1 = self.up(x1)
         # input is CHW
-        diffY = torch.tensor([x2.size()[2] - x1.size()[2]])
-        diffX = torch.tensor([x2.size()[3] - x1.size()[3]])
-
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                        diffY // 2, diffY - diffY // 2])
-        # if you have padding issues, see
-        # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
-        # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
+        # diffY = torch.tensor([x2.size()[2] - x1.size()[2]])
+        # diffX = torch.tensor([x2.size()[3] - x1.size()[3]])
+        #
+        # x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
+        # # if you have padding issues, see
+        # # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
+        # # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 

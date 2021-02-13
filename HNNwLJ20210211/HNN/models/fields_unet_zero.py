@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-class optical_flow_zero(nn.Module):
+class fields_unet_zero(nn.Module):
 
     def __init__(self, n_input, n_hidden):
-        super(optical_flow_zero, self).__init__()
+        super(fields_unet_zero, self).__init__()
         self.correction_term = nn.Sequential(
             nn.Linear(n_input, n_hidden),
             nn.Linear(n_hidden, 2)

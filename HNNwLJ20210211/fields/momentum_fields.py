@@ -19,20 +19,21 @@ class momentum_fields:
         flow = None
         flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                             next=current_image, flow=flow,
-                                            pyr_scale=0.85, levels=3, winsize=3, iterations=3,
-                                            poly_n=5, poly_sigma=1.1, flags=0)
+                                            pyr_scale=0.85, levels=1, winsize=3,
+                                            iterations=1, poly_n=7, poly_sigma=1.5,
+                                            flags=0)
 
         return flow
 
     def p_field(self):
 
-        nsamples, npixels, npixels = self._phi_field_in.shape
+        nsamples, channels, npixels, npixels = self._phi_field_in.shape
         flow_vectors = torch.zeros((nsamples, npixels, npixels, 2))  # nsamples x npixels
 
         for z in range(nsamples):
 
-            phi_field_in = torch.unsqueeze(self._phi_field_in[z], dim=-1)
-            phi_field_nx = torch.unsqueeze(self._phi_field_nx[z], dim=-1)
+            phi_field_in = self._phi_field_in[z].permute(1,2,0) # channel first to channel last for optical flow
+            phi_field_nx = self._phi_field_nx[z].permute(1,2,0)
 
             # convert torch to array : to use opencv
             numpy_phi_field_in = phi_field_in.numpy()
@@ -40,6 +41,8 @@ class momentum_fields:
 
             flow_v = self.compute_dense_optical_flow(numpy_phi_field_in, numpy_phi_field_nx)
             flow_vectors[z] = torch.from_numpy(flow_v)
+
+        flow_vectors = flow_vectors.permute(0,3,1,2) # channel last to channel first for cnn
 
         return flow_vectors
 
@@ -49,10 +52,10 @@ class momentum_fields:
         :param flow_data:
         :return: color image
         """
-        print(flow_data.shape)
+        # print(flow_data.shape)
         # print(type(flow_data))
-        vx = flow_data[0, :, :, 0] # take one sample that is index=0
-        vy = flow_data[0, :, :, 1]
+        vx = flow_data[0, 0, :, :] # take one sample that is index=0
+        vy = flow_data[0, 1, :, :]
 
         # # to make channel
         # height, width = vx.shape
@@ -61,9 +64,9 @@ class momentum_fields:
 
         minm = min(vx.min(), vy.min())
         maxm = max(vx.max(), vy.max())
-        print(vx.min(), vy.min())
-        print(vx.max(), vy.max())
-        print(minm,maxm)
+        # print(vx.min(), vy.min())
+        # print(vx.max(), vy.max())
+        # print(minm,maxm)
         #normalize img to 0-255
         # to show img
         norm_vx = (vx - minm) * 255 / (maxm - minm + 1e-5)
