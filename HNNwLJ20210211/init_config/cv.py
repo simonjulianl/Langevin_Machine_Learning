@@ -70,4 +70,3 @@ if __name__ == '__main__':
         #plt.savefig('./filesave/' + r'N{}_T{:.2f}_pos.png'.format(N_particle,T))
 
         plt.show()
-
