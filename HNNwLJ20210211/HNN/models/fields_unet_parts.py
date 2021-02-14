@@ -8,17 +8,19 @@ from .conv2d_PBC import compute_PBC_constants, compute_PBC
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
+        if not mid_channels:
+            mid_channels = out_channels
 
         self.PBC_constant = compute_PBC_constants(initial_size=32, batch_size=1, initial_channels=2)
 
         self.double_conv_first = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3),
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3),
             nn.ReLU(inplace=True))
 
         self.double_conv_second = nn.Sequential(
-            nn.Conv2d(out_channels, out_channels, kernel_size=3),
+            nn.Conv2d(mid_channels, out_channels, kernel_size=3),
             nn.ReLU(inplace=True)
         )
 
@@ -44,6 +46,41 @@ class Down(nn.Module):
     def forward(self, x):
         return self.maxpool_conv(x)
 
+class FC(nn.Module):
+
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+
+        self.maxpool_conv = nn.Sequential(
+            nn.MaxPool2d(2))
+
+        self.fully_connected = nn.Sequential(
+            nn.Linear(in_channels+1, out_channels),
+            nn.Tanh(),
+            nn.Linear(out_channels, out_channels),
+            nn.Tanh()
+        )
+
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x, tau):
+
+        x1 = self.maxpool_conv(x)
+        print('maxpool',x1.shape)
+        x2 = x1.view(x1.size(0), self.num_flat_features(x1))
+        print('flatten',x2.shape)
+        x2 = torch.cat([x2, tau], dim=1)
+        print('concat',x2.shape)
+        x2 = self.fully_connected(x2)
+        x3 = x2.view(x2.size(0),x1.shape[1],x1.shape[2],x1.shape[3])
+
+        return x3
 
 class Up(nn.Module):
     """Upscaling then double conv"""
@@ -60,7 +97,10 @@ class Up(nn.Module):
         self.conv = DoubleConv(in_channels, out_channels)
 
     def forward(self, x1, x2):
+        print('up', x1.shape)
         x1 = self.up(x1)
+        print('up', x1.shape)
+
         # input is CHW
         # diffY = torch.tensor([x2.size()[2] - x1.size()[2]])
         # diffX = torch.tensor([x2.size()[3] - x1.size()[3]])

@@ -4,17 +4,17 @@ from .conv2d_PBC import compute_PBC_constants, compute_PBC
 
 class CNN4p_field(nn.Module):
 
-    def __init__(self):
+    def __init__(self, in_channels, out_channels):
 
         super(CNN4p_field, self).__init__()
 
         self.PBC_constant = compute_PBC_constants(initial_size=32, batch_size=1, initial_channels=2)
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(2, 32, kernel_size=3, stride=1),
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1),
             nn.ReLU())
         self.layer2 = nn.Sequential(
-            nn.Conv2d(32, 32, kernel_size=3, stride=1),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1),
             nn.ReLU()
         )
 

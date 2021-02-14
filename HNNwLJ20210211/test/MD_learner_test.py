@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     linear_integrator_obj = linear_integrator(MD_parameters.integrator_method)
     # pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
-    field_HNN_obj = field_HNN(fields_unet(2, 2), linear_integrator_obj)
+    field_HNN_obj = field_HNN(fields_unet(2, 32, 2), linear_integrator_obj)
 
     print(field_HNN_obj)
 
@@ -45,7 +45,11 @@ if __name__ == '__main__':
 
     # field_HNN_obj.phi_field4cnn(phase_space)
     # field_HNN_obj.p_field4cnn()
-    field_HNN_obj.fields2cnn(phase_space)
+    tau = torch.tensor([0.1])
+    tau = torch.unsqueeze(tau, dim=0)
+
+    field_HNN_obj.fields2cnn(phase_space, tau)
+    field_HNN_obj.force4nparticle(phase_space, 4) # nsamples x (fx, fy) x npixels x npixels
 
     quit()
     # noMLhamiltonian = super(pair_wise_HNN, pair_wise_HNN_obj)

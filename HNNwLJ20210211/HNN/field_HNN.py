@@ -24,6 +24,9 @@ class field_HNN(hamiltonian):
         super().append(lennard_jones())
         super().append(kinetic_energy(MD_parameters.mass))
 
+
+        self.phi_fields_obj = phi_fields(MD_parameters.npixels, super())
+
     def train(self):
         self.network.train()  # pytorch network for training
 
@@ -42,31 +45,71 @@ class field_HNN(hamiltonian):
 
         # predict_fields to calc predict each particle
         # predict =  #xxxx
-        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
+        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + self.predict_fields4particle  # in linear_vv code, it calculates grad potential.
 
         return corrected_dHdq
 
-    def fields2cnn(self,phase_space):
+    def fields2cnn(self,phase_space, tau):
 
         phi_field = self.phi_field4cnn(phase_space)
         p_field = self.p_field4cnn()
-        predict_fields = self.network(phi_field, p_field)
+        self.predict_fields = self.network(phi_field, p_field, tau)
+        print('predict shape', self.predict_fields.shape)
+        return self.predict_fields
 
-    # find the closest grid to particles and calc farce about each particle
-    def force_each_particle(self, phase_space):
+
+    def euclidean_distance(self, vector1, vector2):
+        return torch.sqrt(torch.sum(torch.pow(vector1 - vector2, 2)))
+
+
+    # find 4 nearest neighbor grids and calc farce about each particle
+    def force4nparticle(self, phase_space, k):
 
         _q_list_in = phase_space.get_q()
-        _p_list_in = phase_space.get_p()
+        grid = self.phi_fields_obj._grid_list
 
-        
+        nsamples, nparticle, DIM = _q_list_in.shape
 
+        distances = []
+        self.predict_fields4particle = torch.zeros((nsamples, k, DIM))
+
+        for z in range(0, nsamples):
+            for i in range(0, nparticle):
+                for j in range(0, len(grid)):
+                    dist = self.euclidean_distance(grid[j], _q_list_in[:,i])
+                    distances.append((dist, j))
+
+                # print(sorted(distances))
+                k_nearest_index = [v[1] for v in sorted(distances)[:k]]
+                k_nearest_distance = torch.tensor(distances)[k_nearest_index,0]
+                print('index', k_nearest_index)
+                print('distance', k_nearest_distance)
+                k_predict_index_x = torch.tensor(k_nearest_index) // MD_parameters.npixels
+                k_predict_index_y = torch.tensor(k_nearest_index) % MD_parameters.npixels
+
+                k_nearest_predict_fields = self.predict_fields[:,:,k_predict_index_x,k_predict_index_y]
+                print('predict_fields', k_nearest_predict_fields)
+                print('predict_fields', k_nearest_predict_fields.shape)
+                z_l = torch.sum( 1. / k_nearest_distance )
+
+                if (k_nearest_distance < 0.001).any() :
+                    index = torch.where(k_nearest_distance < 0.001)
+                    index_x = k_nearest_distance[index] // MD_parameters.npixels
+                    index_y = k_nearest_distance[index] % MD_parameters.npixels
+                    self.predict_fields4particle[z][i] = self.predict_fields[:, :, index_x, index_y]
+
+                else:
+
+                    self.predict_fields4particle[z][i] = ( 1. / z_l ) * torch.sum(( 1. / k_nearest_distance * k_nearest_predict_fields),dim=-1)
+
+
+        return self.predict_fields4particle
 
     def phi_field4cnn(self, phase_space):
 
         _q_list_in = phase_space.get_q()
         _p_list_in = phase_space.get_p()
 
-        self.phi_fields_obj = phi_fields(MD_parameters.npixels, super())
 
         phase_space.set_q(_q_list_in)
         # self.phi_fields_obj.show_grid_nparticles(_q_list_in,'hi')
