@@ -8,18 +8,17 @@ import matplotlib.pyplot as plt
 from HNN.pair_wise_HNN import pair_wise_HNN
 from HNN.models.pair_wise_MLP import pair_wise_MLP
 from phase_space.phase_space import phase_space
-from parameters.MD_paramaters import MD_parameters
 import math
 import numpy as np
 
 if __name__ == '__main__':
 
-    np.random.seed(6)
+    np.random.seed(73893)
 
     temp = 0.04
     nsamples = 100
     DIM = 2
-    nparticle = 8
+    nparticle = 4
     rho = 0.1
     boxsize = math.sqrt(nparticle/rho)
     print('boxsize', boxsize)

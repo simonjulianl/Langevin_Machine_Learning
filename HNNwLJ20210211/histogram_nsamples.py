@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.abspath("../parameters"))
+sys.path.append(os.path.abspath("./parameters"))
 
 from HNN.pair_wise_HNN import pair_wise_HNN
 from HNN.models import pair_wise_MLP
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     terms = noMLhamiltonian.get_terms()
 
     # 1000 samples from 1000 mcs
-    filename1 = './init_config/nparticle{}_new_sim{}_rho0.1_T{}_pos_sampled.pt'.format(nparticle, 80, temperature)
+    filename1 = './init_config/nparticle{}_new_nsim_rho0.1_T{}_pos_train_sampled.pt'.format(nparticle, temperature)
     q_list1, p_list1 = torch.load(filename1)
 
     phase_space.set_p(p_list1)
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # print('potential energy',u_term1)
 
     # 1000 samples from 20000 mcs
-    filename2 = './init_config/nparticle{}_new_sim{}_rho0.1_T{}_pos_sampled.pt'.format(nparticle, 8, temperature)
+    filename2 = './init_config/nparticle{}_new_nsim_rho0.1_T{}_pos_valid_sampled.pt'.format(nparticle, temperature)
     q_list2, p_list2 = torch.load(filename2)
 
     phase_space.set_p(p_list2)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     plt.hist(u_term2.numpy(), bins=100, color='r', alpha = 0.5, label = 'valid: each {} mcs from 8 random samplings'.format(nsamples))
     plt.xlabel(r'$U_{ij}$',fontsize=20)
     plt.ylabel('hist', fontsize=20)
-    anchored_text = AnchoredText('nparticle={} boxsize={:.3f} temperature={} data split = train 80000 / valid 800'.format(nparticle, boxsize, temperature), loc= 'center', prop=dict(fontweight="normal", size=12))
+    anchored_text = AnchoredText('nparticle={} boxsize={:.3f} temperature={} data split = train 50000 / valid 500'.format(nparticle, boxsize, temperature), loc= 'center', prop=dict(fontweight="normal", size=12))
     ax.add_artist(anchored_text)
 
     plt.legend()

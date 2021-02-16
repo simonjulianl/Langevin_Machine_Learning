@@ -110,16 +110,16 @@ class field_HNN(hamiltonian):
         _q_list_in = phase_space.get_q()
         _p_list_in = phase_space.get_p()
 
-
+        print('inital q, p', _q_list_in, _p_list_in)
         phase_space.set_q(_q_list_in)
-        # self.phi_fields_obj.show_grid_nparticles(_q_list_in,'hi')
+        self.phi_fields_obj.show_grid_nparticles(_q_list_in,'hi')
 
         self._phi_field_in = self.phi_fields_obj.phi_field(phase_space)
         print('show in', self._phi_field_in.shape)
-        # self.phi_fields_obj.show_gridimg(self._phi_field_in)
+        self.phi_fields_obj.show_gridimg(self._phi_field_in, '(t)')
 
         nsamples_cur = MD_parameters.nsamples
-        tau_cur = MD_parameters.tau_long
+        tau_cur = MD_parameters.tau_short
         MD_iterations = int(MD_parameters.tau_short / MD_parameters.tau_short)
 
         phase_space.set_q(_q_list_in)
@@ -129,11 +129,13 @@ class field_HNN(hamiltonian):
         _q_list_nx = _q_list_nx[-1].type(torch.float64)  # only take the last from the list
         _p_list_nx = _p_list_nx[-1].type(torch.float64)
 
+        print('next q, p', _q_list_nx, _p_list_nx)
+
         phase_space.set_q(_q_list_nx)
         # phase_space.set_p(_p_list_nx)
         self._phi_field_nx = self.phi_fields_obj.phi_field(phase_space) # nsamples x npixels x npixels
         print('show nx', self._phi_field_nx.shape)
-        # self.phi_fields_obj.show_gridimg(self._phi_field_nx)
+        self.phi_fields_obj.show_gridimg(self._phi_field_nx, '(t+$\delta$t)')
 
         self._phi_field_in = torch.unsqueeze(self._phi_field_in, dim=1) # nsamples x channel x npixels x npixels
         self._phi_field_nx = torch.unsqueeze(self._phi_field_nx, dim=1)
@@ -165,14 +167,16 @@ class field_HNN(hamiltonian):
     def p_field4cnn(self):
 
         phi_field_pbc_in = self.p_field_pbc_padding(self._phi_field_in)
-        # self.phi_fields_obj.show_gridimg(phi_field_pbc_in[:][0])
+        # self.phi_fields_obj.show_gridimg(phi_field_pbc_in[:][0], '(t)')
 
         phi_field_pbc_nx = self.p_field_pbc_padding(self._phi_field_nx)
-        # self.phi_fields_obj.show_gridimg(phi_field_pbc_nx[:][0])
+        # self.phi_fields_obj.show_gridimg(phi_field_pbc_nx[:][0], '(t+$\delta$t)')
 
         momentum_fields_obj = momentum_fields(phi_field_pbc_in, phi_field_pbc_nx)
         flow_vectors = momentum_fields_obj.p_field()
-        # momentum_fields_obj.visualize_flow_file(flow_vectors)
+        print('before crop', flow_vectors.shape)
+        momentum_fields_obj.visualize_flow_file(flow_vectors)
         flow_vectors_crop = flow_vectors[:,:,1:-1,1:-1]
+        print('before crop', flow_vectors_crop.shape)
 
         return flow_vectors_crop

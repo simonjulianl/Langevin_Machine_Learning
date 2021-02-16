@@ -53,10 +53,11 @@ class phi_fields:
         return self._phi_field
 
 
-    def show_gridimg(self, phi_field):
+    def show_gridimg(self, phi_field, time):
 
         norm_phi_field = (phi_field[0] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
 
+        plt.title(r'nparticle {}, npixels {}, boxsize {:.2f}, $\phi$-fields{}'.format(MD_parameters.nparticle, self._npixels, self._boxsize, time))
         plt.imshow(norm_phi_field, cmap='gray') # one sample
         plt.colorbar()
         plt.clim(0, 255)

@@ -17,11 +17,14 @@ class momentum_fields:
         assert current_image.shape == prev_image.shape
 
         flow = None
+        # pyr_scale=0.5 : each next layer is twice smaller than the previous layer.
+        # levels =1 : no additional layers will be created, only the original image will be used.
+        # iterations The number of iterations to perform the iteration algorithm at each pyramid level.
         flow = cv2.calcOpticalFlowFarneback(prev=prev_image,
                                             next=current_image, flow=flow,
-                                            pyr_scale=0.85, levels=1, winsize=3,
+                                            pyr_scale=0.5, levels=1, winsize=3,
                                             iterations=1, poly_n=7, poly_sigma=1.5,
-                                            flags=0)
+                                            flags= 0 ) #cv2.OPTFLOW_FARNEBACK_GAUSSIAN
 
         return flow
 
@@ -64,9 +67,11 @@ class momentum_fields:
 
         minm = min(vx.min(), vy.min())
         maxm = max(vx.max(), vy.max())
-        # print(vx.min(), vy.min())
-        # print(vx.max(), vy.max())
-        # print(minm,maxm)
+        print(vx.min(), vy.min())
+        print(vx.max(), vy.max())
+        print(vx)
+        print(vy)
+        print(minm,maxm)
         #normalize img to 0-255
         # to show img
         norm_vx = (vx - minm) * 255 / (maxm - minm + 1e-5)
