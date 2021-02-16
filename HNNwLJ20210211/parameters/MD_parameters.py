@@ -6,7 +6,7 @@ class MD_parameters:
     seed = 4662570 # index for preparing data
     nsamples = 1
     nsamples_ML = 1
-    nparticle = 4
+    nparticle = 2
     DIM = 2
     epsilon = 1.
     sigma = 1.
