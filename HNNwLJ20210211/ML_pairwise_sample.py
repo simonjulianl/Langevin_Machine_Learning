@@ -11,6 +11,9 @@ from parameters.ML_parameters import ML_parameters
 from phase_space import phase_space
 from integrator import linear_integrator
 import torch
+import time
+
+start_setup = time.time()
 
 nsamples = MD_parameters.nsamples
 nparticle = MD_parameters.nparticle
@@ -55,6 +58,9 @@ base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config/'
 
 torch.autograd.set_detect_anomaly(True)
+
+end_setup = time.time()
+print('time for setup :', end_setup - start_setup)
 
 MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
 MD_learner.load_checkpoint(load_path)

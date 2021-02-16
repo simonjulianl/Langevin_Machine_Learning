@@ -34,27 +34,27 @@ if __name__ == '__main__':
     field_HNN_obj = field_HNN(fields_unet(2, 32, 2), linear_integrator_obj)
 
     print(field_HNN_obj)
-
-    # q_list = [[[-1.5, 0],[1, 1]]]
-    # q_list = [[[1,0],[0.2,0.21]]]  # particles too close
-    # q_list = [[[-2.,-2.],[1.,1.]]]
-    q_list = [[[-1, -1],[1, 1]]]
-    p_list = [[[0, 0],[0, 0]]]
-
-    # q_list = [[[-0.62068786, - 0.77235929],[1.23484839, - 1.33486261],[0.12320894, - 1.58505487],[0.42893553, - 0.5222273]]]
-    # p_list = [[[0, 0],[0, 0],[0, 0],[0, 0]]]
-
-    _q_list_in, _p_list_in = torch.tensor([q_list, p_list], dtype=torch.float64)
-
-    phase_space.set_q(_q_list_in)
-    phase_space.set_p(_p_list_in)
-
-    field_HNN_obj.phi_field4cnn(phase_space)
-    field_HNN_obj.p_field4cnn()
-
-    tau = torch.tensor([0.1])
-    tau = torch.unsqueeze(tau, dim=0)
-
+    #
+    # # q_list = [[[-1.5, 0],[1, 1]]]
+    # # q_list = [[[1,0],[0.2,0.21]]]  # particles too close
+    # # q_list = [[[-2.,-2.],[1.,1.]]]
+    # q_list = [[[-1, -1],[1, 1]]]
+    # p_list = [[[0, 0],[0, 0]]]
+    #
+    # # q_list = [[[-0.62068786, - 0.77235929],[1.23484839, - 1.33486261],[0.12320894, - 1.58505487],[0.42893553, - 0.5222273]]]
+    # # p_list = [[[0, 0],[0, 0],[0, 0],[0, 0]]]
+    #
+    # _q_list_in, _p_list_in = torch.tensor([q_list, p_list], dtype=torch.float64)
+    #
+    # phase_space.set_q(_q_list_in)
+    # phase_space.set_p(_p_list_in)
+    #
+    # field_HNN_obj.phi_field4cnn(phase_space)
+    # field_HNN_obj.p_field4cnn()
+    #
+    # tau = torch.tensor([0.1])
+    # tau = torch.unsqueeze(tau, dim=0)
+    #
     # field_HNN_obj.fields2cnn(phase_space, tau)
     # field_HNN_obj.force4nparticle(phase_space, 4) # nsamples x (fx, fy) x npixels x npixels
 

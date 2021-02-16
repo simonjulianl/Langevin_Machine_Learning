@@ -32,6 +32,8 @@ class MD_learner:
         self._phase_space = phase_space
 
         print("===========start data prepared===============")
+        start = time.time()
+
         self._data_io_obj = data_io(path)
 
         _train_data = self._data_io_obj.loadq_p('train')
@@ -74,7 +76,11 @@ class MD_learner:
 
         assert self._q_valid.shape == self._q_valid_label.shape
         assert self._p_valid.shape == self._p_valid_label.shape
+
+        end = time.time()
         print("===========end data prepared===============")
+        print('time :', end - start)
+        print("===========================================")
 
         self._device = ML_parameters.device
 
@@ -172,18 +178,23 @@ class MD_learner:
 
         text = ''
 
+        start_epoch = time.time()  #
+
         for e in range(1, ML_parameters.nepoch + 1 ):
 
             train_loss = 0.
             valid_loss = 0.
-            start = time.time()
+
             # Decay Learning Rate
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
 
             # print('epoch', e, 'lr', curr_lr)
+            start_epoch_train = time.time()  #
 
             for i in range(random_ordered_train_nsamples): # load each sample for loop
+
+                start_batch_train = time.time()
 
                 q_train_batch, p_train_batch = self._q_train[i], self._p_train[i] # each sample
                 q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._device)
@@ -200,7 +211,10 @@ class MD_learner:
                 self._phase_space.set_p(p_train_batch)
 
                 # print('======= train combination of MD and ML =======')
+                # time
                 q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
+                # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
@@ -214,7 +228,16 @@ class MD_learner:
                 self._opt.step()
 
                 train_loss += loss1.item()  # get the scalar output
-                # print('loss each batch',loss1.item())
+
+                end_batch_train = time.time()
+
+                print('loss each train batch time', end_batch_train - start_batch_train)
+
+            end_epoch_train = time.time()
+
+            print('================ loss each train epoch time ================')
+            print('loss each train epoch time', end_epoch_train - start_epoch_train)
+            print('============================================================')
 
             # eval model
 
@@ -222,7 +245,11 @@ class MD_learner:
 
             with torch.no_grad():
 
+                start_epoch_valid = time.time()
+
                 for j in range(random_ordered_valid_nsamples):
+
+                    start_batch_valid = time.time()
 
                     q_valid_batch, p_valid_batch = self._q_valid[j], self._p_valid[j]
 
@@ -251,16 +278,24 @@ class MD_learner:
 
                     valid_loss += val_loss1.item()  # get the scalar output
 
+                    end_batch_valid = time.time()
+                    print('loss each valid batch time', end_batch_valid - start_batch_valid)
+
+                end_epoch_valid = time.time()
+            print('================ loss each valid epoch time================')
+            print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
+
+            end_epoch = time.time()
+
             train_loss_avg = train_loss / random_ordered_train_nsamples
             valid_loss_avg = valid_loss / random_ordered_valid_nsamples
-
-            end = time.time()
 
             # Decay Learning Rate after every epoch
             curr_lr = self._scheduler.get_lr()
             self._scheduler.step()
 
-            print('{} epoch:'.format(e), 'lr:', curr_lr, 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' time:', end-start)
+            print('================ loss each train valid epoch ================')
+            print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)
 
             self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
 
@@ -270,6 +305,8 @@ class MD_learner:
             fp.close()
 
             self._current_epoch += 1
+
+        print('end training... used parameter: tau long: {}, tau short: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short))
 
 
     def pred_qnp(self, filename):

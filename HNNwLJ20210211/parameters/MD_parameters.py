@@ -11,7 +11,7 @@ class MD_parameters:
     epsilon = 1.
     sigma = 1.
     mass = 1
-    temp_list = [0.04]
+    temp_list = [0.08]
     rho = 0.1
     npixels = 32
     boxsize = math.sqrt(nparticle / rho)
