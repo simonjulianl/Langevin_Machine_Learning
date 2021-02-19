@@ -212,9 +212,9 @@ class MD_learner:
 
                 # print('======= train combination of MD and ML =======')
                 # time
-                #q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
-                q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
-                p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
+                q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
+                # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
