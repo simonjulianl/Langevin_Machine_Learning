@@ -30,7 +30,7 @@ def get_indices(s):
 #        if mr[i,0] == 1:
 #            ind.append(i)
 #    return ind  
-    ind = torch.nonzero(m)
+    ind = m.nonzero(as_tuple=True)
     return ind
 
 # ============================================
