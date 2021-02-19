@@ -44,13 +44,13 @@ if __name__=='__main__':
 
     # now use the 'fast' method to extract the required indices
     r = torch.rand(n,n,2)
-    rr = to_reshape(r)
+#    rr = to_reshape(r)
 
     print('r  ',r)
-    print('rr ',rr)
+#    print('rr ',rr)
 
     # this line of code is fast as it is only indices extraction
-    flatten_r = rr[ind]
+    flatten_r = r[ind]
     flatten_r = flatten_r.reshape((n,n-1,2)) # <--- SJ add this
 
     print('flatten ',flatten_r)
