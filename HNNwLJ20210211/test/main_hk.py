@@ -24,12 +24,14 @@ def get_indices(s):
                 m[i,i,:] = 0
 
 #    mr = to_reshape(m)
-    mr_len = mr.shape[0]
-    ind = []
-    for i in range(mr_len):
-        if mr[i,0] == 1:
-            ind.append(i)
-    return ind    
+#    mr_len = mr.shape[0]
+#    ind = []
+#    for i in range(mr_len):
+#        if mr[i,0] == 1:
+#            ind.append(i)
+#    return ind  
+    ind = torch.nonzero(m)
+    return ind
 
 # ============================================
 if __name__=='__main__':
