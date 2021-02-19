@@ -19,11 +19,11 @@ def get_indices(s):
     n = s[0]
     m = torch.ones(s)
     for i in range(n):
-        for j in range(n):
-            if i==j:
-                m[i,j,:] = 0
+#        for j in range(n):
+#            if i==j:
+                m[i,i,:] = 0
 
-    mr = to_reshape(m)
+#    mr = to_reshape(m)
     mr_len = mr.shape[0]
     ind = []
     for i in range(mr_len):
