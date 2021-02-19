@@ -2,14 +2,14 @@ import numpy as np
 import torch
 
 # ============================================
-def to_reshape(k):
-
-    k_shape = list(k.shape)
-
-    k1 = k_shape[0]*k_shape[1]
-    k2 = k_shape[2]
-    ks = torch.reshape(k,(k1,k2))
-    return ks
+#def to_reshape(k):
+#
+#    k_shape = list(k.shape)
+#
+#    k1 = k_shape[0]*k_shape[1]
+#    k2 = k_shape[2]
+#    ks = torch.reshape(k,(k1,k2))
+#    return ks
 
 # ============================================
 # this is a slow for loop process but do this only once
