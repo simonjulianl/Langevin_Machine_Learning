@@ -30,28 +30,37 @@ class MD_learner:
         # terms = self.noML_hamiltonian.get_terms()
 
         self._phase_space = phase_space
-
-        print("===========start data prepared===============")
-        start = time.time()
-
         self._data_io_obj = data_io(path)
 
-        _train_data = self._data_io_obj.loadq_p('train')
+        print("============ start data loaded ===============")
+        start_data_load = time.time()
+
+        _train_data = self._data_io_obj.loadq_p('train_for_time_test')
         self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
         print('n. of data', self.train_data.shape)
 
-        _valid_data = self._data_io_obj.loadq_p('valid')
+        _valid_data = self._data_io_obj.loadq_p('valid_for_time_test')
         self.valid_data = self._data_io_obj.hamiltonian_dataset(_valid_data)
         print('n. of data', self.valid_data.shape)
 
-        # qnp x iterations x nsamples x  nparticle x DIM
-        print('===========train_label===========')
-        self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
-        print('===========end train_label===========')
+        end_data_load = time.time()
 
-        print('===========valid_label===========')
+        print('data loaded time :', end_data_load - start_data_load)
+        print("============= end data loaded ================")
+
+        print("============ start data label ===============")
+        # qnp x iterations x nsamples x  nparticle x DIM
+
+        start_train_label = time.time()
+        self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
+        end_train_label = time.time()
+        print('prepare train_label time:', end_train_label - start_train_label)
+
+        start_valid_label = time.time()
         self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
-        print('===========end valid_label===========')
+        end_valid_label = time.time()
+        print('prepare valid_label time:', end_valid_label - start_valid_label)
+        print("============= end data label =================")
 
         # print('===== load initial train data =====')
         self._q_train = self.train_data[:,0]; self._p_train = self.train_data[:,1]
@@ -76,11 +85,6 @@ class MD_learner:
 
         assert self._q_valid.shape == self._q_valid_label.shape
         assert self._p_valid.shape == self._p_valid_label.shape
-
-        end = time.time()
-        print("===========end data prepared===============")
-        print('time :', end - start)
-        print("===========================================")
 
         self._device = ML_parameters.device
 
@@ -178,7 +182,7 @@ class MD_learner:
 
         text = ''
 
-        start_epoch = time.time()  #
+        start = time.time()
 
         for e in range(1, ML_parameters.nepoch + 1 ):
 
@@ -190,7 +194,8 @@ class MD_learner:
             # self._scheduler.step()
 
             # print('epoch', e, 'lr', curr_lr)
-            start_epoch_train = time.time()  #
+            start_epoch = time.time()
+            start_epoch_train = time.time()
 
             for i in range(random_ordered_train_nsamples): # load each sample for loop
 
@@ -231,11 +236,11 @@ class MD_learner:
 
                 end_batch_train = time.time()
 
-                print('loss each train batch time', end_batch_train - start_batch_train)
+                # print('loss each train batch time', end_batch_train - start_batch_train)
 
             end_epoch_train = time.time()
 
-            print('================ loss each train epoch time ================')
+            print('============================================================')
             print('loss each train epoch time', end_epoch_train - start_epoch_train)
             print('============================================================')
 
@@ -278,12 +283,16 @@ class MD_learner:
 
                     valid_loss += val_loss1.item()  # get the scalar output
 
+                    # end_batch_valid = time.time()
+                    # print('loss each valid batch time', end_batch_valid - start_batch_valid)
+
                     end_batch_valid = time.time()
-                    print('loss each valid batch time', end_batch_valid - start_batch_valid)
+                    # print('loss each valid batch time', end_batch_valid - start_batch_valid)
 
                 end_epoch_valid = time.time()
-            print('================ loss each valid epoch time================')
+
             print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
+            print('============================================================')
 
             end_epoch = time.time()
 
@@ -306,7 +315,9 @@ class MD_learner:
 
             self._current_epoch += 1
 
-        print('end training... used parameter: tau long: {}, tau short: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short))
+        end = time.time()
+
+        print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
 
 
     def pred_qnp(self, filename):
