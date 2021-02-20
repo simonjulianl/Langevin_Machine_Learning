@@ -105,8 +105,8 @@ class MD_learner:
         # lr = 0.0001     if 10 <= epoch < 20
         # lr = 0.00001    if 20 <= epoch < 30
 
-        # gamma = decaying factor
-        self._scheduler = StepLR(self._opt, step_size=2, gamma=0.99)
+        # # gamma = decaying factor
+        # self._scheduler = StepLR(self._opt, step_size=2, gamma=0.99)
 
         self._loss = qp_MSE_loss
         self._current_epoch = 1
@@ -124,8 +124,8 @@ class MD_learner:
             print('Previously trained models weights state_dict loaded...')
             self._opt.load_state_dict(checkpoint['optimizer'])
             print('Previously trained optimizer state_dict loaded...')
-            self._scheduler = checkpoint['scheduler']
-            print('Previously trained scheduler state_dict loaded...')
+            # self._scheduler = checkpoint['scheduler']
+            # print('Previously trained scheduler state_dict loaded...')
             self._current_epoch = checkpoint['epoch'] + 1
             print('Previously trained epoch state_dict loaded...')
             print('current_epoch', self._current_epoch)
@@ -151,7 +151,7 @@ class MD_learner:
                 'model_state_dict' : self.any_network.state_dict(),
                 'best_validation_loss' : self._best_validation_loss,
                 'optimizer': self._opt.state_dict(),
-                'scheduler' : self._scheduler
+                # 'scheduler' : self._scheduler
                 }, is_best), save_path)
 
         if is_best:
@@ -299,9 +299,9 @@ class MD_learner:
             train_loss_avg = train_loss / random_ordered_train_nsamples
             valid_loss_avg = valid_loss / random_ordered_valid_nsamples
 
-            # Decay Learning Rate after every epoch
-            curr_lr = self._scheduler.get_lr()
-            self._scheduler.step()
+            # # Decay Learning Rate after every epoch
+            # curr_lr = self._scheduler.get_lr()
+            # self._scheduler.step()
 
             print('================ loss each train valid epoch ================')
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)

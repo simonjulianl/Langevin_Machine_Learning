@@ -5,8 +5,8 @@ class MC_parameters:
     seed = 23645  # 23645 for train / 35029 for valid
     mode = 'train'
     kB = 1.0
-    temperature = 0.08
-    new_mcs = 5
+    temperature = 0.04
+    new_mcs = 10
     nsamples = 4
     nparticle = 4
     DIM = 2

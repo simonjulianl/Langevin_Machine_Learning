@@ -1,11 +1,9 @@
 import torch
+# classmethod is bound to the class and not the object of the class
 
-class paired_distance_reduce:
+class paired_distance_reduce(object):
 
-    def __init__(self, reduce_shape):
-        self.indices = self.get_indices(reduce_shape)
-        self.reduce_shape = reduce_shape
-
+    @classmethod
     def get_indices(self, s):
 
         n = s[0]
@@ -15,10 +13,7 @@ class paired_distance_reduce:
 
         return m.nonzero(as_tuple=True)
 
-    def reduce(self, src):
+    @classmethod
+    def reduce(self, src, indices):
 
-        if __debug__:
-
-            assert (src.shape == self.reduce_shape), "error in paired_distance_reduce"
-
-        return src[self.indices]
+        return src[indices]

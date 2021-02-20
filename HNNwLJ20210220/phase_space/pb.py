@@ -1,4 +1,5 @@
 import torch
+from utils.paired_distance_reduce import paired_distance_reduce
 
 class pb:
 
@@ -29,7 +30,6 @@ class pb:
             #print('q', q)
             index = torch.where(torch.abs(q) > 0.5 * boxsize)
             debug = q[index]
-            print('q[185]',q[185])
             print('index', index)
             print('debug_pbc',debug)
 
@@ -55,37 +55,27 @@ class pb:
 
     def paired_distance_reduced(self,q, nparticle, DIM):
 
-        print("==pb==")
+        # print("==pb==")
         qlen = q.shape[0]
         q0 = torch.unsqueeze(q,dim=0)
         qm = torch.repeat_interleave(q0,qlen,dim=0)
         qt = qm.permute(1,0,2)
-        print('qt', qt)
-        print('qm', qm)
+        # print('qt', qt)
+        # print('qm', qm)
         dq = qt - qm
-        print('dq', dq)
+        # print('dq', dq)
         indices = torch.where(torch.abs(dq)>0.5)
         dq[indices] = dq[indices] - torch.round(dq[indices])
-        # print('pbc',dq)
-        dq_reduce_matrix = torch.zeros( (nparticle, (nparticle - 1), DIM) )
+        # print('dq pbc',dq)
 
-        for i in range(nparticle):
-            x = 0  # all index case i=j and i != j
-            for j in range(nparticle):
-                if i != j:
-                    # print(i,j)
-                    # print(delta_init_q_[i,j,:])
-                    dq_reduce_matrix[i][x] = dq[i, j, :]
+        dq_reduced_index = paired_distance_reduce.get_indices(dq.shape)
+        dq_flatten = paired_distance_reduce.reduce(dq, dq_reduced_index)
 
-                    x = x + 1
+        dq_flatten = dq_flatten.reshape((nparticle, nparticle - 1, DIM))
+        # print('dq_flatten', dq_flatten)
 
-        print('dq_reduce_matrix', dq_reduce_matrix)
-
-        # previous method - wrong
-        # dq = dq[dq.nonzero(as_tuple=True)].reshape(nparticle, nparticle - 1, DIM)
-
-        dd = torch.sqrt(torch.sum(dq_reduce_matrix * dq_reduce_matrix, dim=2))
+        dd = torch.sqrt(torch.sum(dq_flatten * dq_flatten, dim=2))
         # print(dd)
 
-        return dq_reduce_matrix, dd
+        return dq_flatten, dd
 

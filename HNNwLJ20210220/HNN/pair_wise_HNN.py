@@ -4,6 +4,7 @@ from ML_parameters import ML_parameters
 from hamiltonian import hamiltonian
 from hamiltonian.lennard_jones import lennard_jones
 from hamiltonian.kinetic_energy import kinetic_energy
+from utils.paired_distance_reduce import paired_distance_reduce
 
 class pair_wise_HNN(hamiltonian):
 
@@ -100,17 +101,12 @@ class pair_wise_HNN(hamiltonian):
 
         qorpt = qorpm.permute(1,0,2)
 
-        dqorp_ = qorpt - qorpm
+        dqorp = qorpt - qorpm
 
-        dqorp = torch.zeros((nparticle,(nparticle - 1),DIM))
+        dqorp_reduced_index = paired_distance_reduce.get_indices(dqorp.shape)
+        dqorp_flatten = paired_distance_reduce.reduce(dqorp, dqorp_reduced_index)
 
-        for i in range(nparticle):
-            x=0
-            for j in range(nparticle):
-                if i != j:
-                    dqorp[i][x] = dqorp_[i,j,:]
+        dqorp_flatten = dqorp_flatten.reshape((nparticle, nparticle - 1, DIM))
 
-                    x = x + 1
-
-        return dqorp
+        return dqorp_flatten
 
