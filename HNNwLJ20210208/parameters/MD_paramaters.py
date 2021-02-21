@@ -7,7 +7,7 @@ class MD_parameters:
     gen_nsamples = 30
     nsamples = 30
     nsamples_ML = 1
-    nparticle = 4
+    nparticle = 8
     DIM = 2
     epsilon = 1.
     sigma = 1.

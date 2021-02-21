@@ -2,7 +2,8 @@ import math
 
 class MC_parameters:
 
-    seed = 2364532  # 23645 for train / 35029 for valid
+    seed = 23645  # 23645 for train / 35029 for valid
+    mode = 'valid'
     kB = 1.0
     temperature = 0.04
     new_mcs = 1
@@ -20,5 +21,5 @@ class MC_parameters:
     # 8 particles :       -> 0.01         -> 0.023,       -> 0.04  DISCARD 4000 interval 40
     # 16 particles :      -> 0.006        -> 0.015        -> 0.02  DISCARD 4000 interval 40
     dq = 0.006
-    mode = 'valid'
+
 
