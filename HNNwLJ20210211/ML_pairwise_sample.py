@@ -13,6 +13,7 @@ from integrator import linear_integrator
 import torch
 import time
 
+start_code = time.time()
 start_setup = time.time()
 
 nsamples = MD_parameters.nsamples
@@ -65,4 +66,7 @@ print('time for setup :', end_setup - start_setup)
 MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
 MD_learner.load_checkpoint(load_path)
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
+
+end_code = time.time()
+print('all process', end_code - start_code)
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))

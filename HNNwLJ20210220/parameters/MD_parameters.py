@@ -6,12 +6,12 @@ class MD_parameters:
     seed = 4662570 # index for preparing data
     nsamples = 1
     nsamples_ML = 1
-    nparticle = 2
+    nparticle = 4
     DIM = 2
     epsilon = 1.
     sigma = 1.
     mass = 1
-    temp_list = [0.08]
+    temp_list = [0.04]
     rho = 0.1
     npixels = 32
     boxsize = math.sqrt(nparticle / rho)
