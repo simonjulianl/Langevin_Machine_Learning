@@ -2,7 +2,7 @@ import torch
 
 class ML_parameters:
 
-    lr = 0.01
+    lr = 0.0001
     nepoch = 10
     optimizer = 'Adam'
     activation = 'tanh'

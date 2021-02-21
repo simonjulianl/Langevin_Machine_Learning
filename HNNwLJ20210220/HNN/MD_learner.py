@@ -283,9 +283,6 @@ class MD_learner:
 
                     valid_loss += val_loss1.item()  # get the scalar output
 
-                    # end_batch_valid = time.time()
-                    # print('loss each valid batch time', end_batch_valid - start_batch_valid)
-
                     end_batch_valid = time.time()
                     # print('loss each valid batch time', end_batch_valid - start_batch_valid)
 

@@ -4,7 +4,7 @@ import math
 class MD_parameters:
 
     seed = 4662570 # index for preparing data
-    nsamples = 1
+    nsamples = 550
     nsamples_ML = 1
     nparticle = 4
     DIM = 2

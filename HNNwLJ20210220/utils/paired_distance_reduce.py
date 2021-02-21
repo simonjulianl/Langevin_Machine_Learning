@@ -3,6 +3,13 @@ import torch
 
 class paired_distance_reduce(object):
 
+    _obj_count = 0
+
+    def __init__(self):
+
+        paired_distance_reduce._obj_count += 1
+        assert (paired_distance_reduce._obj_count == 1),type(self).__name__ + " has more than one object"
+
     @classmethod
     def get_indices(self, s):
 
