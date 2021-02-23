@@ -172,7 +172,7 @@ class MD_learner:
 
         random_ordered_train_nsamples = self._q_train.shape[0] # nsamples
         random_ordered_valid_nsamples = self._q_valid.shape[0] # nsamples
-        print('nsample',random_ordered_train_nsamples, random_ordered_valid_nsamples)
+        print('nsample', random_ordered_train_nsamples, random_ordered_valid_nsamples)
         # n_train_batch = MD_parameters.nparticle * (MD_parameters.nparticle - 1)
         # n_valid_batch
 
