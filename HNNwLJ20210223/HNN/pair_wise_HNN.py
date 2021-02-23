@@ -34,14 +34,15 @@ class pair_wise_HNN(hamiltonian):
     def eval(self):
         self.network.eval()
 
-    def noML_dHdq_fist(self, q_batch, noML_dHdq_fist):
+    def noML_dHdq_fist(self, q_batch, noML_dHdq_first):
 
-        self.noML_dHdq_fist = noML_dHdq_fist
+        self.noML_dHdq_first = noML_dHdq_first
         self.q_batch = q_batch
 
 
     def dHdq(self, phase_space):
 
+        start_dhdq = time.time()
         # print('call pair_wise_HNN class')
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
@@ -49,14 +50,14 @@ class pair_wise_HNN(hamiltonian):
         start_noML = time.time()
 
         if (self.q_batch  ==  q_list).all():
-            noML_dHdq = self.noML_dHdq_fist
-            print('if',noML_dHdq)
+            noML_dHdq = self.noML_dHdq_first
 
         if (self.q_batch != q_list).all():
             noML_dHdq = super().dHdq(phase_space)
-            print('else',noML_dHdq)
 
         end_noML = time.time()
+
+        self.noML_time = end_noML - start_noML
         #print('time for noML', end_noML - start_noML)
 
         # print('noML_dHdq',noML_dHdq.device)
@@ -67,16 +68,26 @@ class pair_wise_HNN(hamiltonian):
         data = self.phase_space2data(phase_space, MD_parameters.tau_long)
         end_prep_data = time.time()
 
+        self.prep_data_time = end_prep_data - start_prep_data
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
 
+        start_ML = time.time()
         predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
+        end_ML = time.time()
+        self.ML_time = end_ML - start_ML
         # print('nn output',predict)
         # print(predict.device)
 
+        start_corrected = time.time()
         corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
+        end_corrected = time.time()
+
+        self.corrected_time = end_corrected - start_corrected
+        end_dhdq = time.time()
+        self.dhdq_time = end_dhdq - start_dhdq
         # print('noML_dHdq diff',noML_dHdq.to(self._state['_device']) -corrected_dHdq)
-        print('corrected_dHdq',corrected_dHdq)
+        # print('corrected_dHdq',corrected_dHdq)
 
         return corrected_dHdq
 
