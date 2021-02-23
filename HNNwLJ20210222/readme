@@ -1,4 +1,0 @@
-try to make code for batch loaded during training
-but will be better one sample loaded during training because update weight more times than many samples loaded.
-HNNwLJ20210222 just keep and not use.
-maybe use this for optical flow
