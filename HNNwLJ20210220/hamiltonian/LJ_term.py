@@ -88,7 +88,7 @@ class LJ_term:
 
             dphidxi[z] = a12*torch.sum(s12, dim=1) - a6*torch.sum(s6, dim=1) # np.sum axis=1 j != k
 
-        # print('dphidxi', dphidxi)
+        #print('dphidxi', dphidxi)
 
         return dphidxi
 

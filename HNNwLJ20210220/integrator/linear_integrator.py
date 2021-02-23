@@ -4,7 +4,7 @@
 import numpy as np
 import torch
 from parameters.MD_parameters import MD_parameters
-
+import time
 #from tqdm import trange
 
 class linear_integrator:
@@ -27,12 +27,17 @@ class linear_integrator:
         q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
         p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
 
+        start_integ_time = time.time()
+
         # for i in trange(self._state['MD_iterations']):
         for i in range(MD_iterations):
             # print(i)
             q_list[i], p_list[i]  = self._integrator_method( hamiltonian, phase_space, tau_cur, boxsize)
 
         # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
+        end_integ_time = time.time()
+
+        self.integ_time = end_integ_time - start_integ_time
 
         if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
             index = torch.where(torch.isnan(q_list))

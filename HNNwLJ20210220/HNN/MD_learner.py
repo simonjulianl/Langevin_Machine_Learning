@@ -35,11 +35,11 @@ class MD_learner:
         print("============ start data loaded ===============")
         start_data_load = time.time()
 
-        _train_data = self._data_io_obj.loadq_p('train_for_time_test')
+        _train_data = self._data_io_obj.loadq_p('train')
         self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
         print('n. of data', self.train_data.shape)
 
-        _valid_data = self._data_io_obj.loadq_p('valid_for_time_test')
+        _valid_data = self._data_io_obj.loadq_p('valid')
         self.valid_data = self._data_io_obj.hamiltonian_dataset(_valid_data)
         print('n. of data', self.valid_data.shape)
 
@@ -189,6 +189,16 @@ class MD_learner:
             train_loss = 0.
             valid_loss = 0.
 
+            avg_pred = 0.
+            avg_loss = 0.
+            avg_backward = 0.
+            avg_noML_time = 0.
+            avg_prep_data_time = 0.
+            avg_ML_time = 0.
+            avg_corrected_time = 0.
+            avg_dhdq_time = 0.
+            avg_integ_time = 0.
+
             # Decay Learning Rate
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
@@ -216,31 +226,67 @@ class MD_learner:
                 self._phase_space.set_p(p_train_batch)
 
                 # print('======= train combination of MD and ML =======')
-                # time
+                start_pred = time.time()
+
                 q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
                 # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
+                end_pred = time.time()
+
                 q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
                 # print('train pred', q_train_pred[-1], p_train_pred[-1])
 
+                start_loss = time.time()
                 loss1 = criterion(train_predict, train_label)
+                end_loss = time.time()
 
+                start_backward = time.time()
                 self._opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
                 loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
+                end_backward = time.time()
 
                 self._opt.step()
 
                 train_loss += loss1.item()  # get the scalar output
 
                 end_batch_train = time.time()
+                avg_pred += (end_pred - start_pred)
+                avg_loss += (end_loss - start_loss)
+                avg_backward += (end_backward - start_backward)
+                avg_noML_time += self.any_HNN.noML_time
+                avg_prep_data_time += self.any_HNN.prep_data_time
+                avg_ML_time += self.any_HNN.ML_time
+                avg_corrected_time += self.any_HNN.corrected_time
+                avg_dhdq_time += self.any_HNN.dhdq_time
+                avg_integ_time += self.linear_integrator.integ_time
 
                 # print('loss each train batch time', end_batch_train - start_batch_train)
 
             end_epoch_train = time.time()
 
             print('============================================================')
+            #print('avg predict batch time', avg_pred / random_ordered_train_nsamples)
+            #print('avg loss train batch time', avg_loss / random_ordered_train_nsamples)
+            #print('avg backward train batch time', avg_backward / random_ordered_train_nsamples)
+
+            print('dHdq noML train batch time', self.any_HNN.noML_time )
+            print('dHdq prep data batch epoch time', self.any_HNN.prep_data_time )
+            print('dHdq ML train batch time', self.any_HNN.ML_time )
+            print('dHdq corrected term batch epoch time', self.any_HNN.corrected_time )
+            print('dhdq 0.5 step train batch time', self.any_HNN.dhdq_time )
+
+            print('dHdq noML train epoch time', avg_noML_time )
+            print('dHdq prep data train epoch time', avg_prep_data_time )
+            print('dHdq ML train epoch time', avg_ML_time )
+            print('dHdq corrected term train epoch time', avg_corrected_time )
+
+            print('dhdq 0.5 step train epoch time', avg_dhdq_time )
+            print('predict integ train epoch time', avg_integ_time )
+            print('predict train epoch time', avg_pred )
+            print('loss train epoch time', avg_loss )
+            print('backward train epoch time', avg_backward )
             print('loss each train epoch time', end_epoch_train - start_epoch_train)
             print('============================================================')
 

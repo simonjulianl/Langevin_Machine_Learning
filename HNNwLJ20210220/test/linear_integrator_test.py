@@ -29,3 +29,7 @@ if __name__ == '__main__':
     torch.autograd.set_detect_anomaly(True) # get the method causing the NANs
 
     MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+    print('q shape', MD_learner.valid_label[0].shape)
+    print('q list', MD_learner.valid_label[0][:,0])
+    print('p shape', MD_learner.valid_label[1].shape)
+    print('q list', MD_learner.valid_label[1][:,0])

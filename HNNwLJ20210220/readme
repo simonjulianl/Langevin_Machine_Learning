@@ -1,2 +1,28 @@
-make code batch data loaded for label
+measure timing
 
+4 nparticle, time step 10-1 vs 10-3, 100 iterations, train 500 samples / valid 50 samples, 10 epochs
+
+all process 154.57226s
+
+NoML vv
+prepare train_label time: 28.02697s  / 500 calls for 500 samples => vv 100 steps  each sample
+prepare valid_label time: 3.08942s  / 50 calls for 50 samples  => vv 100 steps  each sample
+
+Calc corrected term dHdq 0.5 step
+- noML_dHdq time each train epoch 2.56445s / 500 calls  =>  ( noML dHdq for vv )
+- prep ML data time each train epoch  1.45888s  /  500 calls for 500 samples (dq_x, dq_y, dp_x, dp_y,  tau)
+- ML_dHdq time each train epoch  0.54758s / 500 calls  =>  ( ML dHdq for vv )
+- corrected term_dHdq time each train epoch  0.070288s
+
+Prediction = NoML + ML for vv 1 step
+           = corrected term dHdq 0.5 step for p update + q update + corrected term dHdq 0.5 step for p update
+
+Prediction time each train epoch  7.80147s  / 500 calls for 500 samples
+
+loss calc  time each train epoch 0.19063s
+backward  time each train epoch 3.55348s
+each train epoch time 11.99901s
+each valid epoch time 0.21569s
+
+each epoch time: 12.214849
+10 epochs time: 122.681136
