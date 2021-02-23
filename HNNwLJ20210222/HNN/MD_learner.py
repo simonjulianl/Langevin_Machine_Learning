@@ -229,9 +229,9 @@ class MD_learner:
                 loss1 = criterion(train_predict, train_label)
 
                 self._opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
-                loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
+                # loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
 
-                self._opt.step()
+                # self._opt.step()
 
                 train_loss += loss1.item()  # get the scalar output
 

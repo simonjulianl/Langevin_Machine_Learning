@@ -5,6 +5,7 @@ from hamiltonian import hamiltonian
 from hamiltonian.lennard_jones import lennard_jones
 from hamiltonian.kinetic_energy import kinetic_energy
 from utils.paired_distance_reduce import paired_distance_reduce
+import time
 
 class pair_wise_HNN(hamiltonian):
 
@@ -42,18 +43,27 @@ class pair_wise_HNN(hamiltonian):
         # print('===== data for noML dHdq =====')
         # print(q_list,p_list)
 
+        start_noML = time.time()
         noML_dHdq = super().dHdq(phase_space)
+        end_noML = time.time()
+        #print('time for noML', end_noML - start_noML)
         # print('noML_dHdq',noML_dHdq.device)
 
         phase_space.set_q(q_list)
         phase_space.set_p(p_list)
 
+        start_prep_data = time.time()
         data = self.phase_space2data(phase_space, MD_parameters.tau_long)
+        end_prep_data = time.time()
+        #print('time for prepare data ML', end_prep_data - start_prep_data)
 
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
 
+        start_ML = time.time()
         predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
+        end_ML = time.time()
+        #print('time for ML', end_ML - start_ML)
         # print('nn output',predict)
         # print(predict.device)
 
