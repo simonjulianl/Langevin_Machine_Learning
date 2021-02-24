@@ -1,0 +1,105 @@
+lennard_jones.py call potential
+kinetic_energy.py call kinetic
+time for setup : 3.700678586959839
+hi
+-- hi terms --  1
+============ start data loaded ===============
+temp 0.04
+n. of train data torch.Size([500, 2, 4, 2])
+temp 0.04
+n. of valid data torch.Size([50, 2, 4, 2])
+data loaded time : 0.07206940650939941
+============= end data loaded ================
+============ start data label ===============
+prepare labels nsamples_cur, tau_cur, MD_iterations
+500 0.001 100
+prepare train_label time: 29.127774477005005
+prepare labels nsamples_cur, tau_cur, MD_iterations
+50 0.001 100
+prepare valid_label time: 3.2949001789093018
+============= end data label =================
+n. of train data reshape  torch.Size([500, 4, 2]) torch.Size([500, 4, 2])
+n. of train label reshape  torch.Size([500, 4, 2]) torch.Size([500, 4, 2])
+n. of valid data reshape  torch.Size([50, 4, 2]) torch.Size([50, 4, 2])
+n. of valid label reshape  torch.Size([50, 4, 2]) torch.Size([50, 4, 2])
+Adam
+=> no checkpoint found at './saved_model/nsamples550_nparticle4_tau0.1_Adam_lr0.0001_h32_tanh_checkpoint.pth'
+prepare train nsamples_cur, tau_cur, MD_iterations
+1 0.1 1
+nsample 500 50
+============================================================
+loss each train epoch time 12.62249755859375
+============================================================
+loss each valid epoch time 0.21399307250976562
+============================================================
+================ loss each train valid epoch ================
+1 epoch: train_loss: 0.005659546228791441 valid_loss: 0.010672228896291927  each epoch time: 12.83653998374939
+============================================================
+loss each train epoch time 11.780189514160156
+============================================================
+loss each valid epoch time 0.21519851684570312
+============================================================
+================ loss each train valid epoch ================
+2 epoch: train_loss: 0.0038546525592064425 valid_loss: 0.010625590429408477  each epoch time: 11.995448112487793
+============================================================
+loss each train epoch time 11.976975917816162
+============================================================
+loss each valid epoch time 0.21544933319091797
+============================================================
+================ loss each train valid epoch ================
+3 epoch: train_loss: 0.0037726608015073 valid_loss: 0.010584768917178735  each epoch time: 12.192484140396118
+============================================================
+loss each train epoch time 11.911486864089966
+============================================================
+loss each valid epoch time 0.21507549285888672
+============================================================
+================ loss each train valid epoch ================
+4 epoch: train_loss: 0.0037287199367965515 valid_loss: 0.010553580620326101  each epoch time: 12.126619577407837
+============================================================
+loss each train epoch time 11.807216167449951
+============================================================
+loss each valid epoch time 0.21750259399414062
+============================================================
+================ loss each train valid epoch ================
+5 epoch: train_loss: 0.0037040504752003474 valid_loss: 0.010533379880944266  each epoch time: 12.024783611297607
+============================================================
+loss each train epoch time 12.84123158454895
+============================================================
+loss each valid epoch time 0.2140207290649414
+============================================================
+================ loss each train valid epoch ================
+6 epoch: train_loss: 0.0036896307591268852 valid_loss: 0.010521405215840787  each epoch time: 13.05530571937561
+============================================================
+loss each train epoch time 11.991726875305176
+============================================================
+loss each valid epoch time 0.2166604995727539
+============================================================
+================ loss each train valid epoch ================
+7 epoch: train_loss: 0.0036807281953952042 valid_loss: 0.010514465547166764  each epoch time: 12.208436727523804
+============================================================
+loss each train epoch time 12.028453588485718
+============================================================
+loss each valid epoch time 0.21646690368652344
+============================================================
+================ loss each train valid epoch ================
+8 epoch: train_loss: 0.003674822780685645 valid_loss: 0.01051029852242209  each epoch time: 12.244983911514282
+============================================================
+loss each train epoch time 11.971091270446777
+============================================================
+loss each valid epoch time 0.2165846824645996
+============================================================
+================ loss each train valid epoch ================
+9 epoch: train_loss: 0.003670571372127597 valid_loss: 0.010507564622676  each epoch time: 12.187728643417358
+============================================================
+loss each train epoch time 12.03189468383789
+============================================================
+loss each valid epoch time 0.21674346923828125
+============================================================
+================ loss each train valid epoch ================
+10 epoch: train_loss: 0.0036672551116389515 valid_loss: 0.010505526048364118  each epoch time: 12.248685836791992
+end training... used parameter: tau long: 0.1, tau short: 0.001, epochs time: 124.99288010597229
+all process 161.21217370033264
+
+real	3m4.391s
+user	3m55.566s
+sys	0m21.136s
