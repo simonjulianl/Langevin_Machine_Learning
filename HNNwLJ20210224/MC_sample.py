@@ -30,8 +30,8 @@ DISCARD = MC_parameters.DISCARD
 new_mcs = MC_parameters.new_mcs
 mode = MC_parameters.mode
 
-print('new_mcs nparticle boxsize interval DISCARD iterations iterations - DISCARD')
-print(new_mcs, nparticle, boxsize, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval)
+print('temp new_mcs nparticle boxsize interval DISCARD iterations iterations - DISCARD mode seed')
+print(temp, new_mcs, nparticle, boxsize, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval, mode, seed)
 
 phase_space = phase_space.phase_space()
 pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
@@ -41,7 +41,10 @@ noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 metropolis_mc = integrator.metropolis_mc()
 q_hist, U, ACCRatio, spec = metropolis_mc.step(noMLhamiltonian, phase_space)
 
-base_library = os.path.abspath('init_config')
+if not os.path.exists('./init_config_41800/'):
+                os.makedirs('./init_config_41800/')
+
+base_library = os.path.abspath('init_config_41800')
 
 # text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
 # plt.title('T={}; AccRatio={:.3f}'.format(temp, ACCRatio),fontsize=15)

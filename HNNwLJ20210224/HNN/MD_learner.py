@@ -310,7 +310,7 @@ class MD_learner:
 
             self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
 
-            text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + '\n'
+            text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + ' ' + str(end_epoch - start_epoch) + '\n'
             with open(loss_curve, 'w') as fp:
                 fp.write(text)
             fp.close()

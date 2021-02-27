@@ -137,7 +137,7 @@ class metropolis_mc:
 
             end = time.time()
             # print('q_list', q_list[z])
-            print('finished taking {} configuration, '.format(z), 'Accratio :', ACCRatio[z], 'spec :', spec[z], 'time: ', end-start)
+            print('finished taking {} configuration, '.format(z), 'temp: ', MC_parameters.temperature, 'Accratio :', ACCRatio[z], 'spec :', spec[z], 'dq: ', MC_parameters.dq, 'Discard: ', MC_parameters.DISCARD, 'time: ', end-start)
 
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
         return q_list, U, ACCRatio, spec

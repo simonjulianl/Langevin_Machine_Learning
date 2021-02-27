@@ -26,6 +26,9 @@ MLP_nhidden = ML_parameters.MLP_nhidden
 activation = ML_parameters.activation
 tau_short = MD_parameters.tau_short
 
+print('nparticle tau_long tau_short lr nsamples_batch MLP_nhidden')
+print(nparticle, tau_long, tau_short, lr, MD_parameters.nsamples_batch, ML_parameters.MLP_nhidden )
+
 seed = 9372211
 torch.manual_seed(seed)
 # torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
@@ -69,5 +72,5 @@ MD_learner.load_checkpoint(load_path)
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
 end_code = time.time()
-print('all process', end_code - start_code)
+# print('all process', end_code - start_code)
 # pred = MD_learner.pred_qnp(filename ='./init_config/N_particle{}_samples{}_rho0.1_T0.04_pos_sampled.pt'.format(nparticle, nsamples_label))
