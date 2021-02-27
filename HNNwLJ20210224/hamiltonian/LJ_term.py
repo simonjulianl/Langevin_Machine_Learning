@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import torch
+from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 
 class LJ_term:
@@ -25,34 +26,35 @@ class LJ_term:
     def phi_npixels(self, xi_space, grid_state):
 
         xi_state = xi_space.get_q()
-
+        # print('xi_state', xi_state)
         term = torch.zeros((xi_state.shape[0], grid_state.shape[0])) # nsamples x npixels
 
         nsamples, nparticle, DIM = xi_state.shape
         npixels, DIM = grid_state.shape
-        nsamples_batch = MD_parameters.nsamples_batch
+        pixels_batch = MD_parameters.pixels_batch
+
+        grid_state = grid_state.unsqueeze(1)
+        xi_state = xi_state.expand((npixels,nsamples, nparticle, DIM))
 
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
 
-        for z in range(0, len(xi_state), nsamples_batch):
-            for j in range(npixels):
-                #
-                # print('dimensionless grid state', grid_state[j])
-                # print('grid state', grid_state[j]*self._boxsize)
-                # print('dimensionless xi state', xi_state[z])
-                # print('q state', xi_state[z]*self._boxsize)
-                pair_wise = torch.cat((grid_state[j].unsqueeze(0), xi_state[z]), 0)
-                pair_wise = torch.unsqueeze(pair_wise, dim=0)
+        for z in range(nsamples):
+            #for j in range(npixels):
+            for j in range(0, npixels, pixels_batch):
+
+                pair_wise = torch.cat((grid_state[j:j+pixels_batch], xi_state[j:j+pixels_batch,z]),dim=1)
 
                 _, d = xi_space.paired_distance_reduced(pair_wise, nparticle+1, DIM) # concat one pixel so that nparticle+1
 
-                d_grid = d[:,0] #  index = 0 is grid, pair-wise between gird and particles
+                d_grid = d #  index = 0 is grid, pair-wise between gird and particles
 
                 s12 = 1 / pow(d_grid, 12)
                 s6 = 1 / pow(d_grid, 6)
 
-                term[z][j] = torch.sum(a12 * s12 - a6 * s6)
+                phi = a12 * torch.sum(s12, dim=2) - a6 * torch.sum(s6, dim=2)
+                term[z][j:j+pixels_batch] = phi.sum(dim=-1)
+
 
         return term
 
@@ -67,14 +69,21 @@ class LJ_term:
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
 
+        # print('xi_state shape', xi_state.shape)
+
         for z in range(0, len(xi_state), nsamples_batch):
-
+            # print('z',z, xi_state[z:z+nsamples_batch])
             _, d = xi_space.paired_distance_reduced(xi_state[z:z+nsamples_batch], nparticle, DIM)
-
+            # print('d',d)
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
 
-            term[z] = torch.sum(a12* s12 - a6* s6) * 0.5
+            # print('s12',s12)
+            # print('s6',s6)
+            # print('a12* s12 - a6* s6',a12* s12 - a6* s6)
+            term_dim = (a12 * torch.sum(s12, dim=-1) - a6 * torch.sum(s6, dim=-1))
+            term[z:z+nsamples_batch] =  torch.sum(term_dim, dim=-1) * 0.5
+            # print('term {}'.format(z), term[z:z+nsamples_batch])
 
         return term
 
@@ -100,7 +109,7 @@ class LJ_term:
             s12 = -12 * (delta_xi) / pow(d,14)
             s6  = -6 * (delta_xi) / pow(d,8)
 
-            dphidxi[z:z+nsamples_batch] = a12*torch.sum(s12, dim=2) - a6*torch.sum(s6, dim=2) # np.sum axis=2 j != k
+            dphidxi[z:z+nsamples_batch] = a12*torch.sum(s12, dim=2) - a6*torch.sum(s6, dim=2) # np.sum axis=2 j != k ( nsamples-1)
 
         # print('dphidxi', dphidxi)
 

@@ -19,7 +19,7 @@ random.seed(43893324)
 
 text=''
 
-nsamples = MC_parameters.nsamples
+nsamples = MC_parameters.mcstep
 nparticle = MC_parameters.nparticle
 boxsize = MC_parameters.boxsize
 mass = MC_parameters.mass

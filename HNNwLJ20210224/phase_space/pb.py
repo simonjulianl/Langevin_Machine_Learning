@@ -56,6 +56,7 @@ class pb:
     def paired_distance_reduced(self,q, nparticle, DIM):
 
         # print("==pb==")
+        # print('q',q)
         # print('q', q.shape)
         qlen = q.shape[1]
         q0 = torch.unsqueeze(q,dim=1)
@@ -66,13 +67,14 @@ class pb:
         # print('qm', qm)
         dq = qt - qm
         # print('dq', dq)
+
         indices = torch.where(torch.abs(dq)>0.5)
         dq[indices] = dq[indices] - torch.round(dq[indices])
         # print('dq pbc',dq)
 
         dq_reduced_index = paired_distance_reduce.get_indices(dq.shape)
         dq_flatten = paired_distance_reduce.reduce(dq, dq_reduced_index)
-
+        # print('dq_flatten', dq_flatten)
         dq_flatten = dq_flatten.reshape((q.shape[0], nparticle, nparticle - 1, DIM))
         # print('dq_flatten', dq_flatten)
         # print('dq_flatten', dq_flatten.shape)

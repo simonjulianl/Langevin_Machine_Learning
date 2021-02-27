@@ -71,7 +71,6 @@ class metropolis_mc:
         dU = self.enn_q - self.eno_q
         phase_space.set_q(curr_q)
 
-
         #accept with probability proportional di e ^ -beta * delta E
         self.ACCsum += 1.0
         self.ACCNsum += 1.0
@@ -108,7 +107,7 @@ class metropolis_mc:
 
             phase_space.set_q(self.position_sampler())
             phase_space.set_p(self.momentum_dummy_sampler())
-            # print('q, p for new mcs', self.position_sampler(), self.momentum_dummy_sampler())
+            # print('q, p for new mcs {}'.format(z), self.position_sampler(), self.momentum_dummy_sampler())
 
             start = time.time()
 
@@ -137,7 +136,7 @@ class metropolis_mc:
             spec[z] = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature / MC_parameters.nparticle
 
             end = time.time()
-
+            # print('q_list', q_list[z])
             print('finished taking {} configuration, '.format(z), 'Accratio :', ACCRatio[z], 'spec :', spec[z], 'time: ', end-start)
 
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
