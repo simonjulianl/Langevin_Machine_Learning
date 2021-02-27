@@ -58,9 +58,9 @@ class LJ_term:
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
 
         for z in range(nsamples):
-
+            # print('z',z, xi_state[z])
             _, d = xi_space.paired_distance_reduced(xi_state[z], nparticle, DIM)
-
+            # print('d',d)
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
 

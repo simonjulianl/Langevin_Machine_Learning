@@ -19,7 +19,7 @@ random.seed(43893324)
 
 text=''
 
-nsamples = MC_parameters.nsamples
+nsamples = MC_parameters.mcstep
 nparticle = MC_parameters.nparticle
 boxsize = MC_parameters.boxsize
 mass = MC_parameters.mass
@@ -40,7 +40,8 @@ noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 
 metropolis_mc = integrator.metropolis_mc()
 q_hist, U, ACCRatio, spec = metropolis_mc.step(noMLhamiltonian, phase_space)
-
+print(U)
+quit()
 base_library = os.path.abspath('init_config')
 
 # text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'

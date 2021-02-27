@@ -56,17 +56,20 @@ class pb:
     def paired_distance_reduced(self,q, nparticle, DIM):
 
         # print("==pb==")
+        # print('q',q)
+        # print('q', q.shape)
         qlen = q.shape[0]
         q0 = torch.unsqueeze(q,dim=0)
         qm = torch.repeat_interleave(q0,qlen,dim=0)
         qt = qm.permute(1,0,2)
-        # print(qt)
-        # print(qm)
+        # print('qt', qt)
+        # print('qm', qm)
         dq = qt - qm
-        # print(dq)
+        # print('dq', dq)
+
         indices = torch.where(torch.abs(dq)>0.5)
         dq[indices] = dq[indices] - torch.round(dq[indices])
-        # print('pbc',dq)
+        # print('dq pbc',dq)
         dq_reduce_matrix = torch.zeros( (nparticle, (nparticle - 1), DIM) )
 
         for i in range(nparticle):

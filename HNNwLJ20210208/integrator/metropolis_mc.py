@@ -108,7 +108,7 @@ class metropolis_mc:
 
             phase_space.set_q(self.position_sampler())
             phase_space.set_p(self.momentum_dummy_sampler())
-            # print('q, p for new mcs', self.position_sampler(), self.momentum_dummy_sampler())
+            print('q, p for new mcs {}'.format(z), self.position_sampler(), self.momentum_dummy_sampler())
 
             start = time.time()
 
@@ -122,7 +122,7 @@ class metropolis_mc:
                     q_list[z,i- MC_parameters.DISCARD] = copy.deepcopy(phase_space.get_q())
                     # print('q_list', q_list[z])
 
-                    print(self.enn_q)
+                    # print(self.enn_q)
                     if self.enn_q > MC_parameters.nparticle * 10**3:
 
                         print('potential energy too high')
@@ -137,7 +137,7 @@ class metropolis_mc:
             spec[z] = (TE2sum / Nsum - TE1sum * TE1sum / Nsum / Nsum) / MC_parameters.temperature / MC_parameters.temperature / MC_parameters.nparticle
 
             end = time.time()
-
+            print('q_list', q_list[z])
             print('finished taking {} configuration, '.format(z), 'Accratio :', ACCRatio[z], 'spec :', spec[z], 'time: ', end-start)
 
         #print out the rejection rate, recommended rejection 40 - 60 % based on Lit
