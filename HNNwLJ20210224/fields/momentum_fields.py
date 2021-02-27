@@ -1,6 +1,6 @@
 import torch
 import cv2
-import numpy as np
+from MD_parameters import MD_parameters
 import matplotlib.pyplot as plt
 
 class momentum_fields:
@@ -9,7 +9,6 @@ class momentum_fields:
 
         self._phi_field_in = phi_field_in
         self._phi_field_nx = phi_field_nx
-
 
     def compute_dense_optical_flow(self, prev_image, current_image):
 
@@ -47,23 +46,12 @@ class momentum_fields:
 
         flow_vectors = flow_vectors.permute(0,3,1,2) # channel last to channel first for cnn
 
-        return flow_vectors
+        return flow_vectors # first channel : vy , second channel : vx
 
     def flow2img2(self, flow_data):
-        """
-        convert optical flow into color image
-        :param flow_data:
-        :return: color image
-        """
-        # print(flow_data.shape)
-        # print(type(flow_data))
-        vx = flow_data[0, 0, :, :] # take one sample that is index=0
-        vy = flow_data[0, 1, :, :]
 
-        # # to make channel
-        # height, width = vx.shape
-        # imgvx = torch.zeros((height, width, 1))
-        # imgvy = torch.zeros((height, width, 1))
+        vx = flow_data[ 1, :, :]
+        vy = flow_data[ 0, :, :]
 
         minm = min(vx.min(), vy.min())
         maxm = max(vx.max(), vy.max())
@@ -77,25 +65,22 @@ class momentum_fields:
         norm_vx = (vx - minm) * 255 / (maxm - minm + 1e-5)
         norm_vy = (vy - minm) * 255 / (maxm - minm + 1e-5)
 
-        # for i in range(height):
-        #     for j in range(width):
-        #
-        #         imgvx[i,j,:] = norm_vx[i,j]
-        #         imgvy[i,j, :] = norm_vy[i,j]
-
         return norm_vx, norm_vy
 
     def visualize_flow_file(self,flow_data):
-        imgvx, imgvy = self.flow2img2(flow_data)
-        plt.title('vx')
-        plt.imshow(imgvx, cmap='gray')
-        plt.colorbar()
-        plt.clim(0, 255)
-        plt.show()
 
-        plt.title('vy')
-        plt.imshow(imgvy, cmap='gray')
-        plt.colorbar()
-        plt.clim(0, 255)
-        plt.show()
-        plt.close()
+        for i in range(MD_parameters.nsamples):
+
+            imgvx, imgvy = self.flow2img2(flow_data[i])
+            plt.title('vx')
+            plt.imshow(imgvx, cmap='gray')
+            plt.colorbar()
+            plt.clim(0, 255)
+            plt.show()
+
+            plt.title('vy')
+            plt.imshow(imgvy, cmap='gray')
+            plt.colorbar()
+            plt.clim(0, 255)
+            plt.show()
+            plt.close()
