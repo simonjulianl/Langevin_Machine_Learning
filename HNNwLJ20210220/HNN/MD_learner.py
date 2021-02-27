@@ -189,15 +189,15 @@ class MD_learner:
             train_loss = 0.
             valid_loss = 0.
 
-            avg_pred = 0.
-            avg_loss = 0.
-            avg_backward = 0.
-            avg_noML_time = 0.
-            avg_prep_data_time = 0.
-            avg_ML_time = 0.
-            avg_corrected_time = 0.
-            avg_dhdq_time = 0.
-            avg_integ_time = 0.
+            # avg_pred = 0.
+            # avg_loss = 0.
+            # avg_backward = 0.
+            # avg_noML_time = 0.
+            # avg_prep_data_time = 0.
+            # avg_ML_time = 0.
+            # avg_corrected_time = 0.
+            # avg_dhdq_time = 0.
+            # avg_integ_time = 0.
 
             # Decay Learning Rate
             # curr_lr = self._scheduler.get_lr()
@@ -252,43 +252,43 @@ class MD_learner:
                 train_loss += loss1.item()  # get the scalar output
 
                 end_batch_train = time.time()
-                avg_pred += (end_pred - start_pred)
-                avg_loss += (end_loss - start_loss)
-                avg_backward += (end_backward - start_backward)
-                avg_noML_time += self.any_HNN.noML_time
-                avg_prep_data_time += self.any_HNN.prep_data_time
-                avg_ML_time += self.any_HNN.ML_time
-                avg_corrected_time += self.any_HNN.corrected_time
-                avg_dhdq_time += self.any_HNN.dhdq_time
-                avg_integ_time += self.linear_integrator.integ_time
+                # avg_pred += (end_pred - start_pred)
+                # avg_loss += (end_loss - start_loss)
+                # avg_backward += (end_backward - start_backward)
+                # avg_noML_time += self.any_HNN.noML_time
+                # avg_prep_data_time += self.any_HNN.prep_data_time
+                # avg_ML_time += self.any_HNN.ML_time
+                # avg_corrected_time += self.any_HNN.corrected_time
+                # avg_dhdq_time += self.any_HNN.dhdq_time
+                # avg_integ_time += self.linear_integrator.integ_time
 
                 # print('loss each train batch time', end_batch_train - start_batch_train)
 
             end_epoch_train = time.time()
 
-            print('============================================================')
+            # print('============================================================')
             #print('avg predict batch time', avg_pred / random_ordered_train_nsamples)
             #print('avg loss train batch time', avg_loss / random_ordered_train_nsamples)
             #print('avg backward train batch time', avg_backward / random_ordered_train_nsamples)
 
-            print('dHdq noML train batch time', self.any_HNN.noML_time )
-            print('dHdq prep data batch epoch time', self.any_HNN.prep_data_time )
-            print('dHdq ML train batch time', self.any_HNN.ML_time )
-            print('dHdq corrected term batch epoch time', self.any_HNN.corrected_time )
-            print('dhdq 0.5 step train batch time', self.any_HNN.dhdq_time )
-
-            print('dHdq noML train epoch time', avg_noML_time )
-            print('dHdq prep data train epoch time', avg_prep_data_time )
-            print('dHdq ML train epoch time', avg_ML_time )
-            print('dHdq corrected term train epoch time', avg_corrected_time )
-
-            print('dhdq 0.5 step train epoch time', avg_dhdq_time )
-            print('predict integ train epoch time', avg_integ_time )
-            print('predict train epoch time', avg_pred )
-            print('loss train epoch time', avg_loss )
-            print('backward train epoch time', avg_backward )
-            print('loss each train epoch time', end_epoch_train - start_epoch_train)
-            print('============================================================')
+            # print('dHdq noML train batch time', self.any_HNN.noML_time )
+            # print('dHdq prep data batch epoch time', self.any_HNN.prep_data_time )
+            # print('dHdq ML train batch time', self.any_HNN.ML_time )
+            # print('dHdq corrected term batch epoch time', self.any_HNN.corrected_time )
+            # print('dhdq 0.5 step train batch time', self.any_HNN.dhdq_time )
+            #
+            # print('dHdq noML train epoch time', avg_noML_time )
+            # print('dHdq prep data train epoch time', avg_prep_data_time )
+            # print('dHdq ML train epoch time', avg_ML_time )
+            # print('dHdq corrected term train epoch time', avg_corrected_time )
+            #
+            # print('dhdq 0.5 step train epoch time', avg_dhdq_time )
+            # print('predict integ train epoch time', avg_integ_time )
+            # print('predict train epoch time', avg_pred )
+            # print('loss train epoch time', avg_loss )
+            # print('backward train epoch time', avg_backward )
+            # print('loss each train epoch time', end_epoch_train - start_epoch_train)
+            # print('============================================================')
 
             # eval model
 
@@ -334,8 +334,8 @@ class MD_learner:
 
                 end_epoch_valid = time.time()
 
-            print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
-            print('============================================================')
+            # print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
+            # print('============================================================')
 
             end_epoch = time.time()
 
@@ -346,7 +346,7 @@ class MD_learner:
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
 
-            print('================ loss each train valid epoch ================')
+            # print('================ loss each train valid epoch ================')
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)
 
             self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
@@ -360,7 +360,7 @@ class MD_learner:
 
         end = time.time()
 
-        print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
+        # print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
 
 
     def pred_qnp(self, filename):

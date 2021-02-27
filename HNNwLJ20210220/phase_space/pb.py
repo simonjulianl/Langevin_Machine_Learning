@@ -56,6 +56,7 @@ class pb:
     def paired_distance_reduced(self,q, nparticle, DIM):
 
         # print("==pb==")
+        # print('q', q)
         qlen = q.shape[0]
         q0 = torch.unsqueeze(q,dim=0)
         qm = torch.repeat_interleave(q0,qlen,dim=0)
