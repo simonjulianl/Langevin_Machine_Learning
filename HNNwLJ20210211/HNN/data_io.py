@@ -21,7 +21,7 @@ class data_io:
         if not os.path.exists(self.init_path) :
             raise Exception('path doesnt exist')
 
-        file_format = self.init_path + 'nparticle' + str(MD_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
+        file_format = self.init_path + 'nparticle' + str(MC_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
 
         q_list = None
         p_list = None

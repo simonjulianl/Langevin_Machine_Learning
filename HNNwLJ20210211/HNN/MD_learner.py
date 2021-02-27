@@ -184,7 +184,7 @@ class MD_learner:
 
         text = ''
 
-        start_epoch = time.time()  #
+        start = time.time()  #
 
         for e in range(1, ML_parameters.nepoch + 1 ):
 
@@ -242,9 +242,9 @@ class MD_learner:
 
             end_epoch_train = time.time()
 
-            print('============================================================')
-            print('loss each train epoch time', end_epoch_train - start_epoch_train)
-            print('============================================================')
+            # print('============================================================')
+            # print('loss each train epoch time', end_epoch_train - start_epoch_train)
+            # print('============================================================')
 
             # eval model
 
@@ -293,10 +293,10 @@ class MD_learner:
 
                 end_epoch_valid = time.time()
 
-                print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
-                print('============================================================')
+                # print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
+                # print('============================================================')
 
-                end_epoch = time.time()
+            end_epoch = time.time()
 
             train_loss_avg = train_loss / random_ordered_train_nsamples
             valid_loss_avg = valid_loss / random_ordered_valid_nsamples
@@ -305,7 +305,7 @@ class MD_learner:
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
 
-            print('================ loss each train valid epoch ================')
+            # print('================ loss each train valid epoch ================')
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)
 
             self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
@@ -317,7 +317,9 @@ class MD_learner:
 
             self._current_epoch += 1
 
-        print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
+        end = time.time()
+
+        # print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
 
 
     def pred_qnp(self, filename):

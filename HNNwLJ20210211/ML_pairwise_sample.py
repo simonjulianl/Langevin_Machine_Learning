@@ -6,6 +6,7 @@ from HNN import pair_wise_HNN
 from HNN.models import pair_wise_MLP
 # from HNN.models import pair_wise_zero
 from HNN.MD_learner import MD_learner
+from parameters.MC_parameters import MC_parameters
 from parameters.MD_parameters import MD_parameters
 from parameters.ML_parameters import ML_parameters
 from phase_space import phase_space
@@ -17,7 +18,7 @@ start_code = time.time()
 start_setup = time.time()
 
 nsamples = MD_parameters.nsamples
-nparticle = MD_parameters.nparticle
+nparticle = MC_parameters.nparticle
 tau_long = MD_parameters.tau_long
 lr = ML_parameters.lr
 optimizer = ML_parameters.optimizer

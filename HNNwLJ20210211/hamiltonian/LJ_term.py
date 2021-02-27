@@ -63,8 +63,11 @@ class LJ_term:
 
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
-
+            # print('s12',s12)
+            # print('s6',s6)
+            # print('a12* s12 - a6* s6',a12* s12 - a6* s6)
             term[z] = torch.sum(a12* s12 - a6* s6) * 0.5
+            # print('term {}'.format(z), term[z])
 
         return term
 

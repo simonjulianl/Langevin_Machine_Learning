@@ -3,7 +3,7 @@
 
 import numpy as np
 import torch
-from parameters.MD_parameters import MD_parameters
+from parameters.MC_parameters import MC_parameters
 
 #from tqdm import trange
 
@@ -20,9 +20,9 @@ class linear_integrator:
 
     def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
-        nparticle = MD_parameters.nparticle
-        DIM =  MD_parameters.DIM
-        boxsize =  MD_parameters.boxsize
+        nparticle = MC_parameters.nparticle
+        DIM =  MC_parameters.DIM
+        boxsize =  MC_parameters.boxsize
 
         q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
         p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))

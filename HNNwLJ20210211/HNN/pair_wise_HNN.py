@@ -1,4 +1,5 @@
 import torch
+from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
 from hamiltonian import hamiltonian
@@ -52,7 +53,7 @@ class pair_wise_HNN(hamiltonian):
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
 
-        predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
+        predict = self.network(data, MC_parameters.nparticle, MC_parameters.DIM)
         # print('nn output',predict)
         # print(predict.device)
 

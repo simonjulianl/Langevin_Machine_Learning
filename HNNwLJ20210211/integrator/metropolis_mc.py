@@ -50,9 +50,9 @@ class metropolis_mc:
     def mcmove(self, hamiltonian, phase_space) :
 
         curr_q = phase_space.get_q()
-
+        # print('curr_q', curr_q)
         self.eno_q = hamiltonian.total_energy(phase_space)
-
+        # print('eno_q', self.eno_q)
         trial = random.randint(0, curr_q.shape[1] - 1) # randomly pick one particle from the state
 
         old_q = curr_q[:,trial].clone()
@@ -108,7 +108,7 @@ class metropolis_mc:
 
             phase_space.set_q(self.position_sampler())
             phase_space.set_p(self.momentum_dummy_sampler())
-            # print('q, p for new mcs', self.position_sampler(), self.momentum_dummy_sampler())
+            # print('q, p for new mcs {}'.format(z), phase_space.get_q(), phase_space.get_p())
 
             start = time.time()
 
