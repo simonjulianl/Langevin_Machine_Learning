@@ -60,7 +60,7 @@ class LJ_term:
 
         for z in range(nsamples):
 
-            _, d = xi_space.paired_distance_reduced(xi_state[z], nparticle, DIM)
+            _, d = xi_space.paired_distance_reduced(xi_state[z:z+1], nparticle, DIM)
 
             s12 = 1 / pow(d,12)
             s6  = 1 / pow(d,6)
