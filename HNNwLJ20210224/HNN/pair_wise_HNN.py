@@ -1,4 +1,5 @@
 import torch
+from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
 from hamiltonian import hamiltonian
@@ -49,11 +50,7 @@ class pair_wise_HNN(hamiltonian):
 
         start_noML = time.time()
 
-        if (self.q_batch  ==  q_list).all():
-            noML_dHdq = self.noML_dHdq_first
-
-        if (self.q_batch != q_list).all():
-            noML_dHdq = super().dHdq(phase_space)
+        noML_dHdq = super().dHdq(phase_space)
 
         end_noML = time.time()
 
@@ -73,7 +70,7 @@ class pair_wise_HNN(hamiltonian):
         # print(data)
 
         start_ML = time.time()
-        predict = self.network(data, MD_parameters.nparticle, MD_parameters.DIM)
+        predict = self.network(data, MC_parameters.nparticle, MC_parameters.DIM)
         end_ML = time.time()
         self.ML_time = end_ML - start_ML
         # print('nn output',predict)

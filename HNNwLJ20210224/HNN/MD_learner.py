@@ -35,11 +35,11 @@ class MD_learner:
         print("============ start data loaded ===============")
         start_data_load = time.time()
 
-        _train_data = self._data_io_obj.loadq_p('train_for_time_test')
+        _train_data = self._data_io_obj.loadq_p('train')
         self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
         print('n. of data', self.train_data.shape)
 
-        _valid_data = self._data_io_obj.loadq_p('valid_for_time_test')
+        _valid_data = self._data_io_obj.loadq_p('valid')
         self.valid_data = self._data_io_obj.hamiltonian_dataset(_valid_data)
         print('n. of data', self.valid_data.shape)
 
@@ -67,9 +67,9 @@ class MD_learner:
         print('n. of train data reshape ', self._q_train.shape, self._p_train.shape)
 
         # print('===== label train data =====')
-        self.q_train_label = self.train_label[0]; self.p_train_label = self.train_label[1]; self.train_noML_dHdq_first = self.train_label[2]
+        self.q_train_label = self.train_label[0]; self.p_train_label = self.train_label[1]
         self._q_train_label = self.q_train_label[-1]; self._p_train_label = self.p_train_label[-1] # only take the last from the list
-        print('n. of train label reshape ', self._q_train_label.shape, self._p_train_label.shape, self.train_noML_dHdq_first.shape)
+        print('n. of train label reshape ', self._q_train_label.shape, self._p_train_label.shape)
 
         assert self._q_train.shape == self._q_train_label.shape
         assert self._p_train.shape == self._p_train_label.shape
@@ -79,9 +79,9 @@ class MD_learner:
         print('n. of valid data reshape ', self._q_valid.shape, self._p_valid.shape)
 
         # print('===== label valid data =====')
-        self.q_valid_label = self.valid_label[0]; self.p_valid_label = self.valid_label[1]; self.valid_noML_dHdq_first = self.valid_label[2]
+        self.q_valid_label = self.valid_label[0]; self.p_valid_label = self.valid_label[1]
         self._q_valid_label = self.q_valid_label[-1]; self._p_valid_label = self.p_valid_label[-1]  # only take the last from the list
-        print('n. of valid label reshape ', self._q_valid_label.shape, self._p_valid_label.shape, self.valid_noML_dHdq_first.shape)
+        print('n. of valid label reshape ', self._q_valid_label.shape, self._p_valid_label.shape)
 
         assert self._q_valid.shape == self._q_valid_label.shape
         assert self._p_valid.shape == self._p_valid_label.shape
@@ -189,14 +189,6 @@ class MD_learner:
             train_loss = 0.
             valid_loss = 0.
 
-            avg_pred = 0.
-            avg_loss = 0.
-            avg_backward = 0.
-            avg_noML_time = 0.
-            avg_prep_data_time = 0.
-            avg_ML_time = 0.
-            avg_corrected_time = 0.
-            avg_dhdq_time = 0.
             # Decay Learning Rate
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
@@ -220,8 +212,6 @@ class MD_learner:
 
                 train_label = (q_train_label_batch, p_train_label_batch)
 
-                # load first noML_dHdq
-                self.any_HNN.noML_dHdq_fist(q_train_batch, self.train_noML_dHdq_first[i])
 
                 self._phase_space.set_q(q_train_batch)
                 self._phase_space.set_p(p_train_batch)
@@ -252,31 +242,11 @@ class MD_learner:
 
                 train_loss += loss1.item()  # get the scalar output
 
-                end_batch_train = time.time()
-                avg_pred += (end_pred - start_pred)
-                avg_loss += (end_loss - start_loss)
-                avg_backward += (end_backward - start_backward)
-                avg_noML_time += self.any_HNN.noML_time
-                avg_prep_data_time += self.any_HNN.prep_data_time
-                avg_ML_time += self.any_HNN.ML_time
-                avg_corrected_time += self.any_HNN.corrected_time
-                avg_dhdq_time += self.any_HNN.dhdq_time
-                # print('loss each train batch time', end_batch_train - start_batch_train)
-
             end_epoch_train = time.time()
 
-            print('============================================================')
-            print('dHdq noML train epoch time', avg_noML_time )
-            print('dHdq prep data train epoch time', avg_prep_data_time )
-            print('dHdq ML train epoch time', avg_ML_time )
-            print('dHdq corrected term train epoch time', avg_corrected_time )
-
-            print('dhdq 0.5 step train epoch time', avg_dhdq_time )
-            print('predict train epoch time', avg_pred )
-            print('loss train epoch time', avg_loss )
-            print('backward train epoch time', avg_backward )
-            print('loss each train epoch time', end_epoch_train - start_epoch_train)
-            print('============================================================')
+            # print('============================================================')
+            # print('loss each train epoch time', end_epoch_train - start_epoch_train)
+            # print('============================================================')
 
 
             # eval model
@@ -304,9 +274,6 @@ class MD_learner:
 
                     valid_label = (q_valid_label_batch, p_valid_label_batch)
 
-                    # load first noML_dHdq
-                    self.any_HNN.noML_dHdq_fist(q_valid_batch, self.valid_noML_dHdq_first[j])
-
                     self._phase_space.set_q(q_valid_batch)
                     self._phase_space.set_p(p_valid_batch)
 
@@ -326,8 +293,8 @@ class MD_learner:
 
                 end_epoch_valid = time.time()
 
-            print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
-            print('============================================================')
+            # print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
+            # print('============================================================')
 
             end_epoch = time.time()
 
@@ -338,7 +305,7 @@ class MD_learner:
             # curr_lr = self._scheduler.get_lr()
             # self._scheduler.step()
 
-            print('================ loss each train valid epoch ================')
+            # print('================ loss each train valid epoch ================')
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)
 
             self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
@@ -352,7 +319,7 @@ class MD_learner:
 
         end = time.time()
 
-        print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
+        # print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
 
 
     def pred_qnp(self, filename):

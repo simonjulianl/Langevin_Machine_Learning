@@ -19,7 +19,7 @@ class data_io:
         if not os.path.exists(self.init_path) :
             raise Exception('path doesnt exist')
 
-        file_format = self.init_path + 'nparticle' + str(MD_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
+        file_format = self.init_path + 'nparticle' + str(MC_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
 
         q_list = None
         p_list = None
@@ -83,18 +83,15 @@ class data_io:
 
         q_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM))
         p_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM))
-        noML_dHdq_fist = torch.zeros((nsamples_cur, nparticles, DIM))
 
         for z in range(0, len(curr_q), nsamples_batch):
 
             # print('z',z)
             phase_space.set_q(curr_q[z:z+nsamples_batch])
 
-            noML_dHdq_fist[z:z+nsamples_batch] = noML_hamiltonian.dHdq(phase_space)
-
             phase_space.set_q(curr_q[z:z+nsamples_batch])
             phase_space.set_p(curr_p[z:z+nsamples_batch])
 
             q_list[:,z:z+nsamples_batch], p_list[:,z:z+nsamples_batch] = linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
 
-        return q_list, p_list, noML_dHdq_fist
+        return q_list, p_list

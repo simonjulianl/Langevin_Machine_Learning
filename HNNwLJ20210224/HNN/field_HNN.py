@@ -45,7 +45,9 @@ class field_HNN(hamiltonian):
 
         # predict_fields to calc predict each particle
         # predict =  #xxxx
-        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + self.predict_fields4particle  # in linear_vv code, it calculates grad potential.
+        predict = self.force4nparticle(phase_space, 2)
+
+        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
 
         return corrected_dHdq
 
@@ -71,7 +73,7 @@ class field_HNN(hamiltonian):
         nsamples, nparticle, DIM = _q_list_in.shape
 
         distances = []
-        self.predict_fields4particle = torch.zeros((nsamples, k, DIM))
+        predict_fields4particle = torch.zeros((nsamples, k, DIM))
 
         for z in range(0, nsamples):
             for i in range(0, nparticle):
@@ -96,14 +98,14 @@ class field_HNN(hamiltonian):
                     index = torch.where(k_nearest_distance < 0.001)
                     index_x = k_nearest_distance[index] // MD_parameters.npixels
                     index_y = k_nearest_distance[index] % MD_parameters.npixels
-                    self.predict_fields4particle[z][i] = self.predict_fields[:, :, index_x, index_y]
+                    predict_fields4particle[z][i] = self.predict_fields[:, :, index_x, index_y]
 
                 else:
 
-                    self.predict_fields4particle[z][i] = ( 1. / z_l ) * torch.sum(( 1. / k_nearest_distance * k_nearest_predict_fields),dim=-1)
+                    predict_fields4particle[z][i] = ( 1. / z_l ) * torch.sum(( 1. / k_nearest_distance * k_nearest_predict_fields),dim=-1)
 
 
-        return self.predict_fields4particle
+        return predict_fields4particle
 
     def phi_field4cnn(self, phase_space):
 
@@ -111,8 +113,9 @@ class field_HNN(hamiltonian):
         _p_list_in = phase_space.get_p()
 
         print('inital q, p', _q_list_in, _p_list_in)
+
         phase_space.set_q(_q_list_in)
-        self.phi_fields_obj.show_grid_nparticles(_q_list_in,'hi')
+        # self.phi_fields_obj.show_grid_nparticles(_q_list_in,'position each particle')
 
         self._phi_field_in = self.phi_fields_obj.phi_field(phase_space)
         print('show in', self._phi_field_in.shape)
@@ -131,13 +134,14 @@ class field_HNN(hamiltonian):
         _q_list_nx = _q_list_nx[-1].type(torch.float64)  # only take the last from the list
         _p_list_nx = _p_list_nx[-1].type(torch.float64)
 
-        print('next q, p', _q_list_nx, _p_list_nx)
+        # print('next q, p', _q_list_nx, _p_list_nx)
 
         phase_space.set_q(_q_list_nx)
         # phase_space.set_p(_p_list_nx)
         self._phi_field_nx = self.phi_fields_obj.phi_field(phase_space) # nsamples x npixels x npixels
         print('show nx', self._phi_field_nx.shape)
         self.phi_fields_obj.show_gridimg(self._phi_field_nx, '(t+$\delta$t)')
+        print(self._phi_field_nx.shape)
 
         self._phi_field_in = torch.unsqueeze(self._phi_field_in, dim=1) # nsamples x channel x npixels x npixels
         self._phi_field_nx = torch.unsqueeze(self._phi_field_nx, dim=1)
@@ -161,6 +165,9 @@ class field_HNN(hamiltonian):
 
         b = b.unsqueeze(0).repeat(MD_parameters.nsamples, 1, 1)
         b_t = b_t.unsqueeze(0).repeat(MD_parameters.nsamples, 1, 1)
+
+        b = b.unsqueeze(1)
+        b_t = b_t.unsqueeze(1)
 
         x = torch.matmul(torch.matmul(b, fields), b_t)
         print('pbc', x.shape)
