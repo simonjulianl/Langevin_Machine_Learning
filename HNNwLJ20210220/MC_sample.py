@@ -30,8 +30,8 @@ DISCARD = MC_parameters.DISCARD
 new_mcs = MC_parameters.new_mcs
 mode = MC_parameters.mode
 
-print('new_mcs nparticle boxsize interval DISCARD iterations iterations - DISCARD')
-print(new_mcs, nparticle, boxsize, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval)
+print('temp new_mcs nparticle boxsize interval DISCARD iterations iterations - DISCARD mode seed')
+print(temp, new_mcs, nparticle, boxsize, interval, DISCARD, MC_parameters.iterations, MC_parameters.num_interval, mode, seed)
 
 phase_space = phase_space.phase_space()
 pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP())
