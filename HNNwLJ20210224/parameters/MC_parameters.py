@@ -6,8 +6,8 @@ class MC_parameters:
     mode = 'valid'
     kB = 1.0
     temperature = 0.04
-    new_mcs = 3
-    mcstep = 5
+    new_mcs = 1
+    mcstep = 10
     nparticle = 2
     DIM = 2
     mass = 1

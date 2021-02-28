@@ -19,9 +19,9 @@ if __name__ == '__main__':
 
     nsamples = MD_parameters.nsamples
     mass = MD_parameters.mass
-    boxsize = MD_parameters.boxsize
-    nparticle = MD_parameters.nparticle
-    DIM = MD_parameters.DIM
+    boxsize = MC_parameters.boxsize
+    nparticle = MC_parameters.nparticle
+    DIM = MC_parameters.DIM
     npixels = MD_parameters.npixels
     temp = MC_parameters.temperature
 
@@ -44,13 +44,13 @@ if __name__ == '__main__':
     #
     # _q_list_in, _p_list_in = torch.tensor([q_list, p_list],dtype=torch.float64)
 
-    file_format = '../init_config/nparticle' + str(MD_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_train_sampled.pt'
+    file_format = '../init_config/nparticle' + str(MC_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_train_sampled.pt'
     q_curr, p_curr = torch.load(file_format.format(MC_parameters.rho, temp))
 
     phi_fields_obj = phi_fields(npixels, noMLhamiltonian)
 
-    phase_space.set_q(q_curr)
-    phase_space.set_p(p_curr)
+    phase_space.set_q(q_curr[0:1])
+    phase_space.set_p(p_curr[0:1])
 
     pair_wise_HNN_obj.phi_field4cnn(phase_space)
     pair_wise_HNN_obj.p_field4cnn()

@@ -6,6 +6,7 @@ from HNN.field_HNN import field_HNN
 from fields.phi_fields import phi_fields
 from fields.momentum_fields import momentum_fields
 from HNN.models import pair_wise_MLP
+from HNN.models import fields_unet
 # from HNN.models import pair_wise_zero
 from HNN.MD_learner import MD_learner
 from parameters.MC_parameters import MC_parameters
@@ -33,7 +34,7 @@ torch.cuda.manual_seed_all(seed)
 
 phase_space = phase_space.phase_space()
 linear_integrator_obj = linear_integrator( MD_parameters.integrator_method )
-field_HNN_obj = field_HNN(pair_wise_MLP().to(ML_parameters.device), linear_integrator_obj)
+field_HNN_obj = field_HNN(fields_unet(2, 32, 2), linear_integrator_obj)
 
 # check gpu available
 print('__Number CUDA Devices:', torch.cuda.device_count())

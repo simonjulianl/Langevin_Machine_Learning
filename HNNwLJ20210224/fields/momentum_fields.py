@@ -69,7 +69,8 @@ class momentum_fields:
 
     def visualize_flow_file(self,flow_data):
 
-        for i in range(MD_parameters.nsamples):
+        #for i in range(MD_parameters.nsamples):
+        for i in range(1):
 
             imgvx, imgvy = self.flow2img2(flow_data[i])
             plt.title('vx')

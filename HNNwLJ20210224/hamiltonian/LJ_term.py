@@ -26,7 +26,7 @@ class LJ_term:
     def phi_npixels(self, xi_space, grid_state):
 
         xi_state = xi_space.get_q()
-        # print('xi_state', xi_state)
+        print('xi', xi_state.device)
         term = torch.zeros((xi_state.shape[0], grid_state.shape[0])) # nsamples x npixels
 
         nsamples, nparticle, DIM = xi_state.shape
@@ -34,6 +34,7 @@ class LJ_term:
         pixels_batch = MD_parameters.pixels_batch
 
         grid_state = grid_state.unsqueeze(1)
+        print('grid', grid_state.device)
         xi_state = xi_state.expand((npixels,nsamples, nparticle, DIM))
 
         a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)

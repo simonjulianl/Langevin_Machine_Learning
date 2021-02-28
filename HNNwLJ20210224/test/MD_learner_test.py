@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath("../parameters"))
 
 from phase_space.phase_space import phase_space
 from integrator import linear_integrator
+from parameters.MC_parameters import MC_parameters
 from parameters.MD_parameters import MD_parameters
 # from HNN import pair_wise_HNN
 from HNN import field_HNN
@@ -18,7 +19,7 @@ import torch
 if __name__ == '__main__':
 
     nsamples = MD_parameters.nsamples
-    nparticle = MD_parameters.nparticle
+    nparticle = MC_parameters.nparticle
     npixels = MD_parameters.npixels
 
     seed = 9372211

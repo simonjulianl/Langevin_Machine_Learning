@@ -21,7 +21,8 @@ class phi_fields:
 
     def show_grid_nparticles(self, q_list, title):
 
-        for i in range(MD_parameters.nsamples):
+        #for i in range(MD_parameters.nsamples):
+        for i in range(1):
 
             plt.title(title + 'sample {}'.format(i))
             plt.plot(self._grid_list[:,0], self._grid_list[:,1], marker='.', color='k', linestyle='none', markersize=12)
@@ -58,10 +59,11 @@ class phi_fields:
 
     def show_gridimg(self, phi_field, time):
 
-        for i in range(MD_parameters.nsamples):
+        #for i in range(MD_parameters.nsamples):
+        for i in range(1):
             norm_phi_field = (phi_field[i] - self._mincut) * 255 / (self._maxcut - self._mincut) # take one sample
 
-            plt.title(r'nparticle {}, npixels {}, boxsize {:.2f}, $\phi$-fields{}'.format(MD_parameters.nparticle, self._npixels, self._boxsize, time))
+            plt.title(r'nparticle {}, npixels {}, boxsize {:.2f}, $\phi$-fields{}'.format(MC_parameters.nparticle, self._npixels, self._boxsize, time))
             plt.imshow(norm_phi_field, cmap='gray') # one sample
             plt.colorbar()
             plt.clim(0, 255)
