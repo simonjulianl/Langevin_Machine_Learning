@@ -14,7 +14,7 @@ class data_io:
 
         self.init_path = init_path
 
-    def loadq_p(self, mode):
+    def loadq_p(self, mode=None):
 
         if not os.path.exists(self.init_path) :
             raise Exception('path doesnt exist')

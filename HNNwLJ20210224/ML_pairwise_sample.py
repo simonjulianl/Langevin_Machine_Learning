@@ -68,6 +68,12 @@ end_setup = time.time()
 print('time for setup :', end_setup - start_setup)
 
 MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+init = MD_learner.valid_data
+q_list = MD_learner._q_valid_label
+p_list = MD_learner._p_valid_label
+print(init)
+print(q_list,p_list)
+quit()
 MD_learner.load_checkpoint(load_path)
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
