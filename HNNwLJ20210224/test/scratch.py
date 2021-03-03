@@ -10,6 +10,7 @@ class A:
     def get_id(self):
         return self.id
 
+import torch
 
 if __name__=='__main__':
     # if __debug__:
@@ -17,9 +18,14 @@ if __name__=='__main__':
     # else:
     #     print('Debug OFF')
 
-    a1 = A()
-    a2 = A()
-
-    print('a1 id ',a1.get_id())
+    # a1 = A()
+    # a2 = A()
+    #
+    # print('a1 id ',a1.get_id())
     #print('a2 id ',a2.get_id())
 
+    ind = torch.tensor([0.9, -0.9])
+    indlong =ind.type(torch.long)
+
+    print('ind ',ind)
+    print('indlong ', indlong)

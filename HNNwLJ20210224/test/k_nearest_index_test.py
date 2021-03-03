@@ -63,26 +63,10 @@ if __name__ == '__main__':
         k_nearest_down_left = torch.tensor([k_nearest_up_left_x + grid_interval, k_nearest_up_left_y])
         k_nearest_down_right = torch.tensor([k_nearest_up_left_x + grid_interval, k_nearest_up_left_y + grid_interval])
 
-        # print(k_nearest_up_left)
-        # print(k_nearest_up_right)
-        # print(k_nearest_down_left)
-        # print(k_nearest_down_right)
-
         k_nearest = torch.stack([k_nearest_up_left, k_nearest_up_right, k_nearest_down_left, k_nearest_down_right])
         print(k_nearest)
 
         k_nearest_coord = ( boxsize / 2. + k_nearest ) / grid_interval
-        print(k_nearest_coord)
-        print(k_nearest_coord.long())
-
-        up_left_index = k_nearest_coord[:,0] * npixels + k_nearest_coord[:,1]
-        print(up_left_index)
-        print(up_left_index.type(torch.long))
-        quit()
+        kind = torch.round(k_nearest_coord).long()
 
 
-        print(up_left_coord.type(torch.long), up_right_coord.type(torch.long), down_left_coord.type(torch.long), down_right_coord.type(torch.long))
-        print(up_left_coord.dtype, up_right_coord.dtype, down_left_coord.dtype, down_right_coord.dtype)
-
-        # print(up_left_coord, up_right_coord, down_left_coord, down_right_coord)
-        # print(U[up_left_coord[0],up_left_coord[1]], U[up_right_coord[0],up_right_coord[1]], U[down_left_coord[0],down_left_coord[1]], U[down_right_coord[0],down_right_coord[1]])
