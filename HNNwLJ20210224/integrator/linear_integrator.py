@@ -25,16 +25,30 @@ class linear_integrator:
         DIM =  MC_parameters.DIM
         boxsize =  MC_parameters.boxsize
 
-        q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
-        p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
+        # q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
+        # p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
 
         print('step nsamples_cur, tau_cur, MD_iterations')
         print(nsamples_cur, tau_cur, MD_iterations)
 
+        q_list = None
+        p_list = None
+
         # for i in trange(self._state['MD_iterations']):
         for i in range(MD_iterations):
             # print(i)
-            q_list[i], p_list[i]  = self._integrator_method( hamiltonian, phase_space, tau_cur, boxsize)
+            q_curr, p_curr  = self._integrator_method( hamiltonian, phase_space, tau_cur, boxsize)
+            q_curr = torch.unsqueeze(q_curr, dim=0)
+            p_curr = torch.unsqueeze(p_curr, dim=0)
+
+            if i == 0:
+                q_list = q_curr
+                p_list = p_curr
+            else:
+                q_list = torch.cat((q_list, q_curr))
+                p_list = torch.cat((p_list, p_curr))
+
+            assert q_list.shape == p_list.shape
 
         # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
 
