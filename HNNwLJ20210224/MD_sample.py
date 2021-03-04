@@ -21,7 +21,7 @@ tau_short = MD_parameters.tau_short
 nsamples_cur = nsamples
 tau_cur = tau_short # find gold standard
 pair_interval = int(tau_long / tau_short)
-MD_iterations = int(MD_parameters.max_ts / tau_short)
+MD_iterations = round(MD_parameters.max_ts / tau_short)
 
 print('nparticle tau pair_interval MD_iterations')
 print(nparticle, tau_short, pair_interval, MD_iterations)
@@ -56,8 +56,8 @@ q_list, p_list = linear_integrator_obj.step( noMLhamiltonian, phase_space, MD_it
 init_q = torch.unsqueeze(init_q, dim=0)
 init_p = torch.unsqueeze(init_p, dim=0)
 
-q_hist_ = torch.cat((init_q, q_list.double()), dim=0)
-p_hist_ = torch.cat((init_p, p_list.double()), dim=0)
+q_hist_ = torch.cat((init_q, q_list), dim=0)
+p_hist_ = torch.cat((init_p, p_list), dim=0)
 
 # pair w large time step
 q_hist = q_hist_[0::pair_interval]
@@ -65,4 +65,4 @@ p_hist = p_hist_[0::pair_interval]
 
 base_library = os.path.abspath('gold_standard')
 
-torch.save(phase_space, base_library + '/nsample{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp,tau_short,MD_iterations,nsamples))
+torch.save((q_hist, p_hist), base_library + '/nsample{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp,tau_short,MD_iterations,nsamples))
