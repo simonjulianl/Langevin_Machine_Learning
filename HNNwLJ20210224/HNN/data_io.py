@@ -81,8 +81,8 @@ class data_io:
         MD_iterations = int(MD_parameters.tau_long / tau_cur)
         nsamples_batch = MD_parameters.nsamples_batch
 
-        q_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM))
-        p_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM))
+        q_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
+        p_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
 
         for z in range(0, len(curr_q), nsamples_batch):
 

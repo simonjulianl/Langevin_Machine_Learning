@@ -48,7 +48,7 @@ class field_HNN(hamiltonian):
         # predict =  #xxxx
         predict = self.force4nparticle(phase_space)
 
-        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
+        corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict.to(ML_parameters.device)  # in linear_vv code, it calculates grad potential.
 
         return corrected_dHdq
 
@@ -66,7 +66,34 @@ class field_HNN(hamiltonian):
         return tau
 
     def euclidean_distance(self, vector1, vector2):
-        return torch.sqrt(torch.sum(torch.pow(vector1 - vector2, 2)))
+        # print('distance', vector1, vector2)
+        # print('distance', vector1.shape, vector2.shape)
+        return torch.sqrt(torch.sum(torch.pow(vector1 - vector2, 2), dim=1))  # sum DIM that is dim=1 <- nparticle x DIM
+
+    def k_nearest_grids(self, q_list, grid_interval):
+        # to calculate distance between particle and grid
+
+        k_nearest_up_left = torch.floor(q_list / grid_interval) * grid_interval
+
+        k_nearest_up_left_x = k_nearest_up_left[:, 0]
+        k_nearest_up_left_x = k_nearest_up_left_x.reshape(-1, 1)
+        k_nearest_up_left_y = k_nearest_up_left[:, 1]
+        k_nearest_up_left_y = k_nearest_up_left_y.reshape(-1, 1)
+
+        k_nearest_up_right = torch.cat([k_nearest_up_left_x, k_nearest_up_left_y + grid_interval], dim=1)
+        k_nearest_down_left = torch.cat([k_nearest_up_left_x + grid_interval, k_nearest_up_left_y], dim=1)
+        k_nearest_down_right = torch.cat([k_nearest_up_left_x + grid_interval, k_nearest_up_left_y + grid_interval], dim=1)
+
+        k_nearest = torch.stack([k_nearest_up_left, k_nearest_up_right, k_nearest_down_left, k_nearest_down_right], dim=1)  # 4_nearest x samples x DIM
+
+        return k_nearest
+
+    def k_nearest_coord(self, k_nearest, grid_interval):
+        # to find force k neareset grids
+
+        k_nearest_coord = ( MC_parameters.boxsize / 2. + k_nearest) / grid_interval
+        kind = torch.round(k_nearest_coord).long()  # 4_nearest x nsamples x DIM
+        return kind
 
     # find 4 nearest neighbor grids and calc farce about each particle
     def force4nparticle(self, phase_space):
@@ -75,61 +102,53 @@ class field_HNN(hamiltonian):
 
         _q_list_in = phase_space.get_q()
 
-        print(_q_list_in)
         grid_interval = MC_parameters.boxsize / MD_parameters.npixels
-        print('interval', grid_interval)
+
         nsamples, nparticle, DIM = _q_list_in.shape
+        k_nearest_nparticle_app = []
+        k_nearest_coord_nparticle_app = []
 
         for i in range(nparticle):
 
-            print(i)
-            k_nearest_up_left = torch.floor(_q_list_in[:,i] / grid_interval ) * grid_interval
+            k_nearest = self.k_nearest_grids(_q_list_in[:, i], grid_interval)
 
-            k_nearest_up_left_x = k_nearest_up_left[:,0]
-            k_nearest_up_left_y = k_nearest_up_left[:,1]
+            k_nearest_up_left_distance = self.euclidean_distance(_q_list_in[:, i], k_nearest[:, 0])
+            k_nearest_up_right_distance = self.euclidean_distance(_q_list_in[:, i], k_nearest[:, 1])
+            k_nearest_down_left_distance = self.euclidean_distance(_q_list_in[:, i], k_nearest[:, 2])
+            k_nearest_down_right_distance = self.euclidean_distance(_q_list_in[:, i], k_nearest[:, 3])
 
-            k_nearest_up_right = torch.tensor([[k_nearest_up_left_x, k_nearest_up_left_y + grid_interval]])
-            k_nearest_down_left = torch.tensor([[k_nearest_up_left_x + grid_interval, k_nearest_up_left_y]])
-            k_nearest_down_right = torch.tensor([[k_nearest_up_left_x + grid_interval, k_nearest_up_left_y + grid_interval]])
+            k_nearest_distance_cat = torch.stack((k_nearest_up_left_distance, k_nearest_up_right_distance,
+                                                  k_nearest_down_left_distance, k_nearest_down_right_distance), dim=-1)
+            k_nearest_nparticle_app.append(k_nearest_distance_cat)
 
-            k_nearest_up_left_distance = self.euclidean_distance(_q_list_in[:,i], k_nearest_up_left)
-            k_nearest_up_right_distance = self.euclidean_distance(_q_list_in[:,i], k_nearest_up_right)
-            k_nearest_down_left_distance = self.euclidean_distance(_q_list_in[:,i], k_nearest_down_left)
-            k_nearest_down_right_distance = self.euclidean_distance(_q_list_in[:,i], k_nearest_down_right)
+            kind = self.k_nearest_coord(k_nearest, grid_interval)
+            k_nearest_coord_nparticle_app.append(kind)
 
-            z_distance = 1. / k_nearest_up_left_distance + 1. / k_nearest_up_right_distance + 1. / k_nearest_down_left_distance + 1. / k_nearest_down_right_distance
+        k_nearest_distance_nparticle = torch.stack(k_nearest_nparticle_app, dim=1)  # nsample x nparticle x k_nearest x DIM
+        k_nearest_coord_nparticle = torch.stack(k_nearest_coord_nparticle_app, dim=1)
 
-            up_left_coord = ( MC_parameters.boxsize / 2 + k_nearest_up_left ) / grid_interval
-            # up_left_index = up_left_coord[:,0] * MD_parameters.npixels + up_left_coord[:,1]
+        predict_app = []
 
-            up_right_coord = ( MC_parameters.boxsize / 2 + k_nearest_up_right ) / grid_interval
-            # up_right_index = up_right_coord[:,0] * MD_parameters.npixels + up_right_coord[:,1]
+        for z in range(nsamples):
 
-            down_left_coord = ( MC_parameters.boxsize / 2 + k_nearest_down_left ) / grid_interval
-            # down_left_index = down_left_coord[:,0] * MD_parameters.npixels + down_left_coord[:,1]
+            predict_up_left = predict_fields[z, :, k_nearest_coord_nparticle[z, :, 0, 0], k_nearest_coord_nparticle[z, :, 0, 1]]
+            predict_up_right = predict_fields[z, :, k_nearest_coord_nparticle[z, :, 1, 0], k_nearest_coord_nparticle[z, :, 1, 1]]
+            predict_down_left = predict_fields[z, :, k_nearest_coord_nparticle[z, :, 2, 0], k_nearest_coord_nparticle[z, :, 2, 1]]
+            predict_down_right = predict_fields[z, :, k_nearest_coord_nparticle[z, :, 3, 0], k_nearest_coord_nparticle[z, :, 3, 1]]
 
-            down_right_coord = ( MC_parameters.boxsize / 2 + k_nearest_down_right ) / grid_interval
-            # down_right_index = down_right_coord[:,0] * MD_parameters.npixels + down_right_coord[:,1]
+            predict_cat = torch.stack((predict_up_left, predict_up_right, predict_down_left, predict_down_right), dim=-1)
+            predict_app.append(predict_cat)
 
-            print(up_left_coord, up_right_coord, down_left_coord, down_right_coord)
-            # print(up_left_index, up_right_index, down_left_index, down_right_index)
+        predict_k_nearest_force = torch.stack(predict_app)  # sample x npartilce x  DIM x k_nearest
 
-            print(predict_fields.shape)
-            predict_up_left = predict_fields[:,:,int(up_left_coord[:,0]),int(up_left_coord[:,1])]
-            predict_up_right = predict_fields[:,:,int(up_right_coord[:,0]),int(up_right_coord[:,1])]
-            predict_down_left = predict_fields[:,:,int(down_left_coord[:,0]),int(down_left_coord[:,1])]
-            predict_down_right = predict_fields[:,:,int(down_right_coord[:,0]),int(down_right_coord[:,1])]
+        z_l = torch.sum(1. / k_nearest_distance_nparticle, dim=-1)
+        z_l = z_l.unsqueeze(dim=1)
 
+        k_nearest_distance_nparticle = k_nearest_distance_nparticle.unsqueeze(dim=1)
 
-            predict_each_particle = ( 1. / z_distance ) * (1. / k_nearest_up_left_distance * predict_up_left
-                                                           + 1. / k_nearest_up_right_distance * predict_up_right
-                                                           + 1. / k_nearest_down_left_distance * predict_down_left
-                                                           + 1. / k_nearest_down_right_distance * predict_down_right )
+        predict_each_particle = 1. / z_l * ( torch.sum(1. / k_nearest_distance_nparticle * predict_k_nearest_force, dim=-1))
 
-            print('predict', predict_each_particle)
-
-
-        return predict_fields4particle
+        return predict_each_particle
 
     def phi_field4cnn(self, phase_space):
 
