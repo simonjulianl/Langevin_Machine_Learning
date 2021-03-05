@@ -38,8 +38,8 @@ class momentum_fields:
             phi_field_nx = self._phi_field_nx[z].permute(1,2,0)
 
             # convert torch to array : to use opencv
-            numpy_phi_field_in = phi_field_in.numpy()
-            numpy_phi_field_nx = phi_field_nx.numpy()
+            numpy_phi_field_in = phi_field_in.detach().numpy()
+            numpy_phi_field_nx = phi_field_nx.detach().numpy()
 
             flow_v = self.compute_dense_optical_flow(numpy_phi_field_in, numpy_phi_field_nx)
             flow_vectors[z] = torch.from_numpy(flow_v)
