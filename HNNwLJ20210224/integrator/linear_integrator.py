@@ -28,8 +28,8 @@ class linear_integrator:
         # q_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
         # p_list = torch.zeros((MD_iterations, nsamples_cur, nparticle, DIM))
 
-        print('step nsamples_cur, tau_cur, MD_iterations')
-        print(nsamples_cur, tau_cur, MD_iterations)
+        # print('step nsamples_cur, tau_cur, MD_iterations')
+        # print(nsamples_cur, tau_cur, MD_iterations)
 
         q_list = None
         p_list = None
