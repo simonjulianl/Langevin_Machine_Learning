@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 
 nparticle = 4
 DIM = 2
-T = 0.04
+T = 0.16
 samples = 1000
 pair_time_step = 0.1
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 max_ts = 20
-tau_long = 0.005
-tau_short = 0.001
+tau_long = 0.001
+tau_short = 0.0005
 
 gold_standard = torch.load('./gold_standard/nparticle{}_T{}_ts{}_iter{}_vv_1000sampled.pt'.format(nparticle,T,tau_short, int(max_ts/tau_short)))
 tau_large = torch.load('./gold_standard/nparticle{}_T{}_ts{}_iter{}_vv_1000sampled.pt'.format(nparticle,T,tau_long, int(max_ts/tau_long))) # HNN
@@ -112,6 +112,7 @@ plt.ylabel(r'$\Delta^{\tau,{\tau}^\prime}$',fontsize=18)
 #plt.ylim(-0.01,0.1)
 #plt.xlim(0,2.5)
 plt.plot(t,avg_del_qp_particle_sample, label = 'Distance metric')
+# plt.yscale('log',base=2)
 plt.tick_params(axis='y',labelsize=16)
 plt.show()
 
