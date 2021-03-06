@@ -15,7 +15,7 @@ import torch
 
 nsamples = MD_parameters.nsamples
 nparticle = MC_parameters.nparticle
-temp = MC_parameters.temperature
+temp = MD_parameters.temp_list
 tau_long = MD_parameters.tau_long
 tau_short = MD_parameters.tau_short
 nsamples_cur = nsamples
@@ -65,4 +65,4 @@ p_hist = p_hist_[0::pair_interval]
 
 base_library = os.path.abspath('gold_standard')
 
-torch.save((q_hist, p_hist), base_library + '/nsample{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp,tau_short,MD_iterations,nsamples))
+torch.save((q_hist, p_hist), base_library + '/nsample{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
