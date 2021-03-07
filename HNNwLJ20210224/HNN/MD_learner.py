@@ -325,8 +325,7 @@ class MD_learner:
     def pred_qnp(self, filename):
 
         # load the models checkpoint
-        checkpoint = torch.load('./saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format(
-            MD_parameters.nsamples, MD_parameters.nparticle, MD_parameters.tau_long, type(self._opt).__name__, self._opt.param_groups[0]['lr'], ML_parameters.MLP_nhidden, ML_parameters.activation))[0]
+        checkpoint = torch.load(filename)[0]
         print(checkpoint)
 
         # load models weights state_dict
@@ -339,11 +338,15 @@ class MD_learner:
         #     print(var_name, "\t", self._opt.state_dict()[var_name])
 
         # initial data
-        q_list, p_list = self._phase_space.read(filename, nsamples= MD_parameters.gen_nsamples)
+        _test_data = self._data_io_obj.loadq_p('test')
+        test_data = self._data_io_obj.hamiltonian_dataset(_test_data)
+        print('n. of data', test_data.shape)
         # print(q_list, p_list)
 
-        self._phase_space.set_q(torch.unsqueeze(q_list[0], dim=0).to(self._device))
-        self._phase_space.set_p(torch.unsqueeze(p_list[0], dim=0).to(self._device))
+        _q_test = test_data[:, 0]; _p_test = test_data[:, 1]
+
+        self._phase_space.set_q(torch.unsqueeze(_q_test[0], dim=0).to(self._device))
+        self._phase_space.set_p(torch.unsqueeze(_p_test[0], dim=0).to(self._device))
 
         nsamples_cur = MD_parameters.nsamples_ML
         self._tau_cur = MD_parameters.tau_long  # tau = 0.1
@@ -352,14 +355,7 @@ class MD_learner:
         self.any_HNN.eval()
 
         q_pred, p_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
-
-        self._tau_cur = MD_parameters.tau_short
-
-        self._phase_space.set_q(torch.unsqueeze(q_list[0], dim=0))
-        self._phase_space.set_p(torch.unsqueeze(p_list[0], dim=0))
-
-        test_data = self._phase_space.read( filename, nsamples=MD_parameters.nsamples)
-        q_truth, p_truth = self._data_io_obj.phase_space2label( test_data, self.linear_integrator, self.noML_hamiltonian)
+        q_truth, p_truth = self._data_io_obj.phase_space2label( test_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
 
         print('predict',q_pred, p_pred)
         print('truth', q_truth, p_truth)

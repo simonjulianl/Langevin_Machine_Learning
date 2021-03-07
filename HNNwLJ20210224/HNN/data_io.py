@@ -66,6 +66,16 @@ class data_io:
 
         return init
 
+    def hamiltonian_testset(self, qp_list):
+
+        q_list, p_list = qp_list
+
+        init_pos = torch.unsqueeze(q_list, dim=1) #  nsamples  X 1 X nparticle X  DIM
+        init_vel = torch.unsqueeze(p_list, dim=1)  #  nsamples  X 1 X nparticle X  DIM
+        init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
+
+        return init
+
     def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
 
         nsamples, qnp, nparticles, DIM = qp_list.shape

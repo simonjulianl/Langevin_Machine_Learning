@@ -15,6 +15,10 @@ class pair_wise_MLP(nn.Module):
             nn.Tanh(),
             nn.Linear(MLP_nhidden, MLP_nhidden),
             nn.Tanh(),
+            nn.Linear(MLP_nhidden, MLP_nhidden),
+            nn.Tanh(),
+            nn.Linear(MLP_nhidden, MLP_nhidden),
+            nn.Tanh(),
             nn.Linear(MLP_nhidden, 2)
         )
 
