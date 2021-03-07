@@ -4,12 +4,13 @@ import matplotlib.pyplot as plt
 
 nparticle = 4
 DIM = 2
-T = 0.16
+T = 0.04
 samples = 1000
 pair_time_step = 0.1
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 max_ts = 20
+max_ts_cut = 15
 tau_long = 0.001
 tau_short = 0.0005
 
@@ -91,18 +92,22 @@ print('----std_del_qp_particle_sample -----')
 print(std_del_qp_particle_sample.shape)
 
 fig = plt.figure()
-t = torch.arange(0., max_ts + pair_time_step, pair_time_step)
+t = torch.arange(0., max_ts_cut + pair_time_step, pair_time_step)
 plt.suptitle(r'boxsize {:.4f}, Maximum distance $r = {:.4f}, r^2 = {:.4f}$'.format(boxsize,q_max,q_max*q_max)
-             + '\nTemp = {}, pair with time step = {}, Maximum time step = {}'.format(T, pair_time_step, max_ts)
+             + '\nTemp = {}, pair with time step = {}, Maximum time step = {}'.format(T, pair_time_step, max_ts_cut)
              + '\n' + r'gold standard $\tau^\prime$ = {}, time step compared with gold standard $\tau$ = {}'.format(tau_short, tau_long))
 
 fig.add_subplot(2,2,1)
-plt.plot(t,avg_del_q_particle_sample, label = 'Distance metric')
+plt.plot(t,avg_del_q_particle_sample[:int(max_ts_cut/pair_time_step+1)], label = 'Distance metric')
 plt.ylabel(r'$\Delta q^{\tau,{\tau}^\prime}$',fontsize=15)
+# plt.xscale('log',base=2)
+# plt.yscale('log',base=2)
 
 fig.add_subplot(2,2,2)
 plt.ylabel(r'$\Delta p^{\tau,{\tau}^\prime}$',fontsize=15)
-plt.plot(t,avg_del_p_particle_sample, label = 'Distance metric')
+plt.plot(t,avg_del_p_particle_sample[:int(max_ts_cut/pair_time_step+1)], label = 'Distance metric')
+# plt.xscale('log',base=2)
+# plt.yscale('log',base=2)
 
 fig.add_subplot(2,1,2)
 plt.xlabel('time',fontsize=16)
@@ -111,7 +116,8 @@ plt.ylabel(r'$\Delta^{\tau,{\tau}^\prime}$',fontsize=18)
 #plt.ylim(-0.01,0.89)
 #plt.ylim(-0.01,0.1)
 #plt.xlim(0,2.5)
-plt.plot(t,avg_del_qp_particle_sample, label = 'Distance metric')
+plt.plot(t,avg_del_qp_particle_sample[:int(max_ts_cut/pair_time_step+1)], label = 'Distance metric')
+# plt.xscale('log',base=2)
 # plt.yscale('log',base=2)
 plt.tick_params(axis='y',labelsize=16)
 plt.show()
