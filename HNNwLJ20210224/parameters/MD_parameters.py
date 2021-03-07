@@ -4,7 +4,7 @@ import math
 class MD_parameters:
 
     seed = 4662570 # index for preparing data
-    nsamples = 20900
+    nsamples = 20900 # total train/valid
     nsamples_batch = 1
     pixels_batch = 32
     nsamples_ML = 1

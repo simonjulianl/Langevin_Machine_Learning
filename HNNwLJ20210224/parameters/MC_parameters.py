@@ -3,7 +3,7 @@ import math
 class MC_parameters:
 
     seed = 35029  # 23645 for train / 35029 for valid
-    mode = 'test'
+    mode = 'test' # for test set mode 'test'
     kB = 1.0
     temperature = 0.04
     new_mcs = 1
