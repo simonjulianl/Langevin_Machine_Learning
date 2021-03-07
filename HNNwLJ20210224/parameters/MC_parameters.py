@@ -3,12 +3,12 @@ import math
 class MC_parameters:
 
     seed = 35029  # 23645 for train / 35029 for valid
-    mode = 'valid'
+    mode = 'test'
     kB = 1.0
     temperature = 0.04
     new_mcs = 1
     mcstep = 10
-    nparticle = 2
+    nparticle = 4
     DIM = 2
     mass = 1
     rho = 0.1

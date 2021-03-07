@@ -10,7 +10,7 @@ class ML_parameters:
 
     # MLP network parameters
     MLP_input = 5
-    MLP_nhidden = 32
+    MLP_nhidden = 128
 
     # CNN network parameters
 
