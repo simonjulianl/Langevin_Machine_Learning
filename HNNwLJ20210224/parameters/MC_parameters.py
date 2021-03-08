@@ -8,7 +8,7 @@ class MC_parameters:
     temperature = 0.04
     new_mcs = 1
     mcstep = 10
-    nparticle = 4
+    nparticle = 2
     DIM = 2
     mass = 1
     rho = 0.1
