@@ -63,6 +63,14 @@ p_hist_ = torch.cat((init_p, p_list), dim=0)
 q_hist = q_hist_[0::pair_interval]
 p_hist = p_hist_[0::pair_interval]
 
+q_hist = torch.unsqueeze(q_hist, dim=1)
+p_hist = torch.unsqueeze(p_hist, dim=1)
+
+qp_hist = torch.cat((q_hist, p_hist), dim=1)
+
+# del q_hist_
+# del p_hist_
+
 base_library = os.path.abspath('gold_standard')
 
-torch.save((q_hist, p_hist), base_library + '/nsample{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
+torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
