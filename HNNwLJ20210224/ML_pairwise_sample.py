@@ -72,7 +72,6 @@ torch.autograd.set_detect_anomaly(True)
 
 # for test
 MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
-q_pred, p_pred = MD_tester.step()
 
 init_q = MD_tester.test_data[:, 0]
 init_p = MD_tester.test_data[:, 1]
@@ -80,8 +79,15 @@ init_p = MD_tester.test_data[:, 1]
 init_q = torch.unsqueeze(init_q, dim=0)
 init_p = torch.unsqueeze(init_p, dim=0)
 
+q_pred, p_pred = MD_tester.step()
+
 q_hist = torch.cat((init_q, q_pred.cpu()), dim=0)
 p_hist = torch.cat((init_p, p_pred.cpu()), dim=0)
 
+q_hist = torch.unsqueeze(q_hist, dim=1)
+p_hist = torch.unsqueeze(p_hist, dim=1)
+
+qp_hist = torch.cat((q_hist, p_hist), dim=1)
+
 base_library = os.path.abspath('gold_standard')
-torch.save((q_hist, p_hist), base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_predicted.pt'.format(nparticle,temp[0],tau_long,ML_iterations))
+torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_predicted.pt'.format(nparticle,temp[0],tau_long,ML_iterations))
