@@ -1,16 +1,17 @@
 import torch
 import math
 import matplotlib.pyplot as plt
+import sys
 
 nparticle = 4
 DIM = 2
-T = 0.04
+T = 0.16
 samples = 1000
 pair_time_step = 0.1
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 max_ts = 20
-max_ts_cut = 15
+max_ts_cut = 20
 tau_long = 0.001
 tau_short = 0.0005
 
@@ -93,7 +94,7 @@ print(std_del_qp_particle_sample.shape)
 
 fig = plt.figure()
 t = torch.arange(0., max_ts_cut + pair_time_step, pair_time_step)
-plt.suptitle(r'boxsize {:.4f}, Maximum distance $r = {:.4f}, r^2 = {:.4f}$'.format(boxsize,q_max,q_max*q_max)
+plt.suptitle(r'nparticle {}, boxsize {:.4f}, Maximum distance $r = {:.4f}, r^2 = {:.4f}$'.format(nparticle,boxsize,q_max,q_max*q_max)
              + '\nTemp = {}, pair with time step = {}, Maximum time step = {}'.format(T, pair_time_step, max_ts_cut)
              + '\n' + r'gold standard $\tau^\prime$ = {}, time step compared with gold standard $\tau$ = {}'.format(tau_short, tau_long))
 
