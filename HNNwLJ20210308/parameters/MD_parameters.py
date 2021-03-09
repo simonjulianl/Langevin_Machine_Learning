@@ -17,5 +17,5 @@ class MD_parameters:
     tau_long = 0.1
     max_ts = 0.4
     iteration_batch = 2
-    #iteration_batch = int(max_ts / tau_short) // 10
+    #iteration_batch = int(max_ts / tau_short) // int(tau_long / tau_short)
     integrator_method = methods.linear_velocity_verlet
