@@ -52,8 +52,7 @@ phase_space.set_q(init_q)
 phase_space.set_p(init_p)
 
 q_list, p_list = linear_integrator_obj.step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur)
-print(q_list, p_list)
-quit()
+
 init_q = torch.unsqueeze(init_q, dim=0)
 init_p = torch.unsqueeze(init_p, dim=0)
 
