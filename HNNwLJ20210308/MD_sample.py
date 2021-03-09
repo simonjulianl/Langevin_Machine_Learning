@@ -41,10 +41,13 @@ noMLhamiltonian = super(type(pair_wise_HNN_obj), pair_wise_HNN_obj)
 if not os.path.exists('./gold_standard/'):
                 os.makedirs('./gold_standard/')
 
+if not os.path.exists('./tmp/'):
+    os.makedirs('./tmp/')
+
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config/'
-filename = 'nparticle{}_tau{}'.format(nparticle, tau_cur)
+filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
 
 data_io_obj = data_io(init_path)
 init_q, init_p = data_io_obj.loadq_p('valid')
