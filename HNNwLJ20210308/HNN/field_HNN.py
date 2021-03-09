@@ -25,7 +25,6 @@ class field_HNN(hamiltonian):
         super().append(lennard_jones())
         super().append(kinetic_energy(MD_parameters.mass))
 
-
         self.phi_fields_obj = phi_fields(MD_parameters.npixels, super())
 
     def train(self):

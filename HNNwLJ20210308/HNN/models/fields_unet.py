@@ -1,5 +1,6 @@
 """ Full assembly of the parts to form the complete network """
 
+from ML_parameters import ML_parameters
 from .fields_unet_parts import *
 from .concat2fields import concat2fields
 from .CNN4p_field import CNN4p_field
@@ -7,14 +8,17 @@ from .CNN4phi_field import CNN4phi_field
 
 class fields_unet(nn.Module):
 
-    def __init__(self, in_channels, n_channels, out_channels, bilinear=True):
+    def __init__(self, bilinear=True):
         super(fields_unet, self).__init__()
 
-        self.cat_channels = n_channels + n_channels
+        cnn_input = ML_parameters.cnn_input
+        cnn_nhidden = ML_parameters.cnn_nhidden
+
+        self.cat_channels = cnn_nhidden + cnn_nhidden
         self.bilinear = bilinear
 
-        self.modelA = CNN4phi_field(in_channels, n_channels)
-        self.modelB = CNN4p_field(in_channels, n_channels)
+        self.modelA = CNN4phi_field(cnn_input, cnn_nhidden)
+        self.modelB = CNN4p_field(cnn_input, cnn_nhidden)
 
         self.conc = concat2fields(self.modelA, self.modelB)
         self.inc = DoubleConv(self.cat_channels, 64)
@@ -24,7 +28,7 @@ class fields_unet(nn.Module):
         self.up1 = Up(256, 128 , bilinear)
         self.up2 = Up(256, 64, bilinear)
         self.up3 = Up(128, 64, bilinear)
-        self.outc = OutConv(64, out_channels)
+        self.outc = OutConv(64, 2)
 
     def forward(self, phi_field, p_field , tau):
 

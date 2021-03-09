@@ -2,7 +2,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from .conv2d_PBC import compute_PBC_constants, compute_PBC
 
 class DoubleConv(nn.Module):
