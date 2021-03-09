@@ -44,6 +44,7 @@ if not os.path.exists('./gold_standard/'):
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config/'
+filename = 'nparticle{}_tau{}'.format(nparticle, tau_cur)
 
 data_io_obj = data_io(init_path)
 init_q, init_p = data_io_obj.loadq_p('valid')
@@ -51,9 +52,9 @@ init_q, init_p = data_io_obj.loadq_p('valid')
 phase_space.set_q(init_q)
 phase_space.set_p(init_p)
 
-#q_list, p_list = linear_integrator_obj.step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur)
-q_list, p_list = linear_integrator_obj.step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur)
-print(q_list, p_list)
+linear_integrator_obj.tiny_step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur, filename)
+q_list, p_list = linear_integrator_obj.concat_tiny_step(MD_iterations, filename)
+
 init_q = torch.unsqueeze(init_q, dim=0)
 init_p = torch.unsqueeze(init_p, dim=0)
 
@@ -69,9 +70,10 @@ p_hist = torch.unsqueeze(p_hist, dim=1)
 
 qp_hist = torch.cat((q_hist, p_hist), dim=1)
 
-# del q_hist_
-# del p_hist_
-
 base_library = os.path.abspath('gold_standard')
 
-# torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
+torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
+
+# remove files
+for z in range(int(MD_iterations/MD_parameters.iteration_batch)):
+    os.remove( filename + '_{}.pt'.format(z))

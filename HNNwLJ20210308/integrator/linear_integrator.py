@@ -21,25 +21,61 @@ class linear_integrator:
 
         self._integrator_method = integrator_method
 
-    # def save_object(self, qp_list):
-    #     with open('test.pt', 'wb') as handle: # overwrites any existing file
-    #         pickle.dump(qp_list, handle)
+    def save_object(self, qp_list, filename, nfile):
+        with open( filename + '_{}.pt'.format(nfile), 'wb') as handle: # overwrites any existing file
+            pickle.dump(qp_list, handle)
+
+    def load_object(self, filename, nfile):
+        with open( filename + '_{}.pt'.format(nfile), 'rb') as handle: # overwrites any existing file
+            return pickle.load(handle)
 
     def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
+        boxsize =  MC_parameters.boxsize
+
+        q_list = None
+        p_list = None
+
+        # for i in trange(self._state['MD_iterations']):
+        for i in range(MD_iterations):
+            # print(i)
+            q_curr, p_curr  = self._integrator_method( hamiltonian, phase_space, tau_cur, boxsize)
+            q_curr = torch.unsqueeze(q_curr, dim=0)
+            p_curr = torch.unsqueeze(p_curr, dim=0)
+
+            if i == 0:
+                q_list = q_curr
+                p_list = p_curr
+            else:
+                q_list = torch.cat((q_list, q_curr))
+                p_list = torch.cat((p_list, p_curr))
+
+            assert q_list.shape == p_list.shape
+
+        # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
+
+        if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
+            index = torch.where(torch.isnan(q_list))
+            print(q_list[index])
+            raise ArithmeticError('Numerical Integration error, nan is detected')
+
+        return (q_list, p_list)
+
+
+    def tiny_step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur, filename):
+
         nparticle = MC_parameters.nparticle
-        DIM =  MC_parameters.DIM
         boxsize =  MC_parameters.boxsize
         iteration_batch = MD_parameters.iteration_batch
 
-        print('step nsamples_cur, tau_cur, MD_iterations')
-        print(nsamples_cur, tau_cur, MD_iterations)
+        print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
+        print(nsamples_cur, tau_cur, MD_iterations, iteration_batch)
 
         qp_list = []
 
         for i in range(MD_iterations):
 
-            # print('iteration', i)
+            print('iteration', i)
 
             q_list_, p_list_  = self._integrator_method(hamiltonian, phase_space, tau_cur, boxsize)
 
@@ -49,44 +85,38 @@ class linear_integrator:
 
             if i % iteration_batch == iteration_batch - 1:
 
-                with open('test_{}.pt'.format(i // iteration_batch), 'wb') as handle:
+                self.save_object(qp_list, filename, i // iteration_batch )
 
-                    pickle.dump(qp_list, handle)
+                del qp_list
+                qp_list = []
 
-                    del qp_list
-                    qp_list = []
 
-        for j in range(iteration_batch):
+    def concat_tiny_step(self, MD_iterations, filename):
 
-            with open('test_{}.pt'.format(j), 'rb') as handle:  # overwrites any existing file
+        for j in range(int(MD_iterations / MD_parameters.iteration_batch)):
 
-                a = pickle.load(handle)
-                for k in range(len(a)):
-                    q_curr = a[k][0]
-                    p_curr = a[k][1]
+            a = self.load_object(filename, j)
 
-                    q_curr = torch.unsqueeze(q_curr, dim=0)
-                    p_curr = torch.unsqueeze(p_curr, dim=0)
+            for k in range(len(a)):
+                q_curr = a[k][0]
+                p_curr = a[k][1]
 
-                    if k == 0:
-                        q_list = q_curr
-                        p_list = p_curr
-                    else:
-                        q_list = torch.cat((q_list, q_curr))
-                        p_list = torch.cat((p_list, p_curr))
+                q_curr = torch.unsqueeze(q_curr, dim=0)
+                p_curr = torch.unsqueeze(p_curr, dim=0)
 
-                if j == 0:
-                    q_cat = q_list
-                    p_cat = p_list
+                if k == 0:
+                    q_list = q_curr
+                    p_list = p_curr
                 else:
-                    q_cat = torch.cat((q_cat, q_list))
-                    p_cat = torch.cat((p_cat, p_list))
+                    q_list = torch.cat((q_list, q_curr))
+                    p_list = torch.cat((p_list, p_curr))
 
-        # remove files
-        for z in range(iteration_batch):
-            os.remove('test_{}.pt'.format(z))
-
-        # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
+            if j == 0:
+                q_cat = q_list
+                p_cat = p_list
+            else:
+                q_cat = torch.cat((q_cat, q_list))
+                p_cat = torch.cat((p_cat, p_list))
 
         if (torch.isnan(q_cat).any()) or (torch.isnan(p_cat).any()):
             index = torch.where(torch.isnan(q_cat))
@@ -94,4 +124,3 @@ class linear_integrator:
             raise ArithmeticError('Numerical Integration error, nan is detected')
 
         return (q_cat, p_cat)
-
