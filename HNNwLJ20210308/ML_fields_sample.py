@@ -19,7 +19,8 @@ npixels = MD_parameters.npixels
 tau_long = MD_parameters.tau_long
 lr = ML_parameters.lr
 optimizer = ML_parameters.optimizer
-MLP_nhidden = ML_parameters.MLP_nhidden
+cnn_input = ML_parameters.cnn_input
+cnn_nhidden = ML_parameters.cnn_nhidden
 activation = ML_parameters.activation
 tau_short = MD_parameters.tau_short
 
@@ -31,7 +32,7 @@ torch.cuda.manual_seed_all(seed)
 
 phase_space = phase_space.phase_space()
 linear_integrator_obj = linear_integrator( MD_parameters.integrator_method )
-field_HNN_obj = field_HNN(fields_unet(2, 32, 2), linear_integrator_obj)
+field_HNN_obj = field_HNN(fields_unet(), linear_integrator_obj) # in_channels, n_channels, out_channels
 
 # check gpu available
 print('__Number CUDA Devices:', torch.cuda.device_count())
@@ -42,15 +43,15 @@ print ('Current cuda device ', torch.cuda.current_device())
 # print('GPU available', torch.cuda.get_device_name(device))
 
 load_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                 lr, MLP_nhidden, activation)
+                                                 lr, cnn_nhidden, activation)
 best_model_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                     lr, MLP_nhidden, activation)
+                                                     lr, cnn_nhidden, activation)
 
 #change path when retrain빠
 save_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                 lr, MLP_nhidden, activation)
+                                                 lr, cnn_nhidden, activation)
 #change path when retrain
-loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation)
+loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, cnn_nhidden, activation)
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
