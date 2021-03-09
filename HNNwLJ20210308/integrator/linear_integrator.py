@@ -61,7 +61,7 @@ class linear_integrator:
 
         return (q_list, p_list)
 
-
+    # to find gold standard
     def tiny_step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur, filename):
 
         nparticle = MC_parameters.nparticle
