@@ -60,7 +60,6 @@ init_path = base_dir + '/init_config/'
 torch.autograd.set_detect_anomaly(True)
 
 MD_learner = MD_learner(linear_integrator_obj, field_HNN_obj, phase_space, init_path)
-quit()
 MD_learner.load_checkpoint(load_path)
 
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
