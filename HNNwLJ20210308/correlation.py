@@ -5,15 +5,15 @@ import sys
 
 nparticle = 4
 DIM = 2
-T = 0.16
+T = 0.04
 samples = 1000
 pair_time_step = 0.1
 rho = 0.1
 boxsize = math.sqrt(nparticle/rho)
 max_ts = 20
 max_ts_cut = 20
-tau_long = 0.001
-tau_short = 0.0005
+tau_long = 0.01
+tau_short = 0.0001
 
 gold_standard = torch.load('./gold_standard/nparticle{}_T{}_ts{}_iter{}_vv_1000sampled.pt'.format(nparticle,T,tau_short, int(max_ts/tau_short)))
 tau_large = torch.load('./gold_standard/nparticle{}_T{}_ts{}_iter{}_vv_1000sampled.pt'.format(nparticle,T,tau_long, int(max_ts/tau_long))) # HNN
@@ -23,11 +23,11 @@ L_h = boxsize/2.
 q_max = math.sqrt(L_h*L_h + L_h*L_h)
 print('Maximum distance r = {}, r^2 = {}'.format(q_max,q_max*q_max))
 
-gs_q = gold_standard[0]
-q    = tau_large[0]
+gs_q = gold_standard[:,0]
+q    = tau_large[:,0]
 
-gs_p = gold_standard[1]
-p    = tau_large[1]
+gs_p = gold_standard[:,1]
+p    = tau_large[:,1]
 
 sample = gs_q.shape[1]
 print('sample',sample)
