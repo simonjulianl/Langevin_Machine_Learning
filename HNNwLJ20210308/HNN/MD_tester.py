@@ -1,19 +1,21 @@
 from .data_io import data_io
 from .loss import qp_MSE_loss
 import torch.optim as optim
+from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
 # from .models import pair_wise_zero
 from torch.optim.lr_scheduler import StepLR
+from psutil._common import bytes2human
 import torch
-import shutil
+import psutil
+import gzip
 import time
+import pickle
 import os
-import sys
 
 
 class MD_tester:
-
     _obj_count = 0
 
     def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, path, load_path):
@@ -23,10 +25,10 @@ class MD_tester:
 
         self.linear_integrator = linear_integrator_obj
         self.any_HNN = any_HNN_obj
-        self.any_network =  any_HNN_obj.network
+        self.any_network = any_HNN_obj.network
         self.noML_hamiltonian = super(type(any_HNN_obj), any_HNN_obj)
 
-        print('-- hi terms -- ',self.noML_hamiltonian.hi())
+        print('-- hi terms -- ', self.noML_hamiltonian.hi())
         # terms = self.noML_hamiltonian.get_terms()
 
         self._phase_space = phase_space
@@ -36,14 +38,14 @@ class MD_tester:
         start_data_load = time.time()
         _test_data = self._data_io_obj.loadq_p('test')
         self.test_data = self._data_io_obj.hamiltonian_testset(_test_data)
-        self.test_data = self.test_data[:3]
+        # self.test_data = self.test_data[:5]
         print('n. of data', self.test_data.shape)
         end_data_load = time.time()
 
         self._device = ML_parameters.device
 
         if ML_parameters.optimizer == 'Adam':
-            self._opt = optim.Adam(self.any_network.parameters(), lr = ML_parameters.lr)
+            self._opt = optim.Adam(self.any_network.parameters(), lr=ML_parameters.lr)
 
         elif ML_parameters.optimizer == 'SGD':
             self._opt = optim.SGD(self.any_network.parameters(), lr=ML_parameters.lr)
@@ -64,7 +66,7 @@ class MD_tester:
 
         nsamples_cur = MD_parameters.nsamples_ML
         self._tau_cur = MD_parameters.tau_long  # tau = 0.1
-        MD_iterations = int( MD_parameters.tau_long / self._tau_cur)
+        MD_iterations = int(MD_parameters.tau_long / self._tau_cur)
 
         q_pred, p_pred = self.linear_integrator.step(self.any_HNN, phase_space, MD_iterations, nsamples_cur, self._tau_cur)
 
@@ -74,12 +76,15 @@ class MD_tester:
 
         q_list_pred = None
         p_list_pred = None
+        crash_index = []
 
         ML_iterations = int(MD_parameters.max_ts / MD_parameters.tau_long)
-        
+
         self.any_HNN.eval()
 
         for i in range(ML_iterations):
+
+            # print('ML_iterations', i)
 
             if i == 0:
 
@@ -93,36 +98,91 @@ class MD_tester:
 
             else:
 
-                self._phase_space.set_q(q_list_pred[i-1].to(self._device))
-                self._phase_space.set_p(p_list_pred[i-1].to(self._device))
+                self._phase_space.set_q(q_list_pred[i - 1].to(self._device))
+                self._phase_space.set_p(p_list_pred[i - 1].to(self._device))
 
                 q_pred, p_pred = self.pred_qnp(self._phase_space)
+
+                bool_ = self._phase_space.debug_pbc_bool(q_pred, MC_parameters.boxsize)
+
+                if bool_.any() == True:
+                    crash_index.append(i)
 
                 q_list_pred = torch.cat((q_list_pred, q_pred))
                 p_list_pred = torch.cat((p_list_pred, p_pred))
 
+        if crash_index:
+            self.q_crash_before_pred = q_list_pred[ML_iterations - len(crash_index) - 1]
+            self.p_crash_before_pred = p_list_pred[ML_iterations - len(crash_index) - 1]
 
-        return q_list_pred,p_list_pred
+            q_list_pred = torch.zeros([])
+            p_list_pred = torch.zeros([])
 
-    def step(self):
+        return q_list_pred, p_list_pred
+
+    def step(self, filename):
 
         _q_test = self.test_data[:, 0]; _p_test = self.test_data[:, 1]
 
         nsamples, nparticle, DIM = _q_test.shape
 
-        q_list = None
-        p_list = None
+        qp_list = []
+        #no_crash_sample_index = []
+        q_crash_before_pred_app = []
+        p_crash_before_pred_app = []
+
+        iteration_batch = MD_parameters.ML_iteration_batch
 
         for i in range(nsamples):
 
+            print('nsamples', i)
+
             q_sample_list, p_sample_list = self.each_sample_step(_q_test[i], _p_test[i])
+            print(q_sample_list.shape, p_sample_list.shape)
 
-            if i == 0:
-                q_list = q_sample_list
-                p_list = p_sample_list
+            if q_sample_list.shape and p_sample_list.shape:
+                qp_stack = torch.stack((q_sample_list, p_sample_list))
+                qp_list.append(qp_stack)
+                #no_crash_sample_index.append(i)
+
             else:
-                q_list = torch.cat((q_list, q_sample_list), dim=1)
-                p_list = torch.cat((p_list, p_sample_list), dim=1)
+                q_crash_before_pred_app.append(self.q_crash_before_pred)
+                p_crash_before_pred_app.append(self.p_crash_before_pred)
 
 
-        return (q_list, p_list)
+            mem_usage = psutil.virtual_memory()
+
+            print('totol memory :', bytes2human(mem_usage[0]))
+            print('available memory:', bytes2human(mem_usage[1]))
+            print('memory % used:', psutil.virtual_memory()[2])
+
+            if i % iteration_batch == iteration_batch - 1:
+
+                print('save file {}'.format(i))
+                with gzip.open(filename + '_{}.pt'.format(i // iteration_batch), 'wb') as handle:  # overwrites any existing file
+                    pickle.dump(qp_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    handle.close()
+
+                del qp_list
+                qp_list = []
+
+        # q_no_crash_init = _q_test[no_crash_sample_index]
+        # p_no_crash_init = _p_test[no_crash_sample_index]
+        #
+        # q_no_crash_init = torch.unsqueeze(q_no_crash_init, dim=0)
+        # p_no_crash_init = torch.unsqueeze(p_no_crash_init, dim=0)
+        #
+        # q_pred = torch.cat((q_no_crash_init, q_list.cpu()), dim=0)
+        # p_pred = torch.cat((p_no_crash_init, p_list.cpu()), dim=0)
+
+        if q_crash_before_pred_app:
+
+            for z in range(int(nsamples / iteration_batch)):
+                os.remove(filename + '_{}.pt'.format(z))
+
+            q_crash_before_pred_app = torch.cat(q_crash_before_pred_app, dim=0)
+            p_crash_before_pred_app = torch.cat(p_crash_before_pred_app, dim=0)
+
+        return q_crash_before_pred_app, p_crash_before_pred_app
+
+

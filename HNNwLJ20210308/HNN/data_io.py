@@ -66,6 +66,26 @@ class data_io:
 
         return init
 
+    def hamiltonian_balance_dataset(self, crash, train):
+
+        q_crash, p_crash = self.loadq_p(crash)
+        q_train, p_train = self.loadq_p(train)
+
+        y = int(0.4 * len(q_train) / len(q_crash))
+        z = len(q_train) - y * len(q_crash)
+
+        indices = torch.randperm(len(q_train))[:z]
+        q_reduce_train = q_train[indices]
+        p_reduce_train = p_train[indices]
+
+        q_duplicate_crash = q_crash.repeat(y,1,1)
+        p_duplicate_crash = p_crash.repeat(y,1,1)
+
+        q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
+        p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
+
+        return (q_list, p_list)
+
     def hamiltonian_testset(self, qp_list):
 
         q_list, p_list = qp_list
