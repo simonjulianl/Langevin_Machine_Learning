@@ -25,15 +25,26 @@ class pb:
 
         bool = torch.abs(q) > 0.5 * boxsize
         # print('debug_pbc', bool.any())
+        # print('q',q)
 
         if bool.any() == True: # if values have any above condition, return true.
             #print('q', q)
             index = torch.where(torch.abs(q) > 0.5 * boxsize)
             debug = q[index]
-            print('index', index)
-            print('debug_pbc',debug)
+            # print('index', index)
+            # print('debug_pbc',debug)
+            # print(q)
+            print('pbc not applied')
 
-            raise ValueError('pbc not applied')
+            # raise ValueError('pbc not applied')
+
+    def debug_pbc_bool(self, q, boxsize):
+
+        bool = torch.abs(q) > 0.5 * boxsize
+        # print('debug_pbc', bool.any())
+        # print('q',q)
+
+        return bool
 
     def debug_pbc_reduced(self,q):
 
