@@ -12,6 +12,7 @@ from phase_space import phase_space
 from integrator import linear_integrator
 from HNN.data_io import data_io
 import torch
+import time
 
 nsamples = MD_parameters.nsamples
 nparticle = MC_parameters.nparticle
@@ -22,6 +23,8 @@ nsamples_cur = nsamples
 tau_cur = tau_short # find gold standard
 pair_interval = int(tau_long / tau_short)
 MD_iterations = round(MD_parameters.max_ts / tau_short)
+iteration_batch = MD_parameters.iteration_batch
+iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
 
 print('nparticle tau pair_interval MD_iterations')
 print(nparticle, tau_short, pair_interval, MD_iterations)
@@ -46,37 +49,47 @@ if not os.path.exists('./tmp/'):
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
-init_path = base_dir + '/init_config/'
+init_path = base_dir + '/init_config_for_testset/'
 filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
+base_library = os.path.abspath('gold_standard')
 
 data_io_obj = data_io(init_path)
-init_q, init_p = data_io_obj.loadq_p('valid')
+init_q, init_p = data_io_obj.loadq_p('test')
+
+# print('init', init_q, init_p)
 
 phase_space.set_q(init_q)
 phase_space.set_p(init_p)
 
+start = time.time()
 linear_integrator_obj.tiny_step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur, filename)
-q_list, p_list = linear_integrator_obj.concat_tiny_step(MD_iterations, filename)
+end = time.time()
+print('time for integrator :', end-start)
+print('start concat')
+start = time.time()
+q_list, p_list = linear_integrator_obj.concat_tiny_step(MD_iterations, tau_cur, filename)
+end = time.time()
+print('time for save files :', end-start)
+
+print('end concat')
+print(q_list.shape, p_list.shape)
+print('time for concat :', end-start)
 
 init_q = torch.unsqueeze(init_q, dim=0)
 init_p = torch.unsqueeze(init_p, dim=0)
 
-q_hist_ = torch.cat((init_q, q_list), dim=0)
-p_hist_ = torch.cat((init_p, p_list), dim=0)
+q_hist = torch.cat((init_q, q_list), dim=0)
+p_hist = torch.cat((init_p, p_list), dim=0)
 
 # pair w large time step
-q_hist = q_hist_[0::pair_interval]
-p_hist = p_hist_[0::pair_interval]
 
 q_hist = torch.unsqueeze(q_hist, dim=1)
 p_hist = torch.unsqueeze(p_hist, dim=1)
 
 qp_hist = torch.cat((q_hist, p_hist), dim=1)
 
-base_library = os.path.abspath('gold_standard')
-
 torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
 
 # remove files
-for z in range(int(MD_iterations/MD_parameters.iteration_batch)):
+for z in range(iteration_pair_batch):
     os.remove( filename + '_{}.pt'.format(z))
