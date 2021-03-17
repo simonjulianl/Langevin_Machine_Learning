@@ -18,6 +18,7 @@ import time
 nsamples = MD_parameters.nsamples
 nparticle = MC_parameters.nparticle
 temp = MD_parameters.temp_list
+rho = MC_parameters.rho
 tau_long = MD_parameters.tau_long
 tau_short = MD_parameters.tau_short
 lr = ML_parameters.lr
@@ -61,33 +62,33 @@ loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(ns
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config/'
-init_test_path = base_dir + '/init_config_for_testset/'
+init_test_path = base_dir + 'init_config_for_testset/'
+filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_long)
 
 torch.autograd.set_detect_anomaly(True)
 
-# for train
+# # for train
 # MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
 # MD_learner.load_checkpoint(load_path)
 # MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
 # for test
+start = time.time()
 MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
+q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
+end = time.time()
+print('q or p crash before pred', len(q_crash_before_pred_), len(p_crash_before_pred_))
+print('test time:', end - start)
 
-init_q = MD_tester.test_data[:, 0]
-init_p = MD_tester.test_data[:, 1]
+q_crash_before_pred = torch.unsqueeze(q_crash_before_pred_, dim=1)
+p_crash_before_pred = torch.unsqueeze(p_crash_before_pred_, dim=1)
 
-init_q = torch.unsqueeze(init_q, dim=0)
-init_p = torch.unsqueeze(init_p, dim=0)
+qp_crash_before_pred = torch.cat((q_crash_before_pred, p_crash_before_pred), dim=1)
 
-q_pred, p_pred = MD_tester.step()
+if len(q_crash_before_pred_) != 0 and len(p_crash_before_pred_) != 0 :
+    torch.save(qp_crash_before_pred, init_test_path + '/nparticle{}_new_nsim_rho_{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
 
-q_hist = torch.cat((init_q, q_pred.cpu()), dim=0)
-p_hist = torch.cat((init_p, p_pred.cpu()), dim=0)
-
-q_hist = torch.unsqueeze(q_hist, dim=1)
-p_hist = torch.unsqueeze(p_hist, dim=1)
-
-qp_hist = torch.cat((q_hist, p_hist), dim=1)
-
-base_library = os.path.abspath('gold_standard')
-torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_predicted.pt'.format(nparticle,temp[0],tau_long,ML_iterations))
+# # for crash relearner
+# MD_relearner = MD_crash_relearner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path)
+# MD_relearner.load_checkpoint(load_path)
+# MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
