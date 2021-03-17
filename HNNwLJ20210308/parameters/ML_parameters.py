@@ -3,7 +3,7 @@ import torch
 class ML_parameters:
 
     lr = 0.0001
-    nepoch = 3
+    nepoch = 5
     optimizer = 'Adam'
     activation = 'tanh'
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
