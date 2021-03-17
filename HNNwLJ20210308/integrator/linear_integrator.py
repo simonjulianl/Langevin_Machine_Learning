@@ -5,6 +5,8 @@ import numpy as np
 import torch
 import pickle
 import os
+import psutil
+import gzip
 from parameters.MC_parameters import MC_parameters
 from parameters.MD_parameters import MD_parameters
 
@@ -22,12 +24,15 @@ class linear_integrator:
         self._integrator_method = integrator_method
 
     def save_object(self, qp_list, filename, nfile):
-        with open( filename + '_{}.pt'.format(nfile), 'wb') as handle: # overwrites any existing file
-            pickle.dump(qp_list, handle)
+        with gzip.open( filename + '_{}.pt'.format(nfile), 'wb') as handle: # overwrites any existing file
+            pickle.dump(qp_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            handle.close()
 
     def load_object(self, filename, nfile):
-        with open( filename + '_{}.pt'.format(nfile), 'rb') as handle: # overwrites any existing file
-            return pickle.load(handle)
+        with gzip.open( filename + '_{}.pt'.format(nfile), 'rb') as handle: # overwrites any existing file
+            p = pickle.load(handle)
+
+            return p
 
     def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
@@ -55,9 +60,10 @@ class linear_integrator:
         # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
 
         if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
-            index = torch.where(torch.isnan(q_list))
-            print(q_list[index])
-            raise ArithmeticError('Numerical Integration error, nan is detected')
+            # index = torch.where(torch.isnan(q_list))
+            # print(q_list[index])
+            print('Numerical Integration error, nan is detected')
+            # raise ArithmeticError('Numerical Integration error, nan is detected')
 
         return (q_list, p_list)
 
@@ -67,6 +73,7 @@ class linear_integrator:
         nparticle = MC_parameters.nparticle
         boxsize =  MC_parameters.boxsize
         iteration_batch = MD_parameters.iteration_batch
+        iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
 
         print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
         print(nsamples_cur, tau_cur, MD_iterations, iteration_batch)
@@ -75,52 +82,93 @@ class linear_integrator:
 
         for i in range(MD_iterations):
 
-            print('iteration', i)
+            #print('iteration', i)
 
             q_list_, p_list_  = self._integrator_method(hamiltonian, phase_space, tau_cur, boxsize)
 
             qp_stack = torch.stack((q_list_, p_list_))
             # qp = {'q_{}'.format(i): q_list, 'p_{}'.format(i): p_list}
-            qp_list.append(qp_stack)
 
-            if i % iteration_batch == iteration_batch - 1:
+            if (i+1) % int(MD_parameters.tau_long / tau_cur) == 0 :
+                qp_list.append(qp_stack)
+                print('i', i, 'memory % used:', psutil.virtual_memory()[2])
 
-                self.save_object(qp_list, filename, i // iteration_batch )
+
+            if i % iteration_pair_batch == iteration_pair_batch - 1:
+
+                print('save file', i)
+                self.save_object(qp_list, filename, i // iteration_pair_batch )
 
                 del qp_list
                 qp_list = []
 
 
-    def concat_tiny_step(self, MD_iterations, filename):
+    def concat_tiny_step(self, MD_iterations, tau_cur, filename):
 
-        for j in range(int(MD_iterations / MD_parameters.iteration_batch)):
+         qp_list = []
 
-            a = self.load_object(filename, j)
+         iteration_batch = MD_parameters.iteration_batch
+         iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
+         print('iteration pair batch', iteration_pair_batch)
 
-            for k in range(len(a)):
-                q_curr = a[k][0]
-                p_curr = a[k][1]
+         nfile = int(MD_iterations / iteration_pair_batch )
 
-                q_curr = torch.unsqueeze(q_curr, dim=0)
-                p_curr = torch.unsqueeze(p_curr, dim=0)
+         for j in range(nfile):
+             #print('j',j)
+             a = self.load_object(filename, j)
+             #with open( filename + '_{}.pt'.format(j), 'rb') as handle: # overwrites any existing file
+             #   a = pickle.load(handle)
 
-                if k == 0:
-                    q_list = q_curr
-                    p_list = p_curr
-                else:
-                    q_list = torch.cat((q_list, q_curr))
-                    p_list = torch.cat((p_list, p_curr))
+             #handle.close()
+             tensor_a = torch.stack(a)
+             #print('tensor a', tensor_a.shape)
 
-            if j == 0:
-                q_cat = q_list
-                p_cat = p_list
-            else:
-                q_cat = torch.cat((q_cat, q_list))
-                p_cat = torch.cat((p_cat, p_list))
+             q_curr = tensor_a[:,0]
+             p_curr = tensor_a[:,1]
 
-        if (torch.isnan(q_cat).any()) or (torch.isnan(p_cat).any()):
-            index = torch.where(torch.isnan(q_cat))
-            print(q_cat[index])
-            raise ArithmeticError('Numerical Integration error, nan is detected')
+             qp_stack = torch.stack((q_curr, p_curr))
+             # print(qp_stack[0],qp_stack[1])
+             qp_list.append(qp_stack)
+             #print('memory % used:', psutil.virtual_memory()[2])
 
-        return (q_cat, p_cat)
+
+         qp_cat_list = torch.cat(qp_list, dim=1)
+
+         q_list = qp_cat_list[0]
+         p_list = qp_cat_list[1]
+
+         if (torch.isnan(q_list).any()) or (torch.isnan(q_list).any()):
+             index = torch.where(torch.isnan(q_list))
+             print(q_list[index])
+             raise ArithmeticError('Numerical Integration error, nan is detected')
+
+         return (q_list, p_list)
+
+
+    # def load_nfile_tiny_step(self, MD_iterations, filename):
+    #
+    #     self.qp_cat_list = []
+    #     iteration_batch = MD_parameters.iteration_batch
+    #     print('iteration batch', iteration_batch)
+    #     nfile = int( MD_iterations / MD_parameters.iteration_batch )
+    #
+    #     for j in range(nfile):
+    #         print('j',j)
+    #
+    #         #a = self.load_object(filename, j)
+    #         with open( filename + '_{}.pt'.format(j), 'rb') as handle: # overwrites any existing file
+    #             a = pickle.load(handle)
+    #
+    #         handle.close()
+    #         print('j',j, a)
+    #         self.qp_cat_list.append(a)
+    #         print('list',self.qp_cat_list)
+    #
+    #         if j % iteration_batch == iteration_batch - 1:
+    #
+    #
+    #             a.clear()
+    #
+    #         print('memory % used:', psutil.virtual_memory()[2])
+    #
+    #     return self.qp_cat_list
