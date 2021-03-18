@@ -131,7 +131,7 @@ class MD_tester:
         q_crash_before_pred_app = []
         p_crash_before_pred_app = []
 
-        iteration_batch = MD_parameters.ML_iteration_batch
+        ML_iteration_batch = MD_parameters.ML_iteration_batch
 
         for i in range(nsamples):
 
@@ -156,10 +156,10 @@ class MD_tester:
             print('available memory:', bytes2human(mem_usage[1]))
             print('memory % used:', psutil.virtual_memory()[2])
 
-            if i % iteration_batch == iteration_batch - 1:
+            if i % ML_iteration_batch == ML_iteration_batch - 1:
 
                 print('save file {}'.format(i))
-                with gzip.open(filename + '_{}.pt'.format(i // iteration_batch), 'wb') as handle:  # overwrites any existing file
+                with gzip.open(filename + '_{}.pt'.format(i // ML_iteration_batch), 'wb') as handle:  # overwrites any existing file
                     pickle.dump(qp_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
                     handle.close()
 
@@ -177,7 +177,7 @@ class MD_tester:
 
         if q_crash_before_pred_app:
 
-            for z in range(int(nsamples / iteration_batch)):
+            for z in range(int(nsamples / ML_iteration_batch)):
                 os.remove(filename + '_{}.pt'.format(z))
 
             q_crash_before_pred_app = torch.cat(q_crash_before_pred_app, dim=0)

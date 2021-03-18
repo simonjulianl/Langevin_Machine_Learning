@@ -70,21 +70,34 @@ class data_io:
 
         q_crash, p_crash = self.loadq_p(crash)
         q_train, p_train = self.loadq_p(train)
+        print('n. of crash data', q_train.shape, 'n. of original train data', q_train.shape)
 
-        y = int(0.4 * len(q_train) / len(q_crash))
-        z = len(q_train) - y * len(q_crash)
+        y = int(MD_parameters.crash_duplicate_ratio * len(q_train) / len(q_crash)) # duplicate crash data
+        z = len(q_train) - y * len(q_crash)  # reduced train data
+
+        print('crash duplicate', y, 'reduced train data', z)
 
         indices = torch.randperm(len(q_train))[:z]
+
         q_reduce_train = q_train[indices]
         p_reduce_train = p_train[indices]
 
         q_duplicate_crash = q_crash.repeat(y,1,1)
         p_duplicate_crash = p_crash.repeat(y,1,1)
+        # print(q_duplicate_crash , p_duplicate_crash )
 
         q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
         p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
 
-        return (q_list, p_list)
+        g = torch.Generator()
+        g.manual_seed(MD_parameters.seed)
+
+        idx = torch.randperm(q_list.shape[0], generator=g)
+
+        q_list_shuffle = q_list[idx]
+        p_list_shuffle = p_list[idx]
+
+        return (q_list_shuffle, p_list_shuffle)
 
     def hamiltonian_testset(self, qp_list):
 
