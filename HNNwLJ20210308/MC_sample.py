@@ -45,7 +45,7 @@ q_hist, U, ACCRatio, spec = metropolis_mc.step(noMLhamiltonian, phase_space)
 if not os.path.exists('./init_config/'):
                 os.makedirs('./init_config/')
 
-base_library = os.path.abspath('init_config')
+base_library = os.path.abspath('init_config_for_testset')
 
 # text = text +  "{0:.3f}".format(temp) + ' ' + ' '.join(map(str,spec) )+ ' ' + str(ACCRatio)  + '\n'
 # plt.title('T={}; AccRatio={:.3f}'.format(temp, ACCRatio),fontsize=15)
