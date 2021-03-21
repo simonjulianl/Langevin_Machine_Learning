@@ -5,9 +5,9 @@ class MD_parameters:
 
     seed = 4662570 # index for preparing data
     nsamples = 6 # total train/valid 20900
-    nsamples_batch = 1
+    nsamples_batch = 2
     pixels_batch = 32
-    nsamples_ML = 4
+    nsamples_ML = 2
     epsilon = 1.
     sigma = 1.
     mass = 1

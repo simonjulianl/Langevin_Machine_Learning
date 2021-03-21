@@ -54,10 +54,17 @@ class linear_integrator:
 
         # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
 
-        if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
-            index = torch.where(torch.isnan(q_list))
-            print(q_list[index])
-            raise ArithmeticError('Numerical Integration error, nan is detected')
+            if __debug__:
+                phase_space.debug_pbc(q_curr, boxsize)
+
+            if (torch.isnan(q_curr).any()) or (torch.isnan(p_curr).any()):
+                index = torch.where(torch.isnan(q_curr))
+                # print(index)
+                # print('linear_integrator')
+                # print(i, q_curr, p_curr)
+                print(i, q_curr, p_curr)
+                print('Numerical Integration error, nan is detected')
+                # raise ArithmeticError('Numerical Integration error, nan is detected')
 
         return (q_list, p_list)
 

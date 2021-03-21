@@ -51,7 +51,6 @@ class field_HNN(hamiltonian):
 
         return corrected_dHdq
 
-
     def phi_field4cnn(self, phase_space):
 
         _q_list_in = phase_space.get_q().cpu()

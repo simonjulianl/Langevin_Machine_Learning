@@ -201,25 +201,30 @@ class MD_learner:
             start_epoch_train = time.time()
 
             #for i in range(random_ordered_train_nsamples): # load each sample for loop
-            for i in range(0, random_ordered_train_nsamples, nsamples_batch):
+            for i in range(0, random_ordered_train_nsamples, nsamples_cur):
 
                 # print(i)
                 start_batch_train = time.time()
 
-                q_train_batch, p_train_batch = self._q_train[i:i+nsamples_batch], self._p_train[i:i+nsamples_batch] # each sample
+                q_train_batch, p_train_batch = self._q_train[i:i+nsamples_cur], self._p_train[i:i+nsamples_cur] # each sample
+                print('batch',i, q_train_batch, p_train_batch)
+                print('batch',i, q_train_batch.shape, p_train_batch.shape)
+
                 # q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._device)
                 # p_train_batch = torch.unsqueeze(p_train_batch, dim=0).to(self._device)
                 q_train_batch = q_train_batch.to(self._device)
                 p_train_batch = p_train_batch.to(self._device)
 
-                q_train_label_batch, p_train_label_batch = self._q_train_label[i:i+nsamples_batch], self._p_train_label[i:i+nsamples_batch]
+                q_train_label_batch, p_train_label_batch = self._q_train_label[i:i+nsamples_cur], self._p_train_label[i:i+nsamples_cur]
+                print('batch',i, q_train_label_batch, p_train_label_batch)
+                print('batch',i, q_train_label_batch.shape, p_train_label_batch.shape)
+
                 # q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._device)
                 # p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._device)
                 q_train_label_batch = q_train_label_batch.to(self._device)
                 p_train_label_batch = p_train_label_batch.to(self._device)
 
                 train_label = (q_train_label_batch, p_train_label_batch)
-
 
                 self._phase_space.set_q(q_train_batch)
                 self._phase_space.set_p(p_train_batch)
@@ -233,6 +238,8 @@ class MD_learner:
                 end_pred = time.time()
 
                 q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
+                print('pred', q_train_pred, p_train_pred)
+                print('pred', q_train_pred.shape, p_train_pred.shape)
 
                 train_predict = (q_train_pred[-1], p_train_pred[-1])
                 # print('train pred', q_train_pred[-1], p_train_pred[-1])
@@ -248,10 +255,10 @@ class MD_learner:
 
                 self._opt.step()
 
-                train_loss += loss1.item() / nsamples_batch # get the scalar output
+                train_loss += loss1.item() / nsamples_cur # get the scalar output
 
             end_epoch_train = time.time()
-
+            quit()
             # print('============================================================')
             # print('loss each train epoch time', end_epoch_train - start_epoch_train)
             # print('============================================================')
@@ -266,18 +273,18 @@ class MD_learner:
                 start_epoch_valid = time.time()
 
                 # for j in range(random_ordered_valid_nsamples):
-                for j in range(0, random_ordered_valid_nsamples, nsamples_batch):
+                for j in range(0, random_ordered_valid_nsamples, nsamples_cur):
 
                     start_batch_valid = time.time()
 
-                    q_valid_batch, p_valid_batch = self._q_valid[j:j+nsamples_batch], self._p_valid[j:j+nsamples_batch]
+                    q_valid_batch, p_valid_batch = self._q_valid[j:j+nsamples_cur], self._p_valid[j:j+nsamples_cur]
 
                     # q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._device)
                     # p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._device)
                     q_valid_batch = q_valid_batch.to(self._device)
                     p_valid_batch = p_valid_batch.to(self._device)
 
-                    q_valid_label_batch, p_valid_label_batch = self._q_valid_label[j:j+nsamples_batch], self._p_valid_label[j:j+nsamples_batch]
+                    q_valid_label_batch, p_valid_label_batch = self._q_valid_label[j:j+nsamples_cur], self._p_valid_label[j:j+nsamples_cur]
 
                     # q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._device)
                     # p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._device)
@@ -298,7 +305,7 @@ class MD_learner:
 
                     val_loss1 = criterion(valid_predict, valid_label)
 
-                    valid_loss += val_loss1.item() / nsamples_batch # get the scalar output
+                    valid_loss += val_loss1.item() / nsamples_cur # get the scalar output
 
                     end_batch_valid = time.time()
                     # print('loss each valid batch time', end_batch_valid - start_batch_valid)
@@ -310,8 +317,8 @@ class MD_learner:
 
             end_epoch = time.time()
 
-            train_loss_avg = train_loss / (random_ordered_train_nsamples // nsamples_batch)
-            valid_loss_avg = valid_loss / (random_ordered_valid_nsamples  // nsamples_batch)
+            train_loss_avg = train_loss / (random_ordered_train_nsamples // nsamples_cur)
+            valid_loss_avg = valid_loss / (random_ordered_valid_nsamples  // nsamples_cur)
 
             # # Decay Learning Rate after every epoch
             # curr_lr = self._scheduler.get_lr()
