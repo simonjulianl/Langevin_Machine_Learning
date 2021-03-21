@@ -68,34 +68,41 @@ class data_io:
 
     def hamiltonian_balance_dataset(self, crash, train):
 
-        q_crash, p_crash = self.loadq_p(crash)
         q_train, p_train = self.loadq_p(train)
         print('n. of crash data', q_train.shape, 'n. of original train data', q_train.shape)
 
-        y = int(MD_parameters.crash_duplicate_ratio * len(q_train) / len(q_crash)) # duplicate crash data
-        z = len(q_train) - y * len(q_crash)  # reduced train data
+        if crash is not None:
+            q_crash, p_crash = self.loadq_p(crash)
 
-        print('crash duplicate', y, 'reduced train data', z)
+            y = int(MD_parameters.crash_duplicate_ratio * len(q_train) / len(q_crash)) # duplicate crash data
+            z = len(q_train) - y * len(q_crash)  # reduced train data
 
-        indices = torch.randperm(len(q_train))[:z]
+            print('crash duplicate', y, 'reduced train data', z)
 
-        q_reduce_train = q_train[indices]
-        p_reduce_train = p_train[indices]
+            indices = torch.randperm(len(q_train))[:z]
 
-        q_duplicate_crash = q_crash.repeat(y,1,1)
-        p_duplicate_crash = p_crash.repeat(y,1,1)
-        # print(q_duplicate_crash , p_duplicate_crash )
+            q_reduce_train = q_train[indices]
+            p_reduce_train = p_train[indices]
 
-        q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
-        p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
+            q_duplicate_crash = q_crash.repeat(y,1,1)
+            p_duplicate_crash = p_crash.repeat(y,1,1)
+            # print(q_duplicate_crash , p_duplicate_crash )
 
-        g = torch.Generator()
-        g.manual_seed(MD_parameters.seed)
+            q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
+            p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
 
-        idx = torch.randperm(q_list.shape[0], generator=g)
+            g = torch.Generator()
+            g.manual_seed(MD_parameters.seed)
 
-        q_list_shuffle = q_list[idx]
-        p_list_shuffle = p_list[idx]
+            idx = torch.randperm(q_list.shape[0], generator=g)
+
+            q_list_shuffle = q_list[idx]
+            p_list_shuffle = p_list[idx]
+
+        else:
+
+            q_list_shuffle = q_train
+            p_list_shuffle = p_train
 
         return (q_list_shuffle, p_list_shuffle)
 
@@ -135,6 +142,7 @@ class data_io:
             phase_space.set_q(curr_q[z:z+nsamples_batch])
             phase_space.set_p(curr_p[z:z+nsamples_batch])
 
-            q_list[:,z:z+nsamples_batch], p_list[:,z:z+nsamples_batch] = linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
+            linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
+            q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = linear_integrator.concat_step(MD_iterations, tau_cur)
 
         return q_list, p_list

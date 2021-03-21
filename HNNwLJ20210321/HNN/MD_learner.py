@@ -16,7 +16,7 @@ class MD_learner:
 
     _obj_count = 0
 
-    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, path):
+    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, path, crash):
 
         MD_learner._obj_count += 1
         assert (MD_learner._obj_count == 1), type(self).__name__ + " has more than one object"
@@ -35,7 +35,7 @@ class MD_learner:
         print("============ start data loaded ===============")
         start_data_load = time.time()
 
-        _train_data = self._data_io_obj.loadq_p('train')
+        _train_data = self._data_io_obj.hamiltonian_balance_dataset( crash, 'train')
         self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
         self.train_data = self.train_data[:4]
         print('n. of data', self.train_data.shape)
@@ -221,7 +221,8 @@ class MD_learner:
                 # print('======= train combination of MD and ML =======')
                 start_pred = time.time()
 
-                q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                q_train_pred, p_train_pred = self.linear_integrator.concat_step(MD_iterations, self._tau_cur)
                 # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 end_pred = time.time()
@@ -280,7 +281,8 @@ class MD_learner:
                     self._phase_space.set_p(p_valid_batch)
 
                     # print('======= valid combination of MD and ML =======')
-                    q_valid_pred, p_valid_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                    self.linear_integrator.step(self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                    q_valid_pred, p_valid_pred = self.linear_integrator.concat_step(MD_iterations, self._tau_cur)
                     q_valid_pred = q_valid_pred.to(self._device); p_valid_pred = p_valid_pred.to(self._device)
 
                     valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
