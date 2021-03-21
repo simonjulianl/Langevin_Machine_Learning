@@ -91,5 +91,5 @@ qp_hist = torch.cat((q_hist, p_hist), dim=1)
 torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
 
 # remove files
-for z in range(iteration_pair_batch):
+for z in range(int(MD_iterations / iteration_pair_batch)):
     os.remove( filename + '_{}.pt'.format(z))
