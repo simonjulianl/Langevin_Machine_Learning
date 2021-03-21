@@ -50,7 +50,7 @@ if not os.path.exists('./tmp/'):
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config_for_testset/'
-filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
+filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_cur)
 base_library = os.path.abspath('gold_standard')
 
 data_io_obj = data_io(init_path)
@@ -62,12 +62,12 @@ phase_space.set_q(init_q)
 phase_space.set_p(init_p)
 
 start = time.time()
-linear_integrator_obj.tiny_step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur, filename)
+linear_integrator_obj.step( noMLhamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur)
 end = time.time()
 print('time for integrator :', end-start)
 print('start concat')
 start = time.time()
-q_list, p_list = linear_integrator_obj.concat_tiny_step(MD_iterations, tau_cur, filename)
+q_list, p_list = linear_integrator_obj.concat_step(MD_iterations, tau_cur)
 end = time.time()
 print('time for save files :', end-start)
 
