@@ -37,14 +37,15 @@ class linear_integrator:
 
             return p
 
+
     # to find gold standard
     def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
         iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
 
-        print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
-        print(nsamples_cur, tau_cur, MD_iterations, self.iteration_batch)
+        # print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
+        # print(nsamples_cur, tau_cur, MD_iterations, self.iteration_batch)
 
         qp_list = []
 
@@ -56,6 +57,13 @@ class linear_integrator:
 
             qp_stack = torch.stack((q_list_, p_list_))
             # qp = {'q_{}'.format(i): q_list, 'p_{}'.format(i): p_list}
+
+            if MD_iterations == 1:
+
+                q_list_ = torch.unsqueeze(q_list_, dim=0)
+                p_list_ = torch.unsqueeze(p_list_, dim=0)
+
+                return q_list_, p_list_
 
             if (i+1) % int(MD_parameters.tau_long / tau_cur) == 0 :
                 qp_list.append(qp_stack)
@@ -76,7 +84,7 @@ class linear_integrator:
 
          iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
          filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
-         print('iteration pair batch', iteration_pair_batch)
+         # print('iteration pair batch', iteration_pair_batch)
 
          nfile = int(MD_iterations / iteration_pair_batch )
 
