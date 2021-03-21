@@ -49,6 +49,8 @@ pair_wise_HNN_obj = pair_wise_HNN(pair_wise_MLP().to(ML_parameters.device))
 # print ('Available devices ', torch.cuda.device_count())
 # print ('Current cuda device ', torch.cuda.current_device())
 # print('GPU available', torch.cuda.get_device_name(device))
+if not os.path.exists('./tmp/'):
+    os.makedirs('./tmp/')
 
 load_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
                                                  lr, MLP_nhidden, activation)
@@ -72,21 +74,21 @@ loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_crash_{}_loss.txt'.
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
-init_path = base_dir + 'init_config/'
+init_path = base_dir + '/init_config/'
 init_test_path = base_dir + 'init_config_for_testset/'
-filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_long)
+filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_long)
 
 torch.autograd.set_detect_anomaly(True)
 
 # # for train
-# MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash = None)
 # MD_learner.load_checkpoint(load_path)
 # MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
 # # for test
 # start = time.time()
-MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
-q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
+# MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
+# q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
 # end = time.time()
 # print('q or p crash before pred', len(q_crash_before_pred_), len(p_crash_before_pred_))
 # print('test time:', end - start)
@@ -100,6 +102,6 @@ q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
 #     torch.save(qp_crash_before_pred, init_test_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
 
 # for crash relearner
-# MD_relearner = MD_crash_relearner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+# MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash = 'test_before_crash')
 # MD_relearner.load_checkpoint(load_path)
 # MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
