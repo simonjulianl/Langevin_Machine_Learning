@@ -122,8 +122,6 @@ class data_io:
 
         curr_q = qp_list[:,0]
         curr_p = qp_list[:,1]
-        # print('phase_space2label input',q_list.shape, p_list.shape)
-        # print('nsamples',nsamples)
 
         # print('===== state at short time step 0.01 =====')
         nsamples_cur = nsamples # train or valid
