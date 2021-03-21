@@ -4,7 +4,7 @@ import math
 class MD_parameters:
 
     seed = 4662570 # index for preparing data
-    nsamples = 20900 # total train/valid 20900 / for predict 20900 / for inegrate 1000
+    nsamples = 6 # total train/valid 20900 / for predict 20900 / for inegrate 1000
     nsamples_batch = 1
     pixels_batch = 32
     nsamples_ML = 1
@@ -19,4 +19,5 @@ class MD_parameters:
     # iteration_batch = 10
     iteration_batch = int(max_ts )
     ML_iteration_batch = 40
+    crash_duplicate_ratio = 0.4
     integrator_method = methods.linear_velocity_verlet
