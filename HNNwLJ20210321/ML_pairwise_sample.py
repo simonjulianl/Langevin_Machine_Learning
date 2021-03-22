@@ -26,6 +26,9 @@ optimizer = ML_parameters.optimizer
 MLP_nhidden = ML_parameters.MLP_nhidden
 activation = ML_parameters.activation
 crash_duplicate_ratio = MD_parameters.crash_duplicate_ratio
+MD_iterations = round(MD_parameters.tau_long / tau_short)
+iteration_batch = MD_parameters.iteration_batch
+iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_short)
 ML_iterations = int(MD_parameters.max_ts / MD_parameters.tau_long)
 
 print('nparticle tau_long tau_short lr nsamples_batch MLP_nhidden')
@@ -54,35 +57,39 @@ if not os.path.exists('./tmp/'):
 load_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
                                                  lr, MLP_nhidden, activation)
 
-# train
-best_model_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                     lr, MLP_nhidden, activation)
-save_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                 lr, MLP_nhidden, activation)
-loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation)
+# # train
+# best_model_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
+#                                                      lr, MLP_nhidden, activation)
+# save_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
+#                                                  lr, MLP_nhidden, activation)
+# loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation)
 
 
 # # when retrain
-# best_model_path = './retrain_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_crash_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
-#                                                      lr, MLP_nhidden, activation, crash_duplicate_ratio)
-# # when retrain
-# save_path = './retrain_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_crash_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-#                                                  lr, MLP_nhidden, activation, crash_duplicate_ratio)
-# # when retrain
-# loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_crash_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation, crash_duplicate_ratio)
+best_model_path = './retrain_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_crash_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
+                                                     lr, MLP_nhidden, activation, crash_duplicate_ratio)
+# when retrain
+save_path = './retrain_saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_crash_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
+                                                 lr, MLP_nhidden, activation, crash_duplicate_ratio)
+# when retrain
+loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_crash_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, MLP_nhidden, activation, crash_duplicate_ratio)
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_path = base_dir + '/init_config/'
-init_test_path = base_dir + 'init_config_for_testset/'
-filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_long)
+init_test_path = base_dir + '/init_config_for_testset/'
+filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_short)
 
 torch.autograd.set_detect_anomaly(True)
 
 # # for train
-MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash = None)
-MD_learner.load_checkpoint(load_path)
-MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
+# MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+# MD_learner.load_checkpoint(load_path)
+# MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
+#
+# # remove files
+# for z in range(int(MD_iterations / iteration_pair_batch)):
+#     os.remove( filename + '_{}.pt'.format(z))
 
 # # for test
 # start = time.time()
@@ -92,15 +99,17 @@ MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 # print('q or p crash before pred', len(q_crash_before_pred_), len(p_crash_before_pred_))
 # print('test time:', end - start)
 #
-# q_crash_before_pred = torch.unsqueeze(q_crash_before_pred_, dim=0)
-# p_crash_before_pred = torch.unsqueeze(p_crash_before_pred_, dim=0)
-#
-# qp_crash_before_pred = torch.cat((q_crash_before_pred, p_crash_before_pred), dim=0)
-#
 # if len(q_crash_before_pred_) != 0 and len(p_crash_before_pred_) != 0 :
-#     torch.save(qp_crash_before_pred, init_test_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
+#
+#     q_crash_before_pred = torch.unsqueeze(q_crash_before_pred_, dim=0)
+#     p_crash_before_pred = torch.unsqueeze(p_crash_before_pred_, dim=0)
+#
+#     qp_crash_before_pred = torch.cat((q_crash_before_pred, p_crash_before_pred), dim=0)
+#
+#     torch.save(qp_crash_before_pred, init_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
 
 # for crash relearner
-# MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash = 'test_before_crash')
+MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash_filename = 'test_before_crash')
 # MD_relearner.load_checkpoint(load_path)
 # MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
+
