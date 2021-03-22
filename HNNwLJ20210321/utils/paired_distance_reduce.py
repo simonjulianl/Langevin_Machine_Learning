@@ -3,6 +3,8 @@ import torch
 
 class paired_distance_reduce(object):
 
+    ''' fast extraction of indices '''
+
     _obj_count = 0
 
     def __init__(self):
