@@ -28,7 +28,6 @@ class field_HNN(hamiltonian):
         super().append(kinetic_energy(MD_parameters.mass))
 
         self.phi_fields_obj = phi_fields(MD_parameters.npixels, super())
-        self.momentum_fields_obj = momentum_fields(self.phi_field_pbc_in, self.phi_field_pbc_nx)
 
     def train(self):
         self.network.train()  # pytorch network for training
@@ -223,6 +222,7 @@ class field_HNN(hamiltonian):
 
         self._phi_field_in = torch.unsqueeze(self._phi_field_in, dim=1) # nsamples x channel x npixels x npixels
         self._phi_field_nx = torch.unsqueeze(self._phi_field_nx, dim=1)
+
         phi_field_cat = torch.cat((self._phi_field_in, self._phi_field_nx), dim=1)
         print('network shape', phi_field_cat.shape)
 
@@ -264,6 +264,8 @@ class field_HNN(hamiltonian):
 
         self.phi_field_pbc_nx = self.p_field_pbc_padding(self._phi_field_nx)
         # self.phi_fields_obj.show_gridimg(phi_field_pbc_nx[:][0], '(t+$\delta$t)')
+
+        self.momentum_fields_obj = momentum_fields(self.phi_field_pbc_in, self.phi_field_pbc_nx)
 
         flow_vectors = self.momentum_fields_obj.p_field()
         print('before crop', flow_vectors.shape)

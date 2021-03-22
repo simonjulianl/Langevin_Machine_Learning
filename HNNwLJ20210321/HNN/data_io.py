@@ -94,12 +94,12 @@ class data_io:
         '''
 
         q_list1, p_list1 = self.loadq_p(filename)
-        print('before shuffle', q_list1, p_list1)
+        # print('before shuffle', q_list1, p_list1)
 
         if shuffle:
             q_list1, p_list1 = self._shuffle(q_list1, p_list1)
 
-        print('shuffle ? ', q_list1, p_list1)
+        # print('shuffle ? ', q_list1, p_list1)
         if crash_filename is not None:
 
             q_crash, p_crash = self.loadq_p(crash_filename)
