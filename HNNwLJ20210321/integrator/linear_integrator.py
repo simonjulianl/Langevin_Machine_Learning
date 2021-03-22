@@ -35,10 +35,12 @@ class linear_integrator:
 
             return p
 
-    # to find gold standard
+
     def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
-        '''
+        ''' function to save file in case n iterations
+            otherwise return state q, p as prediction
+
         Parameters
         ----------
         iteration pair batch : int
@@ -77,6 +79,7 @@ class linear_integrator:
 
             if bool1_.any() == True or bool2_ is not None:
                 print('bool true i', i)
+                print('pbc not applied or nan error')
                 # print(q_list_, p_list_)
 
             if MD_iterations == 1: # one time step for prediction
