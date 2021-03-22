@@ -45,10 +45,12 @@ class MD_learner:
         print("============ data loaded ===============")
         self.train_data = self._data_io_obj.qp_dataset('train', crash_filename)
         # self.train_data = self.train_data[:4]  # check debug
+        # print('n. of data', self.train_data)
         print('n. of data', self.train_data.shape)
 
         self.valid_data = self._data_io_obj.qp_dataset('valid')
         # self.valid_data = self.valid_data[:2]  # check debug
+        # print('n. of data', self.valid_data)
         print('n. of data', self.valid_data.shape)
 
         print("============ data label ===============")
