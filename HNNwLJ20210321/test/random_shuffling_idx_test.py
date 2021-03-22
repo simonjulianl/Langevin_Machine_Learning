@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     for i in range(epochs):
         # shuffle based on epoch
+
         g = torch.Generator()
         g.manual_seed(i)
 
