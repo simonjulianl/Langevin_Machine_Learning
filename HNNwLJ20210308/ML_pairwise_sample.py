@@ -72,8 +72,8 @@ loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_crash_{}_loss.txt'.
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
-init_path = base_dir + 'init_config/'
-init_test_path = base_dir + 'init_config_for_testset/'
+init_path = base_dir + '/init_config/'
+init_test_path = base_dir + '/init_config_for_testset/'
 filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_long)
 
 torch.autograd.set_detect_anomaly(True)
@@ -85,21 +85,22 @@ torch.autograd.set_detect_anomaly(True)
 
 # # for test
 # start = time.time()
-MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
-q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
+# MD_tester = MD_tester(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_test_path, load_path)
+# q_crash_before_pred_, p_crash_before_pred_ = MD_tester.step(filename)
 # end = time.time()
 # print('q or p crash before pred', len(q_crash_before_pred_), len(p_crash_before_pred_))
 # print('test time:', end - start)
 #
-# q_crash_before_pred = torch.unsqueeze(q_crash_before_pred_, dim=0)
-# p_crash_before_pred = torch.unsqueeze(p_crash_before_pred_, dim=0)
-#
-# qp_crash_before_pred = torch.cat((q_crash_before_pred, p_crash_before_pred), dim=0)
-#
 # if len(q_crash_before_pred_) != 0 and len(p_crash_before_pred_) != 0 :
-#     torch.save(qp_crash_before_pred, init_test_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
+#
+#     q_crash_before_pred = torch.unsqueeze(q_crash_before_pred_, dim=0)
+#     p_crash_before_pred = torch.unsqueeze(p_crash_before_pred_, dim=0)
+#
+#     qp_crash_before_pred = torch.cat((q_crash_before_pred, p_crash_before_pred), dim=0)
+#
+#     torch.save(qp_crash_before_pred, init_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
 
 # for crash relearner
-# MD_relearner = MD_crash_relearner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
-# MD_relearner.load_checkpoint(load_path)
-# MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
+MD_relearner = MD_crash_relearner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
+MD_relearner.load_checkpoint(load_path)
+MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
