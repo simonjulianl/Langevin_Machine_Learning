@@ -110,6 +110,6 @@ torch.autograd.set_detect_anomaly(True)
 
 # for crash relearner
 MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash_filename = 'test_before_crash')
-# MD_relearner.load_checkpoint(load_path)
-# MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
+MD_relearner.load_checkpoint(load_path)
+MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
