@@ -6,7 +6,14 @@ import copy
 
 class phi_fields:
 
+    ''' phi_fields class to help calculate phi fields on grids '''
+
+    _obj_count = 0
+
     def __init__(self, npixels, hamiltonian, maxcut=100):
+
+        phi_fields._obj_count += 1
+        assert(phi_fields._obj_count == 1), type(self).__name__ + ' has more than one object'
 
         terms = hamiltonian.get_terms()
         self.lennard_jones = terms[0]
@@ -15,7 +22,7 @@ class phi_fields:
         self._npixels = npixels
         self._boxsize = MC_parameters.boxsize
         self._maxcut = maxcut * MD_parameters.sigma
-        self._mincut = -8 * MD_parameters.sigma # actual mincut -6 and then give margin -2 = -8 <= each grid can have nearest particles maximum 6
+        self._mincut = -8 * MD_parameters.sigma  # actual mincut -6 and then give margin -2 = -8 <= each grid can have nearest particles maximum 6
         self._grid_list = self.build_gridpoint()
 
 

@@ -1,11 +1,17 @@
 import torch
 import cv2
-from MD_parameters import MD_parameters
 import matplotlib.pyplot as plt
 
 class momentum_fields:
 
+    ''' momentum_fields class to help calculate momentum fields on grids'''
+
+    _obj_count = 0
+
     def __init__(self, phi_field_in, phi_field_nx):
+
+        momentum_fields._obj_count += 1
+        assert(momentum_fields._obj_count == 1), type(self).__name__ + ' has more than one object'
 
         self._phi_field_in = phi_field_in
         self._phi_field_nx = phi_field_nx
