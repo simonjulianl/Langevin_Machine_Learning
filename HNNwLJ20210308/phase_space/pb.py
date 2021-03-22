@@ -33,18 +33,27 @@ class pb:
             debug = q[index]
             # print('index', index)
             # print('debug_pbc',debug)
-            # print(q)
+            print('debug pbc q',q)
             print('pbc not applied')
 
             # raise ValueError('pbc not applied')
 
     def debug_pbc_bool(self, q, boxsize):
 
-        bool = torch.abs(q) > 0.5 * boxsize
+        bool_ = torch.abs(q) > 0.5 * boxsize
         # print('debug_pbc', bool.any())
         # print('q',q)
 
-        return bool
+        return bool_
+
+    def debug_nan_bool(self, q, p):
+
+        if (torch.isnan(q).any()) or (torch.isnan(p).any()):
+
+            bool_ = torch.where(torch.isnan(q))
+            print('debug nan q',q)
+
+            return bool_
 
     def debug_pbc_reduced(self,q):
 

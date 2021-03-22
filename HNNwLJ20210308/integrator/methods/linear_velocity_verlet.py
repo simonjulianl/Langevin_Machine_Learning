@@ -47,8 +47,8 @@ def linear_velocity_verlet(hamiltonian, phase_space, tau_cur, boxsize):
 
     # print('update q', q)
 
-    if __debug__:
-        phase_space.debug_pbc(q, boxsize)
+    # if __debug__:
+    #     phase_space.debug_pbc(q, boxsize)
 
     p = p + tau / 2 * (-hamiltonian.dHdq(phase_space))  # dp/dt
 

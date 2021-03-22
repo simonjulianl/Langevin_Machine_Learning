@@ -57,13 +57,13 @@ class linear_integrator:
 
             assert q_list.shape == p_list.shape
 
-        # q_list = q_list[-1]; p_list = p_list[-1]  # only take the last from the list
+            bool1_ = phase_space.debug_pbc_bool(q_curr, boxsize)
+            bool2_ = phase_space.debug_nan_bool(q_curr, p_curr)
+            # print('bool', bool1_, bool2_)
 
-        if (torch.isnan(q_list).any()) or (torch.isnan(p_list).any()):
-            # index = torch.where(torch.isnan(q_list))
-            # print(q_list[index])
-            print('Numerical Integration error, nan is detected')
-            # raise ArithmeticError('Numerical Integration error, nan is detected')
+            if bool1_.any() == True or bool2_ is not None:
+                # print('bool true i', i)
+                print(q_curr, p_curr)
 
         return (q_list, p_list)
 
