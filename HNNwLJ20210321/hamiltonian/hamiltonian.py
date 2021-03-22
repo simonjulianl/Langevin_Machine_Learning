@@ -1,27 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import torch
 
 class hamiltonian:
-    '''Class container for Hamiltonian
 
-    Common Parameters
-    -----------------
-    q_list : np.array
-            q_list np.array of N (nsamples) x N_particle x DIM matrix which is the position of the states
-    p_list : np.array
-        p_list np.array of N (nsamples) x N_particle x DIM matrix which is the momentum of the states
-    '''
     _obj_count = 0
 
     def __init__(self):
-    # def __init__(self, phase_p):
         '''
         Hamiltonian class for all potential and kinetic interactions
         '''
-
-        # print('call hamiltonian obj')
 
         hamiltonian._obj_count += 1
         assert (hamiltonian._obj_count == 1),type(self).__name__ + " has more than one object"
@@ -41,6 +29,7 @@ class hamiltonian:
         '''
         helper function to add into the hamiltonian terms
         '''
+
         # print('call hamiltonian append')
         self.hamiltonian_terms.append(term)
 
@@ -53,6 +42,7 @@ class hamiltonian:
         H : float
             H is the hamiltonian of the states with separable terms
         '''
+
         H = 0
         # print('call hamiltonian def energy')
         for term in self.hamiltonian_terms:
@@ -70,6 +60,7 @@ class hamiltonian:
         dHdq : float
             dHdq is the derivative of H with respect to q for N x N_particle x DIM dimension
         '''
+
         # print('call hamiltonian def dHdq')
         q_list = phase_space.get_q()
         dHdq = torch.zeros(q_list.shape) #- need same type as q_list
