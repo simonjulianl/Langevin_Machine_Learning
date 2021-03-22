@@ -49,11 +49,11 @@ if not os.path.exists('./tmp/'):
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
-init_path = base_dir + '/init_config_for_testset/'
+init_test_path = base_dir + '/init_config_for_testset/'
 filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_cur)
 base_library = os.path.abspath('gold_standard')
 
-data_io_obj = data_io(init_path)
+data_io_obj = data_io(init_test_path)
 init_q, init_p = data_io_obj.loadq_p('test')
 
 # print('init', init_q, init_p)
