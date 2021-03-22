@@ -115,8 +115,8 @@ class data_io:
             p_duplicate_crash = p_crash.repeat(y,1,1)
             # print(q_duplicate_crash , p_duplicate_crash )
 
-            q_list2 = torch.cat((q_reduced, q_duplicate_crash), dim=0)
-            p_list2 = torch.cat((p_reduced, p_duplicate_crash), dim=0)
+            q_list2 = torch.cat((q_reduced, q_duplicate_crash.cpu()), dim=0)
+            p_list2 = torch.cat((p_reduced, p_duplicate_crash.cpu()), dim=0)
 
             q_list_shuffle, p_list_shuffle = self._shuffle(q_list2, p_list2)
 
@@ -170,7 +170,7 @@ class data_io:
             phase_space.set_q(curr_q[z:z+nsamples_batch])
             phase_space.set_p(curr_p[z:z+nsamples_batch])
 
-            linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, tau_cur)
+            linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
             q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = linear_integrator.concat_step(MD_iterations, tau_cur)
 
         # print('label', q_list.shape, p_list.shape)

@@ -22,6 +22,23 @@ class MD_tester:
 
     def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, init_test_path, load_path, crash_filename=None):
 
+        '''
+        Parameters
+        ----------
+        init_test_path : string
+                folder name
+        load_path : string
+                load saved model
+        crash_filename : str, optional
+                default is None
+
+        Returns
+        ----------
+        predicted q_list : torch.tensor
+        predicted p_list : torch.tensor
+        q_list, p_list to torch.zeros if crash_index exist
+        '''
+
         MD_tester._obj_count += 1
         assert (MD_tester._obj_count == 1), type(self).__name__ + " has more than one object"
 
@@ -38,6 +55,7 @@ class MD_tester:
         print("============ start data loaded ===============")
         self.test_data = self._data_io_obj.qp_dataset('test', shuffle = False)
         # self.test_data = self.test_data[:5]
+        print('n. of data', self.test_data)
         print('n. of data', self.test_data.shape)
 
         self._device = ML_parameters.device
@@ -61,6 +79,24 @@ class MD_tester:
         #     print(var_name, "\t", self._opt.state_dict()[var_name])
 
     def pred_qnp(self, phase_space):
+
+        '''
+        Parameters
+        ----------
+        nsamples_cur : int
+                1 : load input each sample in pair wise HNN
+                n : load input batch samples in optical flow HNN
+        tau_cur : large time step for ML
+        MD_iterations :
+                1 : predict single step
+
+        Returns
+        ----------
+        predicted q_list : torch.tensor
+                predict q list at single step
+        predicted p_list : torch.tensor
+                predict p list at single step
+        '''
 
         nsamples_cur = MD_parameters.nsamples_ML
         self._tau_cur = MD_parameters.tau_long  # tau = 0.1
@@ -101,7 +137,7 @@ class MD_tester:
             # print('ML_iterations', i)
 
             if i == 0:
-
+                # predict one step from initial state
                 self._phase_space.set_q(torch.unsqueeze(q_test, dim=0).to(self._device))
                 self._phase_space.set_p(torch.unsqueeze(p_test, dim=0).to(self._device))
 
@@ -111,21 +147,24 @@ class MD_tester:
                 p_list_pred = p_pred
 
             else:
-
+                # predict one step from previous predicted state
                 self._phase_space.set_q(q_list_pred[i - 1].to(self._device))
                 self._phase_space.set_p(p_list_pred[i - 1].to(self._device))
 
                 q_pred, p_pred = self.pred_qnp(self._phase_space)
 
-                bool_ = self._phase_space.debug_pbc_bool(q_pred, MC_parameters.boxsize)
+                bool1_ = self._phase_space.debug_pbc_bool(q_pred, MC_parameters.boxsize)
+                bool2_ = self._phase_space.debug_nan_bool(q_pred, p_pred)
 
-                if bool_.any() == True:
+                # if any detect debug then add index to the list
+                if bool1_.any() == True or bool2_ is not None:
+                    print('bool true', i)
                     crash_index.append(i)
 
                 q_list_pred = torch.cat((q_list_pred, q_pred))
                 p_list_pred = torch.cat((p_list_pred, p_pred))
 
-        if crash_index:
+        if crash_index:  # if exist index that is debug, then make state zeros
 
             self.q_crash_before_pred = q_list_pred[ML_iterations - len(crash_index) - 1]
             self.p_crash_before_pred = p_list_pred[ML_iterations - len(crash_index) - 1]
