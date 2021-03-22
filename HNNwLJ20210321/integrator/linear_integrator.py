@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-import numpy as np
 import torch
 import pickle
-import os
 import psutil
 import gzip
 from parameters.MC_parameters import MC_parameters
 from parameters.MD_parameters import MD_parameters
 
-#from tqdm import trange
 
 class linear_integrator:
+
+    ''' linear_integrator class to help implement numerical integrator at each step '''
 
     _obj_count = 0
 
@@ -37,15 +35,29 @@ class linear_integrator:
 
             return p
 
-
     # to find gold standard
-    def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
+    def step(self, hamiltonian, phase_space, MD_iterations, tau_cur):
+
+        '''
+        Parameters
+        ----------
+        iteration pair batch : int
+                num. of condition for save files
+        iteration_batch : int
+                multiples of iteration_pair_batch
+        MD_iterations : int
+                n : integrations of short time step
+                1 : integration of large time step
+        tau_cur : float
+                large time step for prediction
+                short time step for label
+        '''
 
         iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
 
-        # print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
-        # print(nsamples_cur, tau_cur, MD_iterations, self.iteration_batch)
+        # print('step  tau_cur, MD_iterations, iteration_batch ')
+        # print(tau_cur, MD_iterations, self.iteration_batch)
 
         qp_list = []
 
@@ -56,9 +68,8 @@ class linear_integrator:
             q_list_, p_list_  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
 
             qp_stack = torch.stack((q_list_, p_list_))
-            # qp = {'q_{}'.format(i): q_list, 'p_{}'.format(i): p_list}
 
-            if MD_iterations == 1:
+            if MD_iterations == 1: # one time step for prediction
 
                 q_list_ = torch.unsqueeze(q_list_, dim=0)
                 p_list_ = torch.unsqueeze(p_list_, dim=0)
@@ -66,8 +77,9 @@ class linear_integrator:
                 return q_list_, p_list_
 
             if (i+1) % int(MD_parameters.tau_long / tau_cur) == 0 :
+                # add qp_stack paired with large time step that to the list
                 qp_list.append(qp_stack)
-                print('i', i, 'memory % used:', psutil.virtual_memory()[2])
+                # print('i', i, 'memory % used:', psutil.virtual_memory()[2])
 
             if i % iteration_pair_batch == iteration_pair_batch - 1:
 
@@ -80,40 +92,46 @@ class linear_integrator:
 
     def concat_step(self, MD_iterations, tau_cur):
 
-         qp_list = []
+        ''' function to concatenate saved files
 
-         iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
-         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
-         # print('iteration pair batch', iteration_pair_batch)
+        Returns
+        ----------
+        q list and p list
+        '''
 
-         nfile = int(MD_iterations / iteration_pair_batch )
+        qp_list = []
 
-         for j in range(nfile):
-             #print('j',j)
-             a = self.load_object(filename, j)
-             #with open( filename + '_{}.pt'.format(j), 'rb') as handle: # overwrites any existing file
-             #   a = pickle.load(handle)
+        iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
+        filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
 
-             #handle.close()
-             tensor_a = torch.stack(a)
-             #print('tensor a', tensor_a.shape)
+        nfile = int(MD_iterations / iteration_pair_batch )
 
-             q_curr = tensor_a[:,0]
-             p_curr = tensor_a[:,1]
+        for j in range(nfile):
+            #print('j',j)
+            a = self.load_object(filename, j)
+            #with open( filename + '_{}.pt'.format(j), 'rb') as handle: # overwrites any existing file
+            #   a = pickle.load(handle)
 
-             qp_stack = torch.stack((q_curr, p_curr))
-             # print(qp_stack[0],qp_stack[1])
-             qp_list.append(qp_stack)
-             #print('memory % used:', psutil.virtual_memory()[2])
+            #handle.close()
+            tensor_a = torch.stack(a)
+            #print('tensor a', tensor_a.shape)
 
-         qp_cat_list = torch.cat(qp_list, dim=1)
+            q_curr = tensor_a[:,0]
+            p_curr = tensor_a[:,1]
 
-         q_list = qp_cat_list[0]
-         p_list = qp_cat_list[1]
+            qp_stack = torch.stack((q_curr, p_curr))
+            # print(qp_stack[0],qp_stack[1])
+            qp_list.append(qp_stack)
+            #print('memory % used:', psutil.virtual_memory()[2])
 
-         if (torch.isnan(q_list).any()) or (torch.isnan(q_list).any()):
-             index = torch.where(torch.isnan(q_list))
-             print(q_list[index])
-             raise ArithmeticError('Numerical Integration error, nan is detected')
+        qp_cat_list = torch.cat(qp_list, dim=1)
 
-         return (q_list, p_list)
+        q_list = qp_cat_list[0]
+        p_list = qp_cat_list[1]
+
+        if (torch.isnan(q_list).any()) or (torch.isnan(q_list).any()):
+            index = torch.where(torch.isnan(q_list))
+            print(q_list[index])
+            raise ArithmeticError('Numerical Integration error, nan is detected')
+
+        return (q_list, p_list)
