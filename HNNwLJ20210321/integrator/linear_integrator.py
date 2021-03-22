@@ -36,13 +36,13 @@ class linear_integrator:
             return p
 
     # to find gold standard
-    def step(self, hamiltonian, phase_space, MD_iterations, tau_cur):
+    def step(self, hamiltonian, phase_space, MD_iterations, nsamples_cur, tau_cur):
 
         '''
         Parameters
         ----------
         iteration pair batch : int
-                num. of condition for save files
+                iterations for save files
         iteration_batch : int
                 multiples of iteration_pair_batch
         MD_iterations : int
@@ -54,20 +54,30 @@ class linear_integrator:
         '''
 
         iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
+        # print('iteration_pair_batch', iteration_pair_batch)
+
         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
 
-        # print('step  tau_cur, MD_iterations, iteration_batch ')
-        # print(tau_cur, MD_iterations, self.iteration_batch)
+        # print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
+        # print(nsamples_cur, tau_cur, MD_iterations, self.iteration_batch)
 
         qp_list = []
 
         for i in range(MD_iterations):
 
-            #print('iteration', i)
+            # print('iteration', i)
 
             q_list_, p_list_  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
 
             qp_stack = torch.stack((q_list_, p_list_))
+
+            bool1_ = phase_space.debug_pbc_bool(q_list_, self.boxsize)
+            bool2_ = phase_space.debug_nan_bool(q_list_, p_list_)
+            # print('bool', bool1_, bool2_)
+
+            if bool1_.any() == True or bool2_ is not None:
+                print('bool true i', i)
+                # print(q_list_, p_list_)
 
             if MD_iterations == 1: # one time step for prediction
 
@@ -114,7 +124,7 @@ class linear_integrator:
 
             #handle.close()
             tensor_a = torch.stack(a)
-            #print('tensor a', tensor_a.shape)
+            print('tensor a', tensor_a.shape)
 
             q_curr = tensor_a[:,0]
             p_curr = tensor_a[:,1]
