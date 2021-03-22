@@ -13,40 +13,38 @@ class pb:
     def adjust_reduced(self,q): # use in Lennard-Jones class
          self.adjust_real(q,boxsize=1)
 
-    def adjust_real(self, q, boxsize): #use in verlet and other classes
+    def adjust_real(self, q, boxsize):
 
-         indices = torch.where(torch.abs(q)>0.5*boxsize)
-         shift = torch.round(q[indices] / boxsize) * boxsize
-         # print('q i ',q[indices])
-         # print('shift ',shift)
-         q[indices] = q[indices] - torch.round(q[indices] / boxsize) * boxsize
+        ''' function to use in verlet  '''
 
-    def debug_pbc(self, q, boxsize):
-
-        bool = torch.abs(q) > 0.5 * boxsize
-        # print('debug_pbc', bool.any())
-        # print('q',q)
-
-        if bool.any() == True: # if values have any above condition, return true.
-            #print('q', q)
-            index = torch.where(torch.abs(q) > 0.5 * boxsize)
-            debug = q[index]
-            # print('index', index)
-            # print('debug_pbc',debug)
-            # print(q)
-            print('pbc not applied')
-
-            # raise ValueError('pbc not applied')
+        indices = torch.where(torch.abs(q)>0.5*boxsize)
+        shift = torch.round(q[indices] / boxsize) * boxsize
+        # print('q i ',q[indices])
+        # print('shift ',shift)
+        q[indices] = q[indices] - torch.round(q[indices] / boxsize) * boxsize
 
     def debug_pbc_bool(self, q, boxsize):
 
-        bool_ = torch.abs(q) > 0.5 * boxsize
-        # print('debug_pbc', bool.any())
-        # print('q',q)
+        ''' function to debug pbc
 
+        Returns
+        ----------
+        tensor of boolean values
+        '''
+
+        bool_ = torch.abs(q) > 0.5 * boxsize
+        # print('pbc not applied')
+        # raise ValueError('pbc not applied')
         return bool_
 
     def debug_nan_bool(self, q, p):
+
+        ''' function to detect nan in q or p
+
+        Returns
+        ----------
+        None is not nan, not None is tensor of nan values
+        '''
 
         if (torch.isnan(q).any()) or (torch.isnan(p).any()):
 
@@ -55,25 +53,9 @@ class pb:
 
             return bool_
 
-    def debug_pbc_reduced(self,q):
-
-        index = torch.where(torch.abs(q)>0.5)
-        debug = q[index]
-        if debug.any():
-            print('debug_pbc_reduced',q)
-            raise ValueError('pbc reduced not applied')
-
-    def debug_pbc_max_distance(self,q):
-
-        boxsize = 1
-        max_distance = torch.sqrt(boxsize/2. * boxsize/2. + boxsize/2. * boxsize/2.)
-        index = torch.where(torch.abs(q)>max_distance)
-        debug = q[index]
-        if debug.any():
-            print('debug_pbc_max_distance',q)
-            raise ValueError('pbc reduced max distnace not applied')
-
     def paired_distance_reduced(self,q, nparticle, DIM):
+
+        ''' function to calculate reduced distance btw two particles  '''
 
         # print("==pb==")
         # print('q',q)
