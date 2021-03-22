@@ -39,6 +39,7 @@ class MD_tester:
         _test_data = self._data_io_obj.loadq_p('test')
         self.test_data = self._data_io_obj.hamiltonian_testset(_test_data)
         # self.test_data = self.test_data[:5]
+        print('n. of data', self.test_data)
         print('n. of data', self.test_data.shape)
         end_data_load = time.time()
 
@@ -79,7 +80,7 @@ class MD_tester:
         crash_index = []
 
         ML_iterations = int(MD_parameters.max_ts / MD_parameters.tau_long)
-
+        print('ML_iterations', ML_iterations)
         self.any_HNN.eval()
 
         for i in range(ML_iterations):
@@ -103,15 +104,19 @@ class MD_tester:
 
                 q_pred, p_pred = self.pred_qnp(self._phase_space)
 
-                bool_ = self._phase_space.debug_pbc_bool(q_pred, MC_parameters.boxsize)
+                bool1_ = self._phase_space.debug_pbc_bool(q_pred, MC_parameters.boxsize)
+                bool2_ = self._phase_space.debug_nan_bool(q_pred, p_pred)
 
-                if bool_.any() == True:
+                if bool1_.any() == True or bool2_ is not None:
+                    print('bool true', i)
                     crash_index.append(i)
 
                 q_list_pred = torch.cat((q_list_pred, q_pred))
                 p_list_pred = torch.cat((p_list_pred, p_pred))
 
         if crash_index:
+
+            print('length before crash', crash_index[0] - 1)
             self.q_crash_before_pred = q_list_pred[ML_iterations - len(crash_index) - 1]
             self.p_crash_before_pred = p_list_pred[ML_iterations - len(crash_index) - 1]
 
@@ -149,7 +154,6 @@ class MD_tester:
                 q_crash_before_pred_app.append(self.q_crash_before_pred)
                 p_crash_before_pred_app.append(self.p_crash_before_pred)
 
-
             mem_usage = psutil.virtual_memory()
 
             print('totol memory :', bytes2human(mem_usage[0]))
@@ -165,15 +169,6 @@ class MD_tester:
 
                 del qp_list
                 qp_list = []
-
-        # q_no_crash_init = _q_test[no_crash_sample_index]
-        # p_no_crash_init = _p_test[no_crash_sample_index]
-        #
-        # q_no_crash_init = torch.unsqueeze(q_no_crash_init, dim=0)
-        # p_no_crash_init = torch.unsqueeze(p_no_crash_init, dim=0)
-        #
-        # q_pred = torch.cat((q_no_crash_init, q_list.cpu()), dim=0)
-        # p_pred = torch.cat((p_no_crash_init, p_list.cpu()), dim=0)
 
         if q_crash_before_pred_app:
 

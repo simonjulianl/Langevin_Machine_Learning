@@ -86,8 +86,8 @@ class data_io:
         p_duplicate_crash = p_crash.repeat(y,1,1)
         # print(q_duplicate_crash , p_duplicate_crash )
 
-        q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
-        p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
+        q_list = torch.cat((q_reduce_train, q_duplicate_crash.cpu()), dim=0)
+        p_list = torch.cat((p_reduce_train, p_duplicate_crash.cpu()), dim=0)
 
         g = torch.Generator()
         g.manual_seed(MD_parameters.seed)
