@@ -40,12 +40,14 @@ class MD_crash_relearner:
 
         _train_data = self._data_io_obj.hamiltonian_balance_dataset('test_before_crash', 'train')
         self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
-        self.train_data = self.train_data[:4]
+        # self.train_data = self.train_data[:4]
+        # print('n. of data', self.train_data)
         print('n. of data', self.train_data.shape)
 
         _valid_data = self._data_io_obj.loadq_p('valid')
         self.valid_data = self._data_io_obj.hamiltonian_dataset(_valid_data)
-        self.train_data = self.train_data[:2]
+        # self.valid_data = self.valid_data[:2]
+        # print('n. of data', self.valid_data)
         print('n. of data', self.valid_data.shape)
 
         end_data_load = time.time()

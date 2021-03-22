@@ -44,14 +44,16 @@ class data_io:
 
         q_list, p_list = mode_qp_list
         # shuffle
-        g = torch.Generator()
-        g.manual_seed(MD_parameters.seed)
+        # g = torch.Generator()
+        # g.manual_seed(MD_parameters.seed)
+        #
+        # idx = torch.randperm(q_list.shape[0], generator=g)
+        #
+        # q_list_shuffle = q_list[idx]
+        # p_list_shuffle = p_list[idx]
 
-        idx = torch.randperm(q_list.shape[0], generator=g)
-
-        q_list_shuffle = q_list[idx]
-        p_list_shuffle = p_list[idx]
-
+        q_list_shuffle = q_list
+        p_list_shuffle = p_list
         try:
             assert q_list_shuffle.shape == p_list_shuffle.shape
         except:
@@ -71,6 +73,17 @@ class data_io:
         q_crash, p_crash = self.loadq_p(crash)
         q_train, p_train = self.loadq_p(train)
         print('n. of crash data', q_train.shape, 'n. of original train data', q_train.shape)
+        print('before shuffle', q_train, p_train)
+
+        g = torch.Generator()
+        g.manual_seed(MD_parameters.seed)
+
+        idx = torch.randperm(q_train.shape[0], generator=g)
+
+        q_list_shuffle = q_train[idx]
+        p_list_shuffle = p_train[idx]
+
+        print('after shuffle', q_list_shuffle, p_list_shuffle)
 
         y = int(MD_parameters.crash_duplicate_ratio * len(q_train) / len(q_crash)) # duplicate crash data
         z = len(q_train) - y * len(q_crash)  # reduced train data
@@ -79,8 +92,8 @@ class data_io:
 
         indices = torch.randperm(len(q_train))[:z]
 
-        q_reduce_train = q_train[indices]
-        p_reduce_train = p_train[indices]
+        q_reduce_train = q_list_shuffle[indices]
+        p_reduce_train = p_list_shuffle[indices]
 
         q_duplicate_crash = q_crash.repeat(y,1,1)
         p_duplicate_crash = p_crash.repeat(y,1,1)
