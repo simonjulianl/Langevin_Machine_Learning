@@ -110,6 +110,14 @@ class MD_learner:
 
     def load_checkpoint(self, load_path):
 
+        ''' function to load saved model
+
+        Parameters
+        ----------
+        load_path : string
+                load saved model. if not, pass
+        '''
+
         if os.path.isfile(load_path):
             print("=> loading checkpoint '{}'".format(load_path))
             checkpoint = torch.load(load_path)[0]
@@ -138,6 +146,18 @@ class MD_learner:
 
     def save_checkpoint(self, validation_loss, save_path, best_model_path):
 
+        ''' function to record the state after each training
+
+        Parameters
+        ----------
+        validation_loss : float
+            validation loss per epoch
+        save_path : string
+            path to the saving the checkpoint
+        best_model_path : string
+            path to the saving the best checkpoint
+        '''
+
         is_best = validation_loss < self._best_validation_loss
         self._best_validation_loss = min(validation_loss, self._best_validation_loss)
 
@@ -152,14 +172,19 @@ class MD_learner:
         if is_best:
             shutil.copyfile(save_path, best_model_path)
 
-    # phase_space consist of minibatch data
+
     def train_valid_epoch(self, save_path, best_model_path, loss_curve):
 
-        # to prepare data at large time step, need to change tau and iterations
-        # tau = large time step 0.1 and 1 step
-        # print('===== state at large time step 0.1 =====')
+        ''' function to train and valid each epoch
+
+        Returns
+        -------
+        float
+            train loss, valid loss per epoch
+        '''
+
         nsamples_cur =  MD_parameters.nsamples_ML
-        self._tau_cur = MD_parameters.tau_long # tau = 0.1
+        self._tau_cur = MD_parameters.tau_long
         MD_iterations = int( MD_parameters.tau_long / self._tau_cur )
 
         print('prepare train nsamples_cur, tau_cur, MD_iterations')
@@ -168,8 +193,7 @@ class MD_learner:
         random_ordered_train_nsamples = self._q_train.shape[0] # nsamples
         random_ordered_valid_nsamples = self._q_valid.shape[0] # nsamples
         print('nsample', random_ordered_train_nsamples, random_ordered_valid_nsamples)
-        # n_train_batch = MD_parameters.nparticle * (MD_parameters.nparticle - 1)
-        # n_valid_batch
+
 
         # any_hnn = self.any_HNN
         self.any_HNN.train()

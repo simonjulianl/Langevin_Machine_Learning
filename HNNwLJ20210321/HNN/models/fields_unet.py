@@ -3,8 +3,8 @@
 from ML_parameters import ML_parameters
 from .fields_unet_parts import *
 from .concat2fields import concat2fields
-from .CNN4p_field import CNN4p_field
-from .CNN4phi_field import CNN4phi_field
+from .cnn4p_field import cnn4p_field
+from .cnn4phi_field import cnn4phi_field
 
 class fields_unet(nn.Module):
 
@@ -17,8 +17,8 @@ class fields_unet(nn.Module):
         self.cat_channels = cnn_nhidden + cnn_nhidden
         self.bilinear = bilinear
 
-        self.modelA = CNN4phi_field(cnn_input, cnn_nhidden)
-        self.modelB = CNN4p_field(cnn_input, cnn_nhidden)
+        self.modelA = cnn4phi_field(cnn_input, cnn_nhidden)
+        self.modelB = cnn4p_field(cnn_input, cnn_nhidden)
 
         self.conc = concat2fields(self.modelA, self.modelB)
         self.inc = DoubleConv(self.cat_channels, 64)

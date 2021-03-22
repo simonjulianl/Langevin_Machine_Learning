@@ -10,15 +10,17 @@ import torch
 
 class field_HNN(hamiltonian):
 
+    ''' field_HNN class to learn dHdq and then combine with nodHdq '''
+
     _obj_count = 0
 
-    def __init__(self, network, linear_integrator_obj):
+    def __init__(self, fields_unet, linear_integrator_obj):
 
         field_HNN._obj_count += 1
         assert (field_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
 
         super().__init__()
-        self.network = network
+        self.network = fields_unet
         self.linear_integrator = linear_integrator_obj
 
         # # append term to calculate dHdq
@@ -31,7 +33,7 @@ class field_HNN(hamiltonian):
     def train(self):
         self.network.train()  # pytorch network for training
 
-    def eval(self):
+    def eval(self):     # pytorch network for eval
         self.network.eval()
 
     def dHdq(self, phase_space):
@@ -52,26 +54,25 @@ class field_HNN(hamiltonian):
 
         return corrected_dHdq
 
-    def fields2cnn(self,phase_space, tau):
 
-        phi_field = self.phi_field4cnn(phase_space)
-        p_field = self.p_field4cnn()
-        self.predict_fields = self.network(phi_field, p_field, tau)
-        print('predict shape', self.predict_fields.shape)
-        return self.predict_fields
+    def diff_tau(self):
 
-    def torch_tau(self):
+        ''' function to prepare different time steps '''
+
         tau = torch.tensor([MD_parameters.tau_long])
         tau = torch.unsqueeze(tau, dim=0)
         return tau
 
+
     def euclidean_distance(self, vector1, vector2):
-        # print('distance', vector1, vector2)
-        # print('distance', vector1.shape, vector2.shape)
+
+        ''' function to measure distance between nearest grid and particle '''
+
         return torch.sqrt(torch.sum(torch.pow(vector1 - vector2, 2), dim=1))  # sum DIM that is dim=1 <- nparticle x DIM
 
     def k_nearest_grids(self, q_list, grid_interval):
-        # to calculate distance between particle and grid
+
+        ''' function to find grids near particle '''
 
         k_nearest_up_left = torch.floor(q_list / grid_interval) * grid_interval
 
@@ -89,16 +90,18 @@ class field_HNN(hamiltonian):
         return k_nearest
 
     def k_nearest_coord(self, k_nearest, grid_interval):
-        # to find force k neareset grids
+
+        ''' function to find index of force for grids near particle '''
 
         k_nearest_coord = ( MC_parameters.boxsize / 2. + k_nearest) / grid_interval
         kind = torch.round(k_nearest_coord).long()  # 4_nearest x nsamples x DIM
         return kind
 
-    # find 4 nearest neighbor grids and calc farce about each particle
     def force4nparticle(self, phase_space):
 
-        predict_fields = self.fields2cnn(phase_space, self.torch_tau())
+        ''' function to find 4 nearest grids and calc farce about each particle '''
+
+        predict_fields = self.fields2cnn(phase_space, self.diff_tau())
 
         _q_list_in = phase_space.get_q()
 
@@ -130,8 +133,8 @@ class field_HNN(hamiltonian):
         k_nearest_coord_nparticle = torch.stack(k_nearest_coord_nparticle_app, dim=1) #nsample x nparticle x k_nearest x DIM
 
         predict_app = []
-        # take 4 nearest forces
-        for z in range(nsamples):
+
+        for z in range(nsamples): # take 4 nearest forces
 
             # shape = DIM x nparticles
             predict_up_left = predict_fields[z, :, k_nearest_coord_nparticle[z, :, 0, 0], k_nearest_coord_nparticle[z, :, 0, 1]]
@@ -159,7 +162,30 @@ class field_HNN(hamiltonian):
 
         return predict_each_particle
 
+
+    def fields2cnn(self,phase_space, tau):
+
+        ''' function to feed phi field and p_field as input to cnn
+
+        parameters
+        tau : torch.tensor
+                different time steps
+
+        Returns
+        ----------
+        predict fields each grids on x, y
+        '''
+
+        phi_field = self.phi_field4cnn(phase_space)
+        p_field = self.p_field4cnn()
+        self.predict_fields = self.network(phi_field, p_field, tau)
+        print('predict shape', self.predict_fields.shape)
+        return self.predict_fields
+
+
     def phi_field4cnn(self, phase_space):
+
+        ''' function to prepare phi field as input in cnn '''
 
         _q_list_in = phase_space.get_q().cpu()
         _p_list_in = phase_space.get_p().cpu()
@@ -203,6 +229,9 @@ class field_HNN(hamiltonian):
         return phi_field_cat  # nsamples x 2 x npixels x npixels
 
     def p_field_pbc_padding(self, fields):
+
+        ''' function to apply pbc pad to p field '''
+
         print('fields shape', fields.shape)
         v = torch.zeros(MD_parameters.npixels, )
         v[0] = 1
@@ -225,7 +254,10 @@ class field_HNN(hamiltonian):
         print('pbc', x.shape)
         return x
 
+
     def p_field4cnn(self):
+
+        ''' function to prepare p field as input in cnn '''
 
         self.phi_field_pbc_in = self.p_field_pbc_padding(self._phi_field_in)
         # self.phi_fields_obj.show_gridimg(phi_field_pbc_in[:][0], '(t)')

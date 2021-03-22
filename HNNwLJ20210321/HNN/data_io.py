@@ -5,6 +5,8 @@ from MD_parameters import MD_parameters
 
 class data_io:
 
+    ''' data_io class to help load, prepare data and label for ML'''
+
     _obj_count = 0
 
     def __init__(self, init_path):
@@ -53,8 +55,9 @@ class data_io:
 
         return (q_list, p_list)
 
-    # for internal use only
+
     def _shuffle(self, q_list, p_list):
+        # for internal use only
 
         g = torch.Generator()
         g.manual_seed(MD_parameters.seed)

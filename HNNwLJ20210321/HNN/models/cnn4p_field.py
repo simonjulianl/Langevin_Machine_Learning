@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 from .conv2d_PBC import compute_PBC_constants, compute_PBC
 
-class CNN4phi_field(nn.Module):
+class cnn4p_field(nn.Module):
 
     def __init__(self, in_channels, out_channels):
 
-        super(CNN4phi_field, self).__init__()
+        super(cnn4p_field, self).__init__()
 
         self.PBC_constant = compute_PBC_constants(initial_size=32, batch_size=1, initial_channels=2)
 
@@ -20,13 +20,13 @@ class CNN4phi_field(nn.Module):
 
 
     def forward(self, x):
-        print('cnn4phi x',x.shape)
+        print('cnn4p x',x.shape)
         x = compute_PBC(x, self.PBC_constant)
-        print('cnn4phi pbc x',x.shape)
+        print('cnn4p pbc x',x.shape)
         x = self.layer1(x)
-        print('cnn4phi x',x.shape)
+        print('cnn4p x',x.shape)
         x = compute_PBC(x, self.PBC_constant)
-        print('cnn4phi pbc x',x.shape)
+        print('cnn4p pbc x',x.shape)
         out = self.layer2(x)
-        print('cnn4phi out',out.shape)
+        print('cnn4p out',out.shape)
         return out

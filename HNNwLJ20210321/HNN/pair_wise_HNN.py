@@ -14,13 +14,13 @@ class pair_wise_HNN(hamiltonian):
 
     _obj_count = 0
 
-    def __init__(self, network):
+    def __init__(self, pair_wise_MLP):
 
         pair_wise_HNN._obj_count += 1
         assert (pair_wise_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
 
         super().__init__()
-        self.network = network
+        self.network = pair_wise_MLP
 
         # # append term to calculate dHdq
         super().append(lennard_jones())
@@ -29,10 +29,17 @@ class pair_wise_HNN(hamiltonian):
     def train(self):
         self.network.train()  # pytorch network for training
 
-    def eval(self):
+    def eval(self):   # pytorch network for eval
         self.network.eval()
 
     def dHdq(self, phase_space):
+
+        ''' function to calculate dHdq = noML_dHdq + residual ML_dHdq
+
+        Returns
+        ----------
+        input in neural network
+        '''
 
         # print('call pair_wise_HNN class')
         q_list = phase_space.get_q()
@@ -61,7 +68,7 @@ class pair_wise_HNN(hamiltonian):
 
     def phase_space2data(self, phase_space, tau_cur):
 
-        '''
+        ''' function to prepare input in nn
         Parameters
         ----------
         tau_cur : float

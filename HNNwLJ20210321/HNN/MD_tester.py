@@ -80,7 +80,8 @@ class MD_tester:
 
     def pred_qnp(self, phase_space):
 
-        '''
+        ''' function to predict state q, p at one step using ML
+
         Parameters
         ----------
         nsamples_cur : int
@@ -108,7 +109,8 @@ class MD_tester:
 
     def each_sample_step(self, q_test, p_test):
 
-        '''
+        ''' function to predict trajectory from initial state each sample
+
         Parameters
         ----------
         ML_iterations : int
@@ -176,7 +178,9 @@ class MD_tester:
 
     def step(self, filename):
 
-        '''
+        ''' function to save trajectory nsamples if no crashed state q
+            otherwise return state q, p before crashed
+
         Parameters
         ----------
         ML_iteration_batch : int
