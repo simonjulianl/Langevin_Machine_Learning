@@ -11,12 +11,23 @@ import time
 import os
 import sys
 
-
 class MD_learner:
+
+    ''' MD_learner class to help train, validate, retrain, and save '''
 
     _obj_count = 0
 
-    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, path, crash):
+    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, init_path, crash_filename=None):
+
+        '''
+        Parameters
+        ----------
+        init_path : string
+                folder name
+        crash_filename : str, optional
+                default is None
+
+        '''
 
         MD_learner._obj_count += 1
         assert (MD_learner._obj_count == 1), type(self).__name__ + " has more than one object"
@@ -27,42 +38,23 @@ class MD_learner:
         self.noML_hamiltonian = super(type(any_HNN_obj), any_HNN_obj)
 
         print('-- hi terms -- ',self.noML_hamiltonian.hi())
-        # terms = self.noML_hamiltonian.get_terms()
 
         self._phase_space = phase_space
-        self._data_io_obj = data_io(path)
+        self._data_io_obj = data_io(init_path)
 
-        print("============ start data loaded ===============")
-        start_data_load = time.time()
-
-        _train_data = self._data_io_obj.hamiltonian_balance_dataset( crash, 'train')
-        self.train_data = self._data_io_obj.hamiltonian_dataset(_train_data)
-        self.train_data = self.train_data[:4]
+        print("============ data loaded ===============")
+        self.train_data = self._data_io_obj.qp_dataset('train', crash_filename)
+        # self.train_data = self.train_data[:4]  # check debug
         print('n. of data', self.train_data.shape)
 
-        _valid_data = self._data_io_obj.loadq_p('valid')
-        self.valid_data = self._data_io_obj.hamiltonian_dataset(_valid_data)
-        self.valid_data = self.valid_data[:2]
+        self.valid_data = self._data_io_obj.qp_dataset('valid')
+        # self.valid_data = self.valid_data[:2]  # check debug
         print('n. of data', self.valid_data.shape)
 
-        end_data_load = time.time()
-
-        print('data loaded time :', end_data_load - start_data_load)
-        print("============= end data loaded ================")
-
-        print("============ start data label ===============")
+        print("============ data label ===============")
         # qnp x iterations x nsamples x  nparticle x DIM
-
-        start_train_label = time.time()
         self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
-        end_train_label = time.time()
-        print('prepare train_label time:', end_train_label - start_train_label)
-
-        start_valid_label = time.time()
         self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
-        end_valid_label = time.time()
-        print('prepare valid_label time:', end_valid_label - start_valid_label)
-        print("============= end data label =================")
 
         # print('===== load initial train data =====')
         self._q_train = self.train_data[:,0]; self._p_train = self.train_data[:,1]
@@ -100,7 +92,6 @@ class MD_learner:
             sys.exit(1)
 
         print(type(self._opt).__name__)
-
 
         # Assuming optimizer uses lr = 0.001 for all groups
         # lr = 0.001      if epoch < 10
@@ -197,7 +188,6 @@ class MD_learner:
 
             # print('epoch', e, 'lr', curr_lr)
             start_epoch = time.time()
-            start_epoch_train = time.time()
 
             for i in range(random_ordered_train_nsamples): # load each sample for loop
                 # print(i)
@@ -221,7 +211,7 @@ class MD_learner:
                 # print('======= train combination of MD and ML =======')
                 start_pred = time.time()
 
-                q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, self._tau_cur)
                 # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
                 end_pred = time.time()
@@ -244,24 +234,13 @@ class MD_learner:
 
                 train_loss += loss1.item()  # get the scalar output
 
-            end_epoch_train = time.time()
-
-            # print('============================================================')
-            # print('loss each train epoch time', end_epoch_train - start_epoch_train)
-            # print('============================================================')
-
-
             # eval model
 
             self.any_HNN.eval()
 
             with torch.no_grad():
 
-                start_epoch_valid = time.time()
-
                 for j in range(random_ordered_valid_nsamples):
-
-                    start_batch_valid = time.time()
 
                     q_valid_batch, p_valid_batch = self._q_valid[j], self._p_valid[j]
 
@@ -280,7 +259,7 @@ class MD_learner:
                     self._phase_space.set_p(p_valid_batch)
 
                     # print('======= valid combination of MD and ML =======')
-                    q_valid_pred, p_valid_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
+                    q_valid_pred, p_valid_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, self._tau_cur)
                     q_valid_pred = q_valid_pred.to(self._device); p_valid_pred = p_valid_pred.to(self._device)
 
                     valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
@@ -289,14 +268,6 @@ class MD_learner:
                     val_loss1 = criterion(valid_predict, valid_label)
 
                     valid_loss += val_loss1.item()  # get the scalar output
-
-                    end_batch_valid = time.time()
-                    # print('loss each valid batch time', end_batch_valid - start_batch_valid)
-
-                end_epoch_valid = time.time()
-
-            # print('loss each valid epoch time', end_epoch_valid - start_epoch_valid)
-            # print('============================================================')
 
             end_epoch = time.time()
 
@@ -318,8 +289,3 @@ class MD_learner:
             fp.close()
 
             self._current_epoch += 1
-
-        end = time.time()
-
-        # print('end training... used parameter: tau long: {}, tau short: {}, epochs time: {}'.format(MD_parameters.tau_long, MD_parameters.tau_short, end - start))
-

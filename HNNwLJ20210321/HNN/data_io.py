@@ -14,7 +14,20 @@ class data_io:
 
         self.init_path = init_path
 
-    def loadq_p(self, mode=None):
+    def loadq_p(self, mode):
+
+        '''
+        Parameters
+        ----------
+        mode : str
+                train or valid or crash_filename or test
+        temp_list : list
+                temperature for dataset
+
+        Returns
+        ----------
+        concatenated initial q list and p list at temp_list
+        '''
 
         if not os.path.exists(self.init_path) :
             raise Exception('path doesnt exist')
@@ -40,10 +53,9 @@ class data_io:
 
         return (q_list, p_list)
 
-    def hamiltonian_dataset(self, mode_qp_list):
+    # for internal use only
+    def _shuffle(self, q_list, p_list):
 
-        q_list, p_list = mode_qp_list
-        # shuffle
         g = torch.Generator()
         g.manual_seed(MD_parameters.seed)
 
@@ -60,63 +72,81 @@ class data_io:
         # print('after shuffle')
         # print(q_list_shuffle, p_list_shuffle)
 
-        init_pos = torch.unsqueeze(q_list_shuffle, dim=1) #  nsamples  X 1 X nparticle X  DIM
-        init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  #  nsamples  X 1 X nparticle X  DIM
-        init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
+        return q_list_shuffle, p_list_shuffle
 
-        return init
+    def qp_dataset(self, filename, crash_filename = None, shuffle = True):
 
-    def hamiltonian_balance_dataset(self, crash, train):
+        ''' function to prepare data for train (shuffle=True) or test (shuffle=False)
 
-        q_train, p_train = self.loadq_p(train)
-        print('n. of crash data', q_train.shape, 'n. of original train data', q_train.shape)
+        Parameters
+        ----------
+        filename : str
+                train or valid or test
+        shuffle : bool, optional
+                True when train and valid / False when test
 
-        if crash is not None:
-            q_crash, p_crash = self.loadq_p(crash)
+        Returns
+        ----------
+        inital q and p
+        '''
 
-            y = int(MD_parameters.crash_duplicate_ratio * len(q_train) / len(q_crash)) # duplicate crash data
-            z = len(q_train) - y * len(q_crash)  # reduced train data
+        q_list1, p_list1 = self.loadq_p(filename)
+
+        if shuffle:
+            q_list1, p_list1 = self._shuffle(q_list1, p_list1)
+
+        if crash_filename is not None:
+
+            q_crash, p_crash = self.loadq_p(crash_filename)
+
+            print('n. of crash data', q_list1.shape, 'n. of original train data', q_list1.shape)
+
+            y = int(MD_parameters.crash_duplicate_ratio * len(q_list1) / len(q_crash)) # duplicate crash data
+            z = len(q_list1) - y * len(q_crash)  # reduced train data
 
             print('crash duplicate', y, 'reduced train data', z)
 
-            indices = torch.randperm(len(q_train))[:z]
+            indices = torch.randperm(len(q_list1))[:z]
 
-            q_reduce_train = q_train[indices]
-            p_reduce_train = p_train[indices]
+            q_reduced = q_list1[indices]
+            p_reduced = p_list1[indices]
 
             q_duplicate_crash = q_crash.repeat(y,1,1)
             p_duplicate_crash = p_crash.repeat(y,1,1)
             # print(q_duplicate_crash , p_duplicate_crash )
 
-            q_list = torch.cat((q_reduce_train, q_duplicate_crash), dim=0)
-            p_list = torch.cat((p_reduce_train, p_duplicate_crash), dim=0)
+            q_list2 = torch.cat((q_reduced, q_duplicate_crash), dim=0)
+            p_list2 = torch.cat((p_reduced, p_duplicate_crash), dim=0)
 
-            g = torch.Generator()
-            g.manual_seed(MD_parameters.seed)
-
-            idx = torch.randperm(q_list.shape[0], generator=g)
-
-            q_list_shuffle = q_list[idx]
-            p_list_shuffle = p_list[idx]
+            q_list_shuffle, p_list_shuffle = self._shuffle(q_list2, p_list2)
 
         else:
 
-            q_list_shuffle = q_train
-            p_list_shuffle = p_train
+            q_list_shuffle = q_list1
+            p_list_shuffle = p_list1
 
-        return (q_list_shuffle, p_list_shuffle)
-
-    def hamiltonian_testset(self, qp_list):
-
-        q_list, p_list = qp_list
-
-        init_pos = torch.unsqueeze(q_list, dim=1) #  nsamples  X 1 X nparticle X  DIM
-        init_vel = torch.unsqueeze(p_list, dim=1)  #  nsamples  X 1 X nparticle X  DIM
+        init_pos = torch.unsqueeze(q_list_shuffle, dim=1)  # nsamples  X 1 X nparticle X  DIM
+        init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  # nsamples  X 1 X nparticle X  DIM
         init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
 
         return init
 
+
     def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
+
+        ''' function to prepare label data for train or valid or test
+
+         Parameters
+        ----------
+        nsamples_cur : int
+                num. of nsamples ( train or valid or test)
+        nsample_batch : int
+                num. of batch for nsamples
+
+        Returns
+        ----------
+        q and p paired w q and p at large time step
+        '''
 
         nsamples, qnp, nparticles, DIM = qp_list.shape
 
@@ -140,7 +170,8 @@ class data_io:
             phase_space.set_q(curr_q[z:z+nsamples_batch])
             phase_space.set_p(curr_p[z:z+nsamples_batch])
 
-            linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
+            linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, tau_cur)
             q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = linear_integrator.concat_step(MD_iterations, tau_cur)
 
+        # print('label', q_list.shape, p_list.shape)
         return q_list, p_list

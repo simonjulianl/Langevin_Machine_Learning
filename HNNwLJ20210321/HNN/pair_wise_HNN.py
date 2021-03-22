@@ -10,10 +10,7 @@ import time
 
 class pair_wise_HNN(hamiltonian):
 
-    def helper(self = None):
-        '''print the common parameters helper'''
-        for parent in pair_wise_HNN.__bases__:
-            print(help(parent))
+    ''' pair_wise_HNN class to learn dHdq and then combine with nodHdq '''
 
     _obj_count = 0
 
@@ -35,60 +32,45 @@ class pair_wise_HNN(hamiltonian):
     def eval(self):
         self.network.eval()
 
-    def noML_dHdq_fist(self, q_batch, noML_dHdq_first):
-
-        self.noML_dHdq_first = noML_dHdq_first
-        self.q_batch = q_batch
-
-
     def dHdq(self, phase_space):
 
-        start_dhdq = time.time()
         # print('call pair_wise_HNN class')
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
 
-        start_noML = time.time()
-
         noML_dHdq = super().dHdq(phase_space)
-
-        end_noML = time.time()
-
-        self.noML_time = end_noML - start_noML
-        #print('time for noML', end_noML - start_noML)
 
         # print('noML_dHdq',noML_dHdq.device)
         phase_space.set_q(q_list)
         phase_space.set_p(p_list)
 
-        start_prep_data = time.time()
         data = self.phase_space2data(phase_space, MD_parameters.tau_long)
-        end_prep_data = time.time()
 
-        self.prep_data_time = end_prep_data - start_prep_data
         # print('=== input for ML : del_qx del_qy del_px del_py tau ===')
         # print(data)
 
-        start_ML = time.time()
         predict = self.network(data, MC_parameters.nparticle, MC_parameters.DIM)
-        end_ML = time.time()
-        self.ML_time = end_ML - start_ML
         # print('nn output',predict)
         # print(predict.device)
 
-        start_corrected = time.time()
         corrected_dHdq = noML_dHdq.to(ML_parameters.device) + predict  # in linear_vv code, it calculates grad potential.
-        end_corrected = time.time()
-
-        self.corrected_time = end_corrected - start_corrected
-        end_dhdq = time.time()
-        self.dhdq_time = end_dhdq - start_dhdq
         # print('noML_dHdq diff',noML_dHdq.to(self._state['_device']) -corrected_dHdq)
         # print('corrected_dHdq',corrected_dHdq)
 
         return corrected_dHdq
 
     def phase_space2data(self, phase_space, tau_cur):
+
+        '''
+        Parameters
+        ----------
+        tau_cur : float
+                large time step for input in neural network
+
+        Returns
+        ----------
+        input in neural network
+        '''
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()

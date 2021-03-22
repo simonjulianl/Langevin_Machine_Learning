@@ -14,11 +14,13 @@ import time
 import pickle
 import os
 
-
 class MD_tester:
+
+    ''' MD_tester class to help predict trajectory at initial state '''
+
     _obj_count = 0
 
-    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, path, load_path):
+    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, init_test_path, load_path, crash_filename=None):
 
         MD_tester._obj_count += 1
         assert (MD_tester._obj_count == 1), type(self).__name__ + " has more than one object"
@@ -29,18 +31,14 @@ class MD_tester:
         self.noML_hamiltonian = super(type(any_HNN_obj), any_HNN_obj)
 
         print('-- hi terms -- ', self.noML_hamiltonian.hi())
-        # terms = self.noML_hamiltonian.get_terms()
 
         self._phase_space = phase_space
-        self._data_io_obj = data_io(path)
+        self._data_io_obj = data_io(init_test_path)
 
         print("============ start data loaded ===============")
-        start_data_load = time.time()
-        _test_data = self._data_io_obj.loadq_p('test')
-        self.test_data = self._data_io_obj.hamiltonian_testset(_test_data)
+        self.test_data = self._data_io_obj.qp_dataset('test', shuffle = False)
         # self.test_data = self.test_data[:5]
         print('n. of data', self.test_data.shape)
-        end_data_load = time.time()
 
         self._device = ML_parameters.device
 
@@ -73,6 +71,22 @@ class MD_tester:
         return q_pred, p_pred
 
     def each_sample_step(self, q_test, p_test):
+
+        '''
+        Parameters
+        ----------
+        ML_iterations : int
+                n iterations with tau_long up to maximum time
+        crash_index : index of q list that is crashed
+        bool_ : debug pbc
+                if True, add crash_index to the list
+
+        Returns
+        ----------
+        predicted q_list : torch.tensor
+        predicted p_list : torch.tensor
+        q_list, p_list to torch.zeros if crash_index exist
+        '''
 
         q_list_pred = None
         p_list_pred = None
@@ -112,6 +126,7 @@ class MD_tester:
                 p_list_pred = torch.cat((p_list_pred, p_pred))
 
         if crash_index:
+
             self.q_crash_before_pred = q_list_pred[ML_iterations - len(crash_index) - 1]
             self.p_crash_before_pred = p_list_pred[ML_iterations - len(crash_index) - 1]
 
@@ -122,12 +137,28 @@ class MD_tester:
 
     def step(self, filename):
 
+        '''
+        Parameters
+        ----------
+        ML_iteration_batch : int
+                the num. of saved files
+        filename : string
+                save files every ML_iteration_batch
+                discard saved files if crashed q list exist
+
+        Returns
+        ----------
+        q_crash_before_pred_app : torch.tensor
+                q list before crash state
+        p_crash_before_pred_app : torch.tensor
+                p list before crash state
+        '''
+
         _q_test = self.test_data[:, 0]; _p_test = self.test_data[:, 1]
 
         nsamples, nparticle, DIM = _q_test.shape
 
         qp_list = []
-        #no_crash_sample_index = []
         q_crash_before_pred_app = []
         p_crash_before_pred_app = []
 
@@ -143,9 +174,9 @@ class MD_tester:
             if q_sample_list.shape and p_sample_list.shape:
                 qp_stack = torch.stack((q_sample_list, p_sample_list))
                 qp_list.append(qp_stack)
-                #no_crash_sample_index.append(i)
 
-            else:
+            else:  # torch.zeros([]) : q_sample_list, p_sample_list that crash_index exist
+
                 q_crash_before_pred_app.append(self.q_crash_before_pred)
                 p_crash_before_pred_app.append(self.p_crash_before_pred)
 
@@ -165,15 +196,6 @@ class MD_tester:
 
                 del qp_list
                 qp_list = []
-
-        # q_no_crash_init = _q_test[no_crash_sample_index]
-        # p_no_crash_init = _p_test[no_crash_sample_index]
-        #
-        # q_no_crash_init = torch.unsqueeze(q_no_crash_init, dim=0)
-        # p_no_crash_init = torch.unsqueeze(p_no_crash_init, dim=0)
-        #
-        # q_pred = torch.cat((q_no_crash_init, q_list.cpu()), dim=0)
-        # p_pred = torch.cat((p_no_crash_init, p_list.cpu()), dim=0)
 
         if q_crash_before_pred_app:
 
