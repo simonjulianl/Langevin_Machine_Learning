@@ -34,24 +34,20 @@ phase_space = phase_space.phase_space()
 linear_integrator_obj = linear_integrator( MD_parameters.integrator_method )
 field_HNN_obj = field_HNN(fields_unet(), linear_integrator_obj) # in_channels, n_channels, out_channels
 
-# check gpu available
-print('__Number CUDA Devices:', torch.cuda.device_count())
-print('__Devices')
-print('Active CUDA Device: GPU', torch.cuda.current_device())
-print ('Available devices ', torch.cuda.device_count())
-print ('Current cuda device ', torch.cuda.current_device())
-# print('GPU available', torch.cuda.get_device_name(device))
+if not os.path.exists('./tmp/'):
+    os.makedirs('./tmp/')
 
-load_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                 lr, cnn_nhidden, activation)
-best_model_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint_best.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                     lr, cnn_nhidden, activation)
+root_train_path = './saved_model/'
+root_retrain_path = './retrain_saved_model/'
 
-#change path when retrain빠
-save_path = './saved_model/nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}_checkpoint.pth'.format( nsamples, nparticle, tau_long, optimizer,
-                                                 lr, cnn_nhidden, activation)
-#change path when retrain
-loss_curve = 'nsamples{}_nparticle{}_tau{}_{}_{}_lr{}_h{}_{}_loss.txt'.format(nsamples, nparticle,  tau_long, tau_short, optimizer, lr, cnn_nhidden, activation)
+prefix = 'nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}'.format( nsamples, nparticle, tau_long, optimizer, lr, cnn_nhidden, activation)
+load_path = root_train_path + prefix + '_checkpoint.pth'
+
+# path for train
+best_model_path = root_train_path + prefix + '_checkpoint_best.pth'
+save_path = root_train_path + prefix + '_checkpoint.pth'
+loss_curve = prefix + '_loss.txt'
+
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
