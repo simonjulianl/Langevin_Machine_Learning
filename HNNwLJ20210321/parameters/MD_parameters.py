@@ -16,7 +16,7 @@ class MD_parameters:
     nstack = 1  # 100 th step at short time step paired with first large time step
     tau_pair = int(tau_long / tau_short) # n iterations of short time step paired w large time step
     max_ts = 10. # use for predict more iterations
-    iteration_batch = int(max_ts )   #  use linear_integrator; setting 1 : train/valid,  int(max_ts ) : test or more iteration for gold standard
+    iteration_batch = 1   #  use linear_integrator; setting 1 : train/valid,  int(max_ts ) : test or more iteration for gold standard
 
     crash_duplicate_ratio = 0.4 # use data_io
     integrator_method = methods.linear_velocity_verlet
