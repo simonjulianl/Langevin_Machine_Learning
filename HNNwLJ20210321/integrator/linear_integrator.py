@@ -16,6 +16,17 @@ class linear_integrator:
 
     def __init__(self, integrator_method):
 
+        '''
+        Parameters
+        ----------
+        iteration_batch : int
+                multiples of iteration_pair_batch
+        paird_steps : int
+                paired step with two time steps (large and short)
+        iteration save batch : int
+                iterations for save files
+        '''
+
         linear_integrator._obj_count += 1
         assert (linear_integrator._obj_count == 1),type(self).__name__ + " has more than one object"
 
@@ -23,6 +34,8 @@ class linear_integrator:
         self.nparticle = MC_parameters.nparticle
         self.boxsize = MC_parameters.boxsize
         self.iteration_batch = MD_parameters.iteration_batch
+        self.paird_step = MD_parameters.tau_pair
+        self.iteration_save_batch = int(self.paird_step / self.iteration_batch)
 
     def save_object(self, qp_list, filename, nfile):
         with gzip.open( filename + '_{}.pt'.format(nfile), 'wb') as handle: # overwrites any existing file
@@ -43,19 +56,18 @@ class linear_integrator:
 
         Parameters
         ----------
-        iteration pair batch : int
-                iterations for save files
-        iteration_batch : int
-                multiples of iteration_pair_batch
         MD_iterations : int
                 n : integrations of short time step
                 1 : integration of large time step
         tau_cur : float
                 large time step for prediction
                 short time step for label
+        nstack : int
+                1 : 100 th step at short time step paired with first large time step in case large ts = 0.1 , short ts = 0.001
         '''
 
-        iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
+        nstack = MD_parameters.nstack
+
         # print('iteration_pair_batch', iteration_pair_batch)
 
         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
@@ -82,22 +94,22 @@ class linear_integrator:
                 print('pbc not applied or nan error')
                 # print(q_list_, p_list_)
 
-            if MD_iterations == 1: # one time step for prediction
+            if MD_iterations == nstack: # one time step for prediction
 
                 q_list_ = torch.unsqueeze(q_list_, dim=0)
                 p_list_ = torch.unsqueeze(p_list_, dim=0)
 
                 return q_list_, p_list_
 
-            if (i+1) % int(MD_parameters.tau_long / tau_cur) == 0 :
+            if (i+1) % self.paird_step == 0 :
                 # add qp_stack paired with large time step that to the list
                 qp_list.append(qp_stack)
                 # print('i', i, 'memory % used:', psutil.virtual_memory()[2])
 
-            if i % iteration_pair_batch == iteration_pair_batch - 1:
+            if i % self.iteration_save_batch == self.iteration_save_batch - 1:
 
                 print('save file', i)
-                self.save_object(qp_list, filename, i // iteration_pair_batch )
+                self.save_object(qp_list, filename, i // self.iteration_save_batch )
 
                 del qp_list
                 qp_list = []
@@ -114,10 +126,9 @@ class linear_integrator:
 
         qp_list = []
 
-        iteration_pair_batch = self.iteration_batch * int(MD_parameters.tau_long / tau_cur)
         filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
 
-        nfile = int(MD_iterations / iteration_pair_batch )
+        nfile = int(MD_iterations / self.iteration_save_batch )
 
         for j in range(nfile):
             #print('j',j)
@@ -133,7 +144,6 @@ class linear_integrator:
             p_curr = tensor_a[:,1]
 
             qp_stack = torch.stack((q_curr, p_curr))
-            # print(qp_stack[0],qp_stack[1])
             qp_list.append(qp_stack)
             #print('memory % used:', psutil.virtual_memory()[2])
 
