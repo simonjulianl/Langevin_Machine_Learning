@@ -37,7 +37,7 @@ field_HNN_obj = field_HNN(fields_unet(), linear_integrator_obj) # in_channels, n
 if not os.path.exists('./tmp/'):
     os.makedirs('./tmp/')
 
-root_train_path = './saved_model/'
+root_train_path = 'saved_model/'
 root_retrain_path = './retrain_saved_model/'
 
 prefix = 'nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}'.format( nsamples, nparticle, tau_long, optimizer, lr, cnn_nhidden, activation)
