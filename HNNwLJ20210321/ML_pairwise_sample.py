@@ -71,8 +71,7 @@ filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_short)
 torch.autograd.set_detect_anomaly(True)
 
 # for train
-MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path)
-MD_learner.load_checkpoint(load_path)
+MD_learner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, load_path)
 MD_learner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
 # remove files
@@ -97,7 +96,6 @@ for z in range(int(MD_iterations / iteration_pair_batch)):
 #     torch.save(qp_crash_before_pred, init_path + '/nparticle{}_new_nsim_rho{}_T{}_pos_test_before_crash_sampled.pt'.format(nparticle,rho,temp[0]))
 
 # # for crash relearner
-# MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, crash_filename = 'test_before_crash')
-# MD_relearner.load_checkpoint(load_path)
+# MD_relearner = MD_learner(linear_integrator_obj, pair_wise_HNN_obj, phase_space, init_path, load_path, crash_filename = 'test_before_crash')
 # MD_relearner.train_valid_epoch(save_path, best_model_path, loss_curve)
 
