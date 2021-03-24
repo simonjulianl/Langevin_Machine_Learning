@@ -2,7 +2,6 @@ from .data_io import data_io
 from .loss import qp_MSE_loss
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
-from ._checkpoint import _checkpoint
 import torch
 import shutil
 import time
@@ -15,7 +14,7 @@ class MD_learner:
 
     _obj_count = 0
 
-    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, init_path, load_path, crash_filename=None):
+    def __init__(self, linear_integrator_obj, any_HNN_obj, phase_space, init_path, crash_filename=None):
 
         '''
         Parameters
@@ -24,9 +23,6 @@ class MD_learner:
         any_HNN_obj : pass any HNN object to this container
         init_path : string
                 folder name
-        load_path : string
-                filename to save checkpoint
-                default is None
         crash_filename : str, optional
                 default is None
 
@@ -75,9 +71,72 @@ class MD_learner:
 
         self._loss = qp_MSE_loss
         self._current_epoch = 1
+        # initialize best models
+        self._best_validation_loss = float('inf')
 
-        self._checkpoint = _checkpoint(self.any_network, self._opt, self._current_epoch)
-        self._checkpoint.load_checkpoint(load_path)
+    def load_checkpoint(self, load_path):
+
+        ''' function to load saved model
+
+        Parameters
+        ----------
+        load_path : string
+                load saved model. if not, pass
+        '''
+
+        if os.path.isfile(load_path):
+            print("=> loading checkpoint '{}'".format(load_path))
+            checkpoint = torch.load(load_path)[0]
+            # print(checkpoint)
+            # load models weights state_dict
+            self.any_network.load_state_dict(checkpoint['model_state_dict'])
+            print('Previously trained models weights state_dict loaded...')
+            self._opt.load_state_dict(checkpoint['optimizer'])
+            print('Previously trained optimizer state_dict loaded...')
+            # self._scheduler = checkpoint['scheduler']
+            # print('Previously trained scheduler state_dict loaded...')
+            self._current_epoch = checkpoint['epoch'] + 1
+            print('Previously trained epoch state_dict loaded...')
+            print('current_epoch', self._current_epoch)
+
+            if not os.path.exists('./retrain_saved_model/'):
+                os.makedirs('./retrain_saved_model/')
+
+        else:
+            print("=> no checkpoint found at '{}'".format(load_path))
+
+            if not os.path.exists('./saved_model/'):
+                os.makedirs('./saved_model/')
+            # # epoch, best_precision, loss_train
+            # return 1, 0, []
+
+    def save_checkpoint(self, validation_loss, save_path, best_model_path):
+
+        ''' function to record the state after each training
+
+        Parameters
+        ----------
+        validation_loss : float
+            validation loss per epoch
+        save_path : string
+            path to the saving the checkpoint
+        best_model_path : string
+            path to the saving the best checkpoint
+        '''
+
+        is_best = validation_loss < self._best_validation_loss
+        self._best_validation_loss = min(validation_loss, self._best_validation_loss)
+
+        torch.save(({
+                'epoch': self._current_epoch,
+                'model_state_dict' : self.any_network.state_dict(),
+                'best_validation_loss' : self._best_validation_loss,
+                'optimizer': self._opt.state_dict(),
+                # 'scheduler' : self._scheduler
+                }, is_best), save_path)
+
+        if is_best:
+            shutil.copyfile(save_path, best_model_path)
 
 
     def train_valid_epoch(self, save_path, best_model_path, loss_curve):
@@ -86,9 +145,6 @@ class MD_learner:
 
         parameters
         -------
-        save_path : dir + filename
-        loss_curve : filename
-        best_model_path : dir + filename
         nsamples_cur : int
                 1 : load one sample in pair-wise HNN
                 batch : load batch in field HNN
@@ -194,7 +250,7 @@ class MD_learner:
             # print('================ loss each train valid epoch ================')
             print('{} epoch:'.format(e), 'train_loss:', train_loss_avg, 'valid_loss:', valid_loss_avg, ' each epoch time:', end_epoch - start_epoch)
 
-            self._checkpoint.save_checkpoint(valid_loss_avg, save_path, best_model_path, self._current_epoch)
+            self.save_checkpoint(valid_loss_avg, save_path, best_model_path)
 
             text = text + str(e) + ' ' + str(train_loss_avg) + ' ' + str(valid_loss_avg) + ' ' + str(end_epoch - start_epoch) + '\n'
             with open(loss_curve, 'w') as fp:
