@@ -1,10 +1,7 @@
 from .data_io import data_io
 from .loss import qp_MSE_loss
-import torch.optim as optim
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
-# from .models import pair_wise_zero
-from torch.optim.lr_scheduler import StepLR
 import torch
 import shutil
 import time
@@ -22,6 +19,8 @@ class MD_learner:
         '''
         Parameters
         ----------
+        linear_integrator_obj : use for integrator using large time step
+        any_HNN_obj : pass any HNN object to this container
         init_path : string
                 folder name
         crash_filename : str, optional
@@ -84,16 +83,8 @@ class MD_learner:
 
         self._device = ML_parameters.device
 
-        if ML_parameters.optimizer == 'Adam':
-            self._opt = optim.Adam(self.any_network.parameters(), lr = ML_parameters.lr)
-
-        elif ML_parameters.optimizer == 'SGD':
-            self._opt = optim.SGD(self.any_network.parameters(), lr=ML_parameters.lr)
-
-        else:
-            sys.exit(1)
-
-        print(type(self._opt).__name__)
+        self._opt = ML_parameters.opt.create(self.any_network.parameters())
+        print(self._opt.name())
 
         # Assuming optimizer uses lr = 0.001 for all groups
         # lr = 0.001      if epoch < 10

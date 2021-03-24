@@ -59,10 +59,10 @@ class data_io:
     def _shuffle(self, q_list, p_list):
         # for internal use only
 
-        g = torch.Generator()
-        g.manual_seed(MD_parameters.seed)
+        # g = torch.Generator()
+        # g.manual_seed(MD_parameters.seed)
 
-        idx = torch.randperm(q_list.shape[0], generator=g)
+        idx = torch.randperm(q_list.shape[0]) #, generator=g)
 
         q_list_shuffle = q_list[idx]
         p_list_shuffle = p_list[idx]
