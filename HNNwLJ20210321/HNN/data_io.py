@@ -59,10 +59,10 @@ class data_io:
     def _shuffle(self, q_list, p_list):
         # for internal use only
 
-        g = torch.Generator()
-        g.manual_seed(MD_parameters.seed)
+        # g = torch.Generator()
+        # g.manual_seed(MD_parameters.seed)
 
-        idx = torch.randperm(q_list.shape[0], generator=g)
+        idx = torch.randperm(q_list.shape[0]) #, generator=g)
 
         q_list_shuffle = q_list[idx]
         p_list_shuffle = p_list[idx]
@@ -130,14 +130,10 @@ class data_io:
             q_list_shuffle = q_list1
             p_list_shuffle = p_list1
 
-        init_pos = torch.unsqueeze(q_list_shuffle, dim=1)  # nsamples  X 1 X nparticle X  DIM
-        init_vel = torch.unsqueeze(p_list_shuffle, dim=1)  # nsamples  X 1 X nparticle X  DIM
-        init = torch.cat((init_pos, init_vel), dim=1)  # nsamples X 2 X nparticle X  DIM
-
-        return init
+        return q_list_shuffle, p_list_shuffle
 
 
-    def phase_space2label(self, qp_list, linear_integrator, phase_space, noML_hamiltonian):
+    def phase_space2label(self, curr_q, curr_p, linear_integrator, phase_space, noML_hamiltonian):
 
         ''' function to prepare label data for train or valid or test
 
@@ -147,25 +143,29 @@ class data_io:
                 num. of nsamples ( train or valid or test)
         nsample_batch : int
                 num. of batch for nsamples
+        pair_iterations : int
+                ex) large time step = 0.1, short time step = 0.001
+                1 : 100 th step at short time step paired with first large time step
+                2 : 200 th step at short time step paired with second lare time step
+        MD_iteration : int
+                n iterations of short time step paired w large time step
 
         Returns
         ----------
         q and p paired w q and p at large time step
         '''
 
-        nsamples, qnp, nparticles, DIM = qp_list.shape
-
-        curr_q = qp_list[:,0]
-        curr_p = qp_list[:,1]
+        nsamples, nparticles, DIM = curr_q.shape
 
         # print('===== state at short time step 0.01 =====')
         nsamples_cur = nsamples # train or valid
         tau_cur = MD_parameters.tau_short
-        MD_iterations = int(MD_parameters.tau_long / tau_cur)
+        pair_iterations = MD_parameters.nstack
+        MD_iterations = MD_parameters.tau_pair
         nsamples_batch = MD_parameters.nsamples_batch
 
-        q_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
-        p_list = torch.zeros((MD_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
+        q_list = torch.zeros((pair_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
+        p_list = torch.zeros((pair_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
 
         for z in range(0, len(curr_q), nsamples_batch):
 
@@ -178,5 +178,5 @@ class data_io:
             linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, nsamples_batch, tau_cur)
             q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = linear_integrator.concat_step(MD_iterations, tau_cur)
 
-        # print('label', q_list.shape, p_list.shape)
+        print('label', q_list.shape, p_list.shape)
         return q_list, p_list

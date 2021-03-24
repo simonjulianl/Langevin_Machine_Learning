@@ -1,10 +1,7 @@
 from .data_io import data_io
 from .loss import qp_MSE_loss
-import torch.optim as optim
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
-# from .models import pair_wise_zero
-from torch.optim.lr_scheduler import StepLR
 import torch
 import shutil
 import time
@@ -22,6 +19,8 @@ class MD_learner:
         '''
         Parameters
         ----------
+        linear_integrator_obj : use for integrator using large time step
+        any_HNN_obj : pass any HNN object to this container
         init_path : string
                 folder name
         crash_filename : str, optional
@@ -42,58 +41,25 @@ class MD_learner:
         self._phase_space = phase_space
         self._data_io_obj = data_io(init_path)
 
-        print("============ data loaded ===============")
-        self.train_data = self._data_io_obj.qp_dataset('train', crash_filename)
-        # self.train_data = self.train_data[:4]  # check debug
-        # print('n. of data', self.train_data)
-        print('n. of data', self.train_data.shape)
+        print("============ train/valid data ===============")
+        self.q_train, self.p_train = self._data_io_obj.qp_dataset('train', crash_filename)
+        self.q_valid, self.p_valid = self._data_io_obj.qp_dataset('valid')
 
-        self.valid_data = self._data_io_obj.qp_dataset('valid')
-        # self.valid_data = self.valid_data[:2]  # check debug
-        # print('n. of data', self.valid_data)
-        print('n. of data', self.valid_data.shape)
+        print('n. of train data reshape ', self.q_train.shape, self.p_train.shape)
+        print('n. of valid data reshape ', self.q_valid.shape, self.p_valid.shape)
 
-        print("============ data label ===============")
+        print("============ label for train/valid ===============")
         # qnp x iterations x nsamples x  nparticle x DIM
-        self.train_label = self._data_io_obj.phase_space2label(self.train_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
-        self.valid_label = self._data_io_obj.phase_space2label(self.valid_data, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
+        self.q_train_label, self.p_train_label = self._data_io_obj.phase_space2label(self.q_train, self.p_train, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
+        self.q_valid_label, self.p_valid_label = self._data_io_obj.phase_space2label(self.q_valid, self.p_valid, self.linear_integrator, self._phase_space, self.noML_hamiltonian)
 
-        # print('===== load initial train data =====')
-        self._q_train = self.train_data[:,0]; self._p_train = self.train_data[:,1]
-        print('n. of train data reshape ', self._q_train.shape, self._p_train.shape)
-
-        # print('===== label train data =====')
-        self.q_train_label = self.train_label[0]; self.p_train_label = self.train_label[1]
-        self._q_train_label = self.q_train_label[-1]; self._p_train_label = self.p_train_label[-1] # only take the last from the list
-        print('n. of train label reshape ', self._q_train_label.shape, self._p_train_label.shape)
-
-        assert self._q_train.shape == self._q_train_label.shape
-        assert self._p_train.shape == self._p_train_label.shape
-
-        # print('===== load initial valid data =====')
-        self._q_valid = self.valid_data[:, 0]; self._p_valid = self.valid_data[:, 1]
-        print('n. of valid data reshape ', self._q_valid.shape, self._p_valid.shape)
-
-        # print('===== label valid data =====')
-        self.q_valid_label = self.valid_label[0]; self.p_valid_label = self.valid_label[1]
-        self._q_valid_label = self.q_valid_label[-1]; self._p_valid_label = self.p_valid_label[-1]  # only take the last from the list
-        print('n. of valid label reshape ', self._q_valid_label.shape, self._p_valid_label.shape)
-
-        assert self._q_valid.shape == self._q_valid_label.shape
-        assert self._p_valid.shape == self._p_valid_label.shape
+        print('n. of train label reshape ', self.q_train_label.shape, self.p_train_label.shape)
+        print('n. of valid label reshape ', self.q_valid_label.shape, self.p_valid_label.shape)
 
         self._device = ML_parameters.device
 
-        if ML_parameters.optimizer == 'Adam':
-            self._opt = optim.Adam(self.any_network.parameters(), lr = ML_parameters.lr)
-
-        elif ML_parameters.optimizer == 'SGD':
-            self._opt = optim.SGD(self.any_network.parameters(), lr=ML_parameters.lr)
-
-        else:
-            sys.exit(1)
-
-        print(type(self._opt).__name__)
+        self._opt = ML_parameters.opt.create(self.any_network.parameters())
+        print(ML_parameters.opt.name())
 
         # Assuming optimizer uses lr = 0.001 for all groups
         # lr = 0.001      if epoch < 10
@@ -177,6 +143,20 @@ class MD_learner:
 
         ''' function to train and valid each epoch
 
+        parameters
+        -------
+        nsamples_cur : int
+                1 : load one sample in pair-wise HNN
+                batch : load batch in field HNN
+        tau_cur : float
+                long time step
+        MD_iterations : int
+                1 : integration of large time step
+        random_ordered_train_nsamples : int
+                n. of samples for train
+        random_ordered_valid_nsamples : int
+                n. of samples for valid
+
         Returns
         -------
         float
@@ -187,21 +167,17 @@ class MD_learner:
         self._tau_cur = MD_parameters.tau_long
         MD_iterations = int( MD_parameters.tau_long / self._tau_cur )
 
+        random_ordered_train_nsamples = self.q_train.shape[0] # nsamples
+        random_ordered_valid_nsamples = self.q_valid.shape[0] # nsamples
+
         print('prepare train nsamples_cur, tau_cur, MD_iterations')
         print(nsamples_cur, self._tau_cur, MD_iterations)
-
-        random_ordered_train_nsamples = self._q_train.shape[0] # nsamples
-        random_ordered_valid_nsamples = self._q_valid.shape[0] # nsamples
         print('nsample', random_ordered_train_nsamples, random_ordered_valid_nsamples)
 
-
-        # any_hnn = self.any_HNN
         self.any_HNN.train()
         criterion = self._loss
 
         text = ''
-
-        start = time.time()
 
         for e in range(1, ML_parameters.nepoch + 1 ):
 
@@ -215,50 +191,27 @@ class MD_learner:
             # print('epoch', e, 'lr', curr_lr)
             start_epoch = time.time()
 
-            for i in range(random_ordered_train_nsamples): # load each sample for loop
-                # print(i)
-                start_batch_train = time.time()
+            for i in range(0, random_ordered_train_nsamples, nsamples_cur):
 
-                q_train_batch, p_train_batch = self._q_train[i], self._p_train[i] # each sample
-                q_train_batch = torch.unsqueeze(q_train_batch, dim=0).to(self._device)
-                p_train_batch = torch.unsqueeze(p_train_batch, dim=0).to(self._device)
+                q_train_batch, p_train_batch = self.q_train[i:i+nsamples_cur], self.p_train[i:i+nsamples_cur] # each sample
+                q_train_label_batch, p_train_label_batch = self.q_train_label[:,i:i+nsamples_cur], self.p_train_label[:,i:i+nsamples_cur]
 
-                q_train_label_batch, p_train_label_batch = self._q_train_label[i], self._p_train_label[i]
-                q_train_label_batch = torch.unsqueeze(q_train_label_batch, dim=0).to(self._device)
-                p_train_label_batch = torch.unsqueeze(p_train_label_batch, dim=0).to(self._device)
-                # print('train label', q_train_label_batch, p_train_label_batch)
-
-                train_label = (q_train_label_batch, p_train_label_batch)
-
-
-                self._phase_space.set_q(q_train_batch)
-                self._phase_space.set_p(p_train_batch)
+                self._phase_space.set_q(q_train_batch.to(self._device))
+                self._phase_space.set_p(p_train_batch.to(self._device))
 
                 # print('======= train combination of MD and ML =======')
-                start_pred = time.time()
-
                 q_train_pred, p_train_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
-                # q_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
-                # p_train_pred = torch.zeros(torch.unsqueeze(q_train_label_batch, dim=0).shape,requires_grad=True)
-                end_pred = time.time()
 
-                q_train_pred = q_train_pred.to(self._device); p_train_pred = p_train_pred.to(self._device)
+                train_predict = (q_train_pred, p_train_pred)
+                train_label = (q_train_label_batch.to(self._device), p_train_label_batch.to(self._device))
 
-                train_predict = (q_train_pred[-1], p_train_pred[-1])
-                # print('train pred', q_train_pred[-1], p_train_pred[-1])
-
-                start_loss = time.time()
                 loss1 = criterion(train_predict, train_label)
-                end_loss = time.time()
 
-                start_backward = time.time()
                 self._opt.zero_grad()  # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
                 loss1.backward()  # backward pass : compute gradient of the loss wrt models parameters
-                end_backward = time.time()
-
                 self._opt.step()
 
-                train_loss += loss1.item()  # get the scalar output
+                train_loss += loss1.item() / nsamples_cur  # get the scalar output
 
             # eval model
 
@@ -266,39 +219,29 @@ class MD_learner:
 
             with torch.no_grad():
 
-                for j in range(random_ordered_valid_nsamples):
+                for j in range(0, random_ordered_valid_nsamples, nsamples_cur):
 
-                    q_valid_batch, p_valid_batch = self._q_valid[j], self._p_valid[j]
+                    q_valid_batch, p_valid_batch = self.q_valid[j:j+nsamples_cur], self.p_valid[j:j+nsamples_cur]
+                    q_valid_label_batch, p_valid_label_batch = self.q_valid_label[:,j:j+nsamples_cur], self.p_valid_label[:,j:j+nsamples_cur]
 
-                    q_valid_batch = torch.unsqueeze(q_valid_batch, dim=0).to(self._device)
-                    p_valid_batch = torch.unsqueeze(p_valid_batch, dim=0).to(self._device)
-
-                    q_valid_label_batch, p_valid_label_batch = self._q_valid_label[j], self._p_valid_label[j]
-
-                    q_valid_label_batch = torch.unsqueeze(q_valid_label_batch, dim=0).to(self._device)
-                    p_valid_label_batch = torch.unsqueeze(p_valid_label_batch, dim=0).to(self._device)
-                    # print('valid label', q_valid_label_batch, p_valid_label_batch)
-
-                    valid_label = (q_valid_label_batch, p_valid_label_batch)
-
-                    self._phase_space.set_q(q_valid_batch)
-                    self._phase_space.set_p(p_valid_batch)
+                    self._phase_space.set_q(q_valid_batch.to(self._device))
+                    self._phase_space.set_p(p_valid_batch.to(self._device))
 
                     # print('======= valid combination of MD and ML =======')
                     q_valid_pred, p_valid_pred = self.linear_integrator.step( self.any_HNN, self._phase_space, MD_iterations, nsamples_cur, self._tau_cur)
-                    q_valid_pred = q_valid_pred.to(self._device); p_valid_pred = p_valid_pred.to(self._device)
 
-                    valid_predict = (q_valid_pred[-1], p_valid_pred[-1])
-                    # print('valid pred', q_valid_pred[-1], q_valid_pred[-1])
+                    valid_predict = (q_valid_pred, p_valid_pred)
+                    valid_label = (q_valid_label_batch.to(self._device), p_valid_label_batch.to(self._device))
 
                     val_loss1 = criterion(valid_predict, valid_label)
 
-                    valid_loss += val_loss1.item()  # get the scalar output
+                    valid_loss += val_loss1.item() / nsamples_cur # get the scalar output
+
 
             end_epoch = time.time()
 
-            train_loss_avg = train_loss / random_ordered_train_nsamples
-            valid_loss_avg = valid_loss / random_ordered_valid_nsamples
+            train_loss_avg = train_loss / (random_ordered_train_nsamples // nsamples_cur)
+            valid_loss_avg = valid_loss / (random_ordered_valid_nsamples  // nsamples_cur)
 
             # # Decay Learning Rate after every epoch
             # curr_lr = self._scheduler.get_lr()

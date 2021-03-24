@@ -1,11 +1,8 @@
 from .data_io import data_io
 from .loss import qp_MSE_loss
-import torch.optim as optim
 from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
-# from .models import pair_wise_zero
-from torch.optim.lr_scheduler import StepLR
 from psutil._common import bytes2human
 import torch
 import psutil
@@ -60,11 +57,8 @@ class MD_tester:
 
         self._device = ML_parameters.device
 
-        if ML_parameters.optimizer == 'Adam':
-            self._opt = optim.Adam(self.any_network.parameters(), lr=ML_parameters.lr)
-
-        elif ML_parameters.optimizer == 'SGD':
-            self._opt = optim.SGD(self.any_network.parameters(), lr=ML_parameters.lr)
+        self._opt = ML_parameters.opt.create(self.any_network.parameters())
+        print(ML_parameters.opt.name())
 
         checkpoint = torch.load(load_path)[0]
         # print(checkpoint)
