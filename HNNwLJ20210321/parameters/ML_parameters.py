@@ -17,7 +17,6 @@ class optimizer:
 
 class ML_parameters:
 
-    seed = 9372211
     lr = 0.0001
     nepoch = 5
     opt = optimizer(lr)
