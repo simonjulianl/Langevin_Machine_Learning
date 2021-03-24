@@ -22,7 +22,7 @@ rho = MC_parameters.rho
 tau_long = MD_parameters.tau_long
 tau_short = MD_parameters.tau_short
 lr = ML_parameters.lr
-optimizer = ML_parameters.optimizer
+optname = ML_parameters.opt.name()
 MLP_nhidden = ML_parameters.MLP_nhidden
 activation = ML_parameters.activation
 crash_duplicate_ratio = MD_parameters.crash_duplicate_ratio
@@ -33,7 +33,7 @@ iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_short)
 print('nparticle tau_long tau_short lr nsamples_batch MLP_nhidden')
 print(nparticle, tau_long, tau_short, lr, MD_parameters.nsamples_batch, ML_parameters.MLP_nhidden )
 
-seed = 9372211
+seed = ML_parameters.seed
 torch.manual_seed(seed)
 # torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
 # torch.backends.cudnn.benchmark = False
@@ -49,7 +49,7 @@ if not os.path.exists('./tmp/'):
 root_train_path = './saved_model/'
 root_retrain_path = './retrain_saved_model/'
 
-prefix = 'nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}'.format( nsamples, nparticle, tau_long, optimizer, lr, MLP_nhidden, activation)
+prefix = 'nsamples{}_nparticle{}_tau{}_{}_lr{}_h{}_{}'.format( nsamples, nparticle, tau_long, optname, lr, MLP_nhidden, activation)
 load_path = root_train_path + prefix + '_checkpoint.pth'
 
 # path for train
