@@ -29,7 +29,7 @@ iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
 print('nparticle tau pair_interval MD_iterations')
 print(nparticle, tau_short, pair_interval, MD_iterations)
 
-seed = 9372211
+seed = MD_parameters.seed
 torch.manual_seed(seed)
 # torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
 # torch.backends.cudnn.benchmark = False
