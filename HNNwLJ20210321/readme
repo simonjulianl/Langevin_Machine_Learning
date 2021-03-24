@@ -1,3 +1,11 @@
+more clean code
+- create factory for opt. not use if in MD_learner.py
+- reduce code in MD_learner.py
+- define parameters more for linear_integrator.py
+- fix phase_space2label function in data_io.py.
+  torch.zeros shape was wrong for creating q list, p_list ( MD_interation -> pair_iterations )
+- create checkpoint class
+
 cannot duplicate code
 cannot duplicate code
 cannot duplicate code
@@ -19,5 +27,6 @@ cannot duplicate code
 cannot duplicate code
 cannot duplicate code
 cannot duplicate code
+
 
 
