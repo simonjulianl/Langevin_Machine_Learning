@@ -24,7 +24,7 @@ tau_cur = tau_short # find gold standard
 pair_interval = int(tau_long / tau_short)
 MD_iterations = round(MD_parameters.max_ts / tau_short)
 iteration_batch = MD_parameters.iteration_batch
-iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
+iteration_save_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
 
 print('nparticle tau pair_interval MD_iterations')
 print(nparticle, tau_short, pair_interval, MD_iterations)
@@ -91,5 +91,5 @@ qp_hist = torch.cat((q_hist, p_hist), dim=1)
 torch.save(qp_hist, base_library + '/nparticle{}_T{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_short,MD_iterations,nsamples))
 
 # remove files
-for z in range(int(MD_iterations / iteration_pair_batch)):
+for z in range(int(MD_iterations / iteration_save_batch)):
     os.remove( filename + '_{}.pt'.format(z))
