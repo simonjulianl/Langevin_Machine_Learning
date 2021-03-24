@@ -33,7 +33,7 @@ iteration_pair_batch = iteration_batch * int(MD_parameters.tau_long / tau_short)
 print('nparticle tau_long tau_short lr nsamples_batch MLP_nhidden')
 print(nparticle, tau_long, tau_short, lr, MD_parameters.nsamples_batch, ML_parameters.MLP_nhidden )
 
-seed = ML_parameters.seed
+seed = MD_parameters.seed
 torch.manual_seed(seed)
 # torch.backends.cudnn.deterministic = True  # Processing speed may be lower then when the models functions nondeterministically.
 # torch.backends.cudnn.benchmark = False
