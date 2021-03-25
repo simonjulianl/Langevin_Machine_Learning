@@ -24,7 +24,7 @@ tau_cur = tau_short # find gold standard
 pair_interval = int(tau_long / tau_short)
 MD_iterations = round(MD_parameters.max_ts / tau_short)
 iteration_batch = MD_parameters.iteration_batch
-iteration_save_batch = iteration_batch * int(MD_parameters.tau_long / tau_cur)
+iteration_save_batch = iteration_batch * int(MD_parameters.tau_long * tau_cur)
 
 print('nparticle tau pair_interval MD_iterations')
 print(nparticle, tau_short, pair_interval, MD_iterations)
