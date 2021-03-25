@@ -4,7 +4,7 @@ import math
 class MD_parameters:
 
     seed = 9372211
-    nsamples = 6 # total train/valid 20900 / for predict 20900 / for inegrate 1000
+    nsamples = 6 # total train/valid 20900 / when predict, set 20900 to load file / set 1000 when noML
     nsamples_batch = 10  # num. of batch for nsamples when prepare data before ML
     nsamples_ML = 1
     epsilon = 1.
@@ -24,4 +24,4 @@ class MD_parameters:
     # optical flow
     pixels_batch = 32
     npixels = 32
-    # ML_iteration_batch = 2
+    ML_iteration_batch = 1000 # the num. of saved files when test  1000 /
