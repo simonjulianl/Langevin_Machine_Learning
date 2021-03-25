@@ -21,13 +21,13 @@ tau_long = MD_parameters.tau_long
 tau_short = MD_parameters.tau_short
 nsamples_cur = nsamples
 tau_cur = tau_short # find gold standard
-pair_interval = int(tau_long / tau_short)
+paird_step = int(tau_long / tau_short)
 MD_iterations = round(MD_parameters.max_ts / tau_short)
 iteration_batch = MD_parameters.iteration_batch
-iteration_save_batch = iteration_batch * int(MD_parameters.tau_long * tau_cur)
+iteration_save_batch = int( paird_step * iteration_batch)
 
 print('nparticle tau pair_interval MD_iterations')
-print(nparticle, tau_short, pair_interval, MD_iterations)
+print(nparticle, tau_short, paird_step, MD_iterations)
 
 seed = MD_parameters.seed
 torch.manual_seed(seed)
@@ -50,7 +50,7 @@ if not os.path.exists('./tmp/'):
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 1)
 init_test_path = base_dir + '/init_config_for_testset/'
-filename = 'tmp/nparticle{}_tau{}'.format(nparticle, tau_cur)
+filename = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
 base_library = os.path.abspath('gold_standard')
 
 data_io_obj = data_io(init_test_path)
