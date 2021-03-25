@@ -11,11 +11,11 @@ class MD_parameters:
     sigma = 1.
     mass = 1
     temp_list = [0.04]
-    tau_short = 0.001  # short time step for label
+    tau_short = 0.01  # short time step for label
     tau_long = 0.1
     nstack = 1  # 100 th step at short time step paired with first large time step
     tau_pair = int(tau_long / tau_short) # n iterations of short time step paired w large time step
-    max_ts = 10. # use for predict more iterations
+    max_ts = 1. # use for predict more iterations
     iteration_batch = 1   #  use linear_integrator; setting 1 : train/valid,  int(max_ts ) : test or more iteration for gold standard
 
     crash_duplicate_ratio = 0.4 # use data_io
@@ -24,4 +24,4 @@ class MD_parameters:
     # optical flow
     pixels_batch = 32
     npixels = 32
-    ML_iteration_batch = 1000 # the num. of saved files when test  1000 /
+    ML_iteration_batch = 2 #  set 50 the num. of saved files when test  1000 /
