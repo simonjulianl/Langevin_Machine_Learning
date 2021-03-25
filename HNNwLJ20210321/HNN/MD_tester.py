@@ -1,5 +1,6 @@
 from .data_io import data_io
 from .loss import qp_MSE_loss
+from ._checkpoint import _checkpoint
 from MC_parameters import MC_parameters
 from MD_parameters import MD_parameters
 from ML_parameters import ML_parameters
@@ -50,27 +51,19 @@ class MD_tester:
         self._data_io_obj = data_io(init_test_path)
 
         print("============ start data loaded ===============")
-        self.test_data = self._data_io_obj.qp_dataset('test', shuffle = False)
-        # self.test_data = self.test_data[:5]
-        print('n. of data', self.test_data)
-        print('n. of data', self.test_data.shape)
+        self.q_test, self.p_test = self._data_io_obj.qp_dataset('test', shuffle = False)
+        print('n. of valid data reshape ', self.q_test.shape, self.p_test.shape)
 
         self._device = ML_parameters.device
 
         self._opt = ML_parameters.opt.create(self.any_network.parameters())
         print(ML_parameters.opt.name())
 
-        checkpoint = torch.load(load_path)[0]
-        # print(checkpoint)
 
         # load models weights state_dict
-        self.any_network.load_state_dict(checkpoint['model_state_dict'])
-        print('Previously trained models weights state_dict loaded...')
-        self._opt.load_state_dict(checkpoint['optimizer'])
-        print('Previously trained optimizer state_dict loaded...')
-        # print("Optimizer's state_dict:")
-        # for var_name in self._opt.state_dict():
-        #     print(var_name, "\t", self._opt.state_dict()[var_name])
+        self._checkpoint = _checkpoint(self.any_network, self._opt, current_epoch = 0)
+        self._checkpoint.load_checkpoint(load_path)
+
 
     def pred_qnp(self, phase_space):
 
@@ -191,9 +184,7 @@ class MD_tester:
                 p list before crash state
         '''
 
-        _q_test = self.test_data[:, 0]; _p_test = self.test_data[:, 1]
-
-        nsamples, nparticle, DIM = _q_test.shape
+        nsamples, nparticle, DIM = self.q_test.shape
 
         qp_list = []
         q_crash_before_pred_app = []
@@ -205,7 +196,7 @@ class MD_tester:
 
             print('nsamples', i)
 
-            q_sample_list, p_sample_list = self.each_sample_step(_q_test[i], _p_test[i])
+            q_sample_list, p_sample_list = self.each_sample_step(self.q_test[i], self.p_test[i])
             print(q_sample_list.shape, p_sample_list.shape)
 
             if q_sample_list.shape and p_sample_list.shape:
