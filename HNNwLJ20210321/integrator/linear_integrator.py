@@ -33,9 +33,10 @@ class linear_integrator:
         self._integrator_method = integrator_method
         self.nparticle = MC_parameters.nparticle
         self.boxsize = MC_parameters.boxsize
+        self.temp = MD_parameters.temp_list
         self.iteration_batch = MD_parameters.iteration_batch
         self.paird_step = MD_parameters.tau_pair
-        self.iteration_save_batch = int(self.paird_step / self.iteration_batch)
+        self.iteration_save_batch = int(self.paird_step * self.iteration_batch)
 
     def save_object(self, qp_list, filename, nfile):
         with gzip.open( filename + '_{}.pt'.format(nfile), 'wb') as handle: # overwrites any existing file
@@ -70,7 +71,7 @@ class linear_integrator:
 
         # print('iteration_pair_batch', iteration_pair_batch)
 
-        filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
+        filename = 'tmp/nparticle{}_T{}_tau{}'.format(self.nparticle, self.temp[0],  tau_cur)
 
         # print('step nsamples_cur, tau_cur, MD_iterations, iteration_batch ')
         # print(nsamples_cur, tau_cur, MD_iterations, self.iteration_batch)
@@ -126,7 +127,7 @@ class linear_integrator:
 
         qp_list = []
 
-        filename = 'tmp/nparticle{}_tau{}'.format(self.nparticle, tau_cur)
+        filename = 'tmp/nparticle{}_T{}_tau{}'.format(self.nparticle, self.temp[0], tau_cur)
 
         nfile = int(MD_iterations / self.iteration_save_batch )
 
