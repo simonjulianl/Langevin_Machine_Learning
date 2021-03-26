@@ -5,14 +5,8 @@ import torch
 from .pb import pb
 
 class phase_space(pb):
-    '''phase space container class that have a 
-    q and p configuration as well wrapper to read and write'
-    q and p must be either numpy or torch 
-    '''
-    def helper(self = None):
-        '''print the common parameters helper'''
-        for parent in phase_space.__bases__:
-            print(help(parent))
+
+    '''phase space class that have q and p and copy q_list to _q_list  and p_list to _p_list'''
 
     _obj_count = 0
 
@@ -23,7 +17,7 @@ class phase_space(pb):
         phase_space._obj_count += 1
         assert(phase_space._obj_count == 1), type(self).__name__ + ' has more than one object'
 
-        '''initialize phase space container of N X particle X DIM dimension'''
+        '''initialize phase space of nsamples X nparticle X DIM '''
         self._q_list = None
         self._p_list = None
 
