@@ -12,13 +12,14 @@ class data_io:
         self.root_dir = root_dir_name
 
     def read_init_qp(self, mode):
-        ''' given a filename, read the init_qp
+        ''' given mode ( train or valid or test), read the files at different temp
+            and then combine them
 
             returns
             torch.tensor of qp_list
 
             use in MD_sample.py and dataset.py at HNN folder
-            '''
+        '''
 
         file_format =  self.root_dir + 'nparticle' + str(MC_parameters.nparticle) + '_new_nsim' + '_rho{}_T{}_pos_' + str(mode) + '_sampled.pt'
 
@@ -77,10 +78,10 @@ class data_io:
     #         handle.close()
 
     def read_trajectory_qp(self,tmp_filename, no_file):
-        ''' given a filename, read the qp paired pts for testing or gold standard
+        ''' given a temporary filename, read the qp paired pts trajectory for testing or gold standard
 
         returns
-        list of qp_list
+        torch tensor of qp_list
 
         use in MD_sample.py
         '''
@@ -91,7 +92,20 @@ class data_io:
             return qp_list
 
     def write_trajectory_qp(self, tmp_filename, no_file, qp_trajectory):
-        ''' write or append to filename for qp_trajectory
+        ''' write or append to temporary filename for qp_trajectory
+
+        Parameters
+        ----------
+        tmp_filename : string
+        no_file : int
+                i th saved file
+        qp_trajectory : torch.tensor
+                  tensor of (q,p) states
+                  shape is [iteration_batch, (q, p), nsamples, nparticle, DIM]
+
+        returns
+        torch tensor
+        qp paired pts trajectory
 
         use in MD_sample.py
         '''
@@ -103,7 +117,9 @@ class data_io:
 
     def read_crash_qp(self, filename):
         ''' given a filename, read the qp pts for retraining
-            returns torch tensor pair of qp_list '''
+
+            returns
+            torch tensor pair of qp_list '''
 
         with gzip.open( filename , 'rb') as handle: # overwrites any existing file
             qp_list = pickle.load(handle)

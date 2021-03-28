@@ -6,7 +6,7 @@ from MD_parameters import MD_parameters
 
 class dataset:
 
-    ''' data_io class to help load, prepare data and label for ML'''
+    ''' dataset class to help split data for train or valid or test and make label for training'''
 
     _obj_count = 0
 
@@ -21,10 +21,7 @@ class dataset:
     def _shuffle(self, q_list, p_list):
         # for internal use only
 
-        # g = torch.Generator()
-        # g.manual_seed(MD_parameters.seed)
-
-        idx = torch.randperm(q_list.shape[0]) #, generator=g)
+        idx = torch.randperm(q_list.shape[0])
 
         q_list_shuffle = q_list[idx]
         p_list_shuffle = p_list[idx]
@@ -34,18 +31,16 @@ class dataset:
         except:
              raise Exception('does not have shape method or shape differs')
 
-        # print('after shuffle')
-        # print(q_list_shuffle, p_list_shuffle)
-
         return q_list_shuffle, p_list_shuffle
+
 
     def qp_dataset(self, mode, crash_filename = None, shuffle = True):
 
-        ''' function to prepare data for train (shuffle=True) or test (shuffle=False)
+        ''' given mode, split data for train (shuffle=True) or test (shuffle=False)
 
         Parameters
         ----------
-        filename : str
+        mode : str
                 train or valid or test
         shuffle : bool, optional
                 True when train and valid / False when test
@@ -56,7 +51,6 @@ class dataset:
         '''
 
         q_list1, p_list1 = self.data_io_obj.read_init_qp(mode)
-        # print('before shuffle', q_list1, p_list1)
 
         if shuffle:
             q_list1, p_list1 = self._shuffle(q_list1, p_list1)
@@ -96,15 +90,17 @@ class dataset:
 
     def phase_space2label(self, curr_q, curr_p, linear_integrator, phase_space, noML_hamiltonian):
 
-        ''' function to prepare label data for train or valid or test
+        ''' function to make label for train or valid
 
          Parameters
         ----------
-        nsamples_cur : int
-                num. of nsamples ( train or valid or test)
+        nsamples : int
+                num. of nsamples ( train or valid)
         nsample_batch : int
                 num. of batch for nsamples
         pair_iterations : int
+                qp end pts iteration paired with large time step
+                nstack is no. of paired pts
                 ex) large time step = 0.1, short time step = 0.001
                 1 : 100 th step at short time step paired with first large time step
                 2 : 200 th step at short time step paired with second lare time step
@@ -113,33 +109,27 @@ class dataset:
 
         Returns
         ----------
-        q and p paired w q and p at large time step
+        q and p end pts paired w q and p at large time step
         '''
 
         nsamples, nparticles, DIM = curr_q.shape
 
-        # print('===== state at short time step 0.01 =====')
-        nsamples_cur = nsamples # train or valid
         tau_cur = MD_parameters.tau_short
         pair_iterations = MD_parameters.nstack
         MD_iterations = MD_parameters.tau_pair
         nsamples_batch = MD_parameters.nsamples_batch
 
-        q_list = torch.zeros((pair_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
-        p_list = torch.zeros((pair_iterations, nsamples_cur, nparticles, DIM), dtype=torch.float64)
+        q_list = torch.zeros((pair_iterations, nsamples, nparticles, DIM), dtype=torch.float64)
+        p_list = torch.zeros((pair_iterations, nsamples, nparticles, DIM), dtype=torch.float64)
 
         for z in range(0, len(curr_q), nsamples_batch):
 
-            # print('z',z)
             phase_space.set_q(curr_q[z:z+nsamples_batch])
             phase_space.set_p(curr_p[z:z+nsamples_batch])
 
-            #[:, z: z + nsamples_batch]
             qp_list  = linear_integrator.step( noML_hamiltonian, phase_space, MD_iterations, tau_cur)
-            tensor_qp_list = torch.stack(qp_list)
+            tensor_qp_list = torch.stack(qp_list) # shape is [MD_iterations, (q,p), nsamples, nparticles, DIM]
 
-            q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = tensor_qp_list[-1,0], tensor_qp_list[-1,1]
+            q_list[:, z:z + nsamples_batch], p_list[:, z:z + nsamples_batch] = tensor_qp_list[-1,0], tensor_qp_list[-1,1] # take no. of qp paired pts
 
-
-        print('label', q_list.shape, p_list.shape)
         return q_list, p_list

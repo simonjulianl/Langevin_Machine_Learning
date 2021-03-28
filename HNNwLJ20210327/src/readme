@@ -9,7 +9,7 @@ make code for only do integrator
 5. MD_sample.py <- create data_io obj for
                    * read init qp
                    * write, read trajectory file to solve overuse memory
-
+6. make dataset.py at HNN to use MD_learner.py
 
 still doing... X(
 
