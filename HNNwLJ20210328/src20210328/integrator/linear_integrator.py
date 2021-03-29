@@ -82,7 +82,7 @@ class linear_integrator:
         for t in range(nitr):
             print('====== step ', t)
             nxt_qp = self.one_step( hamiltonian, phase_space, tau_cur)
-            print('nxt qp', nxt_qp)
+            # print('nxt qp', nxt_qp)
 
             if (t+1) % append_strike == 0:
                 # print('append stike', nxt_qp)

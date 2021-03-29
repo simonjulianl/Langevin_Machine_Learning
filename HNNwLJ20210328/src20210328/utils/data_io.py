@@ -71,4 +71,5 @@ class data_io:
         '''
 
         full_path = self.root_dir + filename
+        print(full_path)
         torch.save(qp_trajectory, full_path)

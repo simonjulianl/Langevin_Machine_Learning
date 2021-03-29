@@ -3,14 +3,14 @@ import math
 
 class MD_parameters:
 
-    data_path = '/training_data/n2/run1'
+    data_path = '/training_data/n=2/run@@'
     nsamples = 2 # total train/valid 20900 / when predict, set 20900 to load file / set 1000 when noML
     nsamples_batch = 2  # num. of batch for nsamples when prepare data before ML
     nsamples_ML = 1
     epsilon = 1.
     sigma = 1.
     mass = 1
-    temp_list = [0.32]
+    temp_list = [0.04]
 
     tau_short = 0.001                                    # short time step for label
     append_strike = 20                                   # number of short steps to make one long step

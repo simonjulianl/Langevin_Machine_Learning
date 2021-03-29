@@ -12,6 +12,7 @@ from phase_space                import phase_space
 from integrator                 import linear_integrator
 from utils.data_io              import data_io
 
+import psutil
 import torch
 import time
 
@@ -31,25 +32,27 @@ niter_tau_short = MD_parameters.niter_tau_short
 
 tau_cur = tau_short
 nfile = niter_tau_short // save2file_strike
+data_path = MD_parameters.data_path
 
-print('tau long, tau short, niter tau long, niter tau short, max. times, nfile')
-print(tau_long, tau_short, niter_tau_long, niter_tau_short, tau_long * niter_tau_long, nfile)
+print('temp tau long, tau short, niter tau long, niter tau short, max. times, nfile')
+print(temp[0],tau_long, tau_short, niter_tau_long, niter_tau_short, tau_long * niter_tau_long, nfile)
 
 uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 base_dir = uppath(__file__, 2)
-root_path =  base_dir + '/data/'
-write_path =  base_dir + '/data/training_data/'
-tmp_path =  base_dir + '/data/tmp/'
 
-tmp = 'tmp/nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
-init_filename = 'init_config/nparticle{}_new_nsim_rho{}_T{}_pos_{}_sampled.pt'.format(nparticle, rho, temp[0], mode)
-write_filename = 'training_data/nparticle{}_T{}_tl{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_long,tau_short,niter_tau_short, nsamples)
+root_path =  base_dir + '/data'
+write_path =  data_path
+tmp_path =  '/tmp/'
 
-if not os.path.exists(write_path):
-                os.makedirs(write_path)
+tmp = 'nparticle{}_T{}_tau{}'.format(nparticle, temp[0], tau_cur)
+init_filename = '/init_config/nparticle{}_new_nsim_rho{}_T{}_pos_{}_sampled.pt'.format(nparticle, rho, temp[0], mode)
+write_filename = write_path + '/nparticle{}_T{}_tl{}_ts{}_iter{}_vv_{}sampled.pt'.format(nparticle,temp[0],tau_long,tau_short,niter_tau_short, nsamples)
 
-if not os.path.exists(tmp_path):
-    os.makedirs(tmp_path)
+if not os.path.exists(root_path + write_path):
+    os.makedirs(root_path + write_path)
+
+if not os.path.exists(root_path + tmp_path):
+    os.makedirs(root_path + tmp_path)
 
 data_io_obj = data_io(root_path)
 phase_space = phase_space.phase_space()
@@ -74,8 +77,8 @@ for i in range(nfile):
     print('save file ',i)
     qp_list = linear_integrator_obj.nsteps(noMLhamiltonian, phase_space, tau_cur, save2file_strike, append_strike)
     qp_list = torch.stack(qp_list)
-    # print('write qp', qp_list.shape)
-    tmp_filename = tmp + str(i) + '.pt'
+    print('i', i, 'memory % used:', psutil.virtual_memory()[2])
+    tmp_filename = tmp_path + tmp + str(i) + '.pt'
     data_io_obj.write_trajectory_qp(tmp_filename, qp_list)
 
 
@@ -83,7 +86,7 @@ for i in range(nfile):
 qp_list = []
 for i in range(nfile):
 
-    tmp_filename = tmp + str(i) + '.pt'
+    tmp_filename = tmp_path + tmp + str(i) + '.pt'
     qp = data_io_obj.read_trajectory_qp(tmp_filename)
 
     assert (torch.all(torch.eq(torch.load(root_path + tmp_filename), qp))), 'write and read file not match'
@@ -100,4 +103,4 @@ data_io_obj.write_trajectory_qp(write_filename, qp_hist)
 
 # remove files
 for z in range(nfile):
-    os.remove( root_path + tmp + str(z) + '.pt' )
+    os.remove( root_path + tmp_path + tmp + str(z) + '.pt' )
