@@ -33,7 +33,7 @@ class data_io:
                   tensor of (q,p) states
                   shape is [(q,p), (new_mcs x mc step), nparticle, DIM]
 
-        use in MC_sample.py
+        use in MC_sampler.py
         '''
         full_path = self.root_dir + filename
         torch.save(qp_list, full_path)
@@ -45,7 +45,7 @@ class data_io:
         returns
         torch tensor of qp_list
 
-        use in MD_sample.py
+        use in MD_sampler.py
         '''
 
         full_path = self.root_dir + filename
@@ -69,7 +69,7 @@ class data_io:
         torch tensor
         qp paired pts trajectory
 
-        use in MD_sample.py
+        use in MD_sampler.py
         '''
 
         full_path = self.root_dir + filename
