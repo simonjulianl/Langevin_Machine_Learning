@@ -1,0 +1,44 @@
+more clean code
+- add explain each code..
+
+2. data_io at utils folder
+change open file to torch.save
+3. linear_integrator at integrator folder
+make code for only do integrator
+4. MC_sample.py <- create data_io obj for write init qp file
+5. MD_sample.py <- create data_io obj for
+                   * read init qp
+                   * write, read trajectory file to solve overuse memory
+6. make dataset.py, use in ML_pair_wise.py
+do only split data for input in ML
+
+plan
+dataLoader.py  : only for load data (label also)
+
+
+still doing... X(
+
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+cannot duplicate code
+
+
+
