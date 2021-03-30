@@ -4,8 +4,8 @@ class MD_parameters:
 
     mode               = 'train'     # set mode train or valid or test for filename
 
-    init_qp_path       = '../data/init_config/n2/run@@/'
-    training_path      = '../data/training_data/n2/run@@/'
+    init_qp_path       = '../data/init_config/n2/run11/'
+    training_path      = '../data/training_data/n2/run11/'
     init_qp_filename   = init_qp_path + 'nparticle2_new_nsim_rho0.1_T0.04_pos_{}_sampled.pt'.format(mode)
     training_filenames = training_path + 'nparticle2_new_nsim_rho0.1_T0.04_pos_{}_sampled'.format(mode)
 
