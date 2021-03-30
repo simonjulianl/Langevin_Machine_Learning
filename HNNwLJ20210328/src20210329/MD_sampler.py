@@ -7,6 +7,7 @@ from integrator.linear_integrator    import linear_integrator
 from utils.data_io                   import data_io
 
 import psutil
+import shutil
 import torch
 
 if __name__=='__main__':
@@ -24,7 +25,7 @@ if __name__=='__main__':
     # io varaiables
     init_filename       = MD_parameters.init_qp_filename
     training_filenames  = MD_parameters.training_filenames
-    
+
     data_io_obj = data_io()
      
     phase_space = phase_space.phase_space()
@@ -50,3 +51,5 @@ if __name__=='__main__':
         tmp_filename = training_filenames + '_id' + str(i) + '.pt'
         data_io_obj.write_trajectory_qp(tmp_filename, qp_list)
     
+    # cp init file in same training filename folder
+    shutil.copy2(init_filename, MD_parameters.training_path)
