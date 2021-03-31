@@ -1,0 +1,48 @@
+# combine_init_files.py
+combine initial q, p at different temperature for training.
+
+1. settiing MC_parameters (particle, temp, dq ...) and then run prepare_dir.sh
+( make run folders and parameters template )
+2. run ./cp2parameters.py after resetting parameters.
+3. run MC_sampler.py and then generate samples depend on temp each run folder.
+4. run combine_init_files.py
+5. write pt file for combined samples in n4 folder for train/valid.
+
+e.g)
+init_config/n4/nparticle4_new_nsim_rho0.1_allT_train_sampled.pt
+init_config/n4/nparticle4_new_nsim_rho0.1_allT_valid_sampled.pt
+
+
+# combine_niter_files.py ( for training - write and read in training_data folder )
+
+1. setting MD_parameters (long tau, short tau ...) and then run prepare_dir.sh
+2. run ./cp2parameters.py after resetting parameters.
+3. run MD_sampler.py and then write file that integrate from combined samples as initial q, p.
+
+e.g)
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_train_sampled_id0.pt   - from iteration id0
+training_data/run11/nparticle4_new_nsim_rho0.1_T0.04_pos_valid_sampled_id0.pt   - from iteration id0
+
+4. concatenate initial q, p and write files (iteration id0), and then create file in n4 folder
+
+e.g) copy initial q, p file in same folder
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_train_sampled.pt       - initial q, p
+training_data/run11/nparticle4_new_nsim_rho0.1_T0.04_pos_valid_sampled.pt
+
+get below files.
+training_data/n4/nparticle4_rho0.1_allT_train_sampled.pt
+training_data/n4/nparticle4_rho0.1_allT_valid_sampled.pt
+
+# combine_niter_files.py ( for test - write and read in test_data folder)
+do more iterations given maximum times. then generate more write files.
+
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_test_sampled_id0.pt
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_test_sampled_id1.pt
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_test_sampled_id2.pt
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_test_sampled_id3.pt
+
+e.g) copy initial q, p file in same folder
+training_data/run10/nparticle4_new_nsim_rho0.1_T0.04_pos_test_sampled.pt       - initial q, p
+
+get below files.
+training_data/n4/run10/nparticle4_rho0.1_T0.04_test_sampled.pt

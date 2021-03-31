@@ -10,7 +10,7 @@ class MD_parameters:
     epsilon = 1.
     sigma = 1.
     mass = 1
-    temp_list = [0.32]
+    temp_list = [0.04]
 
     tau_short = 0.001                                    # short time step for label
     append_strike = 20                                   # number of short steps to make one long step

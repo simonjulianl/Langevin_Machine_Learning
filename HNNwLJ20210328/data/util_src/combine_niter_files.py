@@ -38,18 +38,23 @@ if __name__ == '__main__':
 
     # paramters
     nparticle = 2
-    temp      = 0.04
     mode      = 'train'  # set train or valid or test
     n_num     = 11
 
-    # io varaiables
+    temp      = 0.04     # use only test data
+
+    # io varaiables for training data
     root_path = '../training_data/n{}/run{}/'.format(nparticle, n_num)
+    init_filename = root_path + 'nparticle{}_new_nsim_rho0.1_allT_{}_sampled.pt'.format(nparticle, mode)
+    write_filename = root_path + '../nparticle{}_rho0.1_allT_{}_sampled.pt'.format(nparticle, mode)
+
+    # # io varaiables for test data
     # root_path = '../test_data/n{}/run{}/'.format(nparticle, n_num)
-    init_filename = root_path + 'nparticle{}_new_nsim_rho0.1_T{}_pos_{}_sampled.pt'.format(nparticle, temp, mode)
-    write_filename = root_path + 'nparticle{}_rho0.1_T{}_pos_{}_sampled.pt'.format(nparticle, temp, mode)
+    # init_filename = root_path + 'nparticle{}_new_nsim_rho0.1_T{}_pos_test_sampled.pt'.format(nparticle, temp)
+    # write_filename = root_path + 'nparticle{}_rho0.1_T{}_test_sampled.pt'.format(nparticle, temp)
 
     # returns the list of files with their full path
-    filename = sorted(glob.glob(root_path + '*' +'id' +'*.pt'), key=keyFunc)
+    filename = sorted(glob.glob(root_path + '*' +'_id' +'*.pt'), key=keyFunc)
     qp_list_app = qp_list_combine(filename)
 
     # load init q, p

@@ -24,7 +24,7 @@ if __name__=='__main__':
 
     # io varaiables
     init_filename       = MD_parameters.init_qp_filename
-    training_filenames  = MD_parameters.training_filenames
+    data_filenames      = MD_parameters.data_filenames
 
     data_io_obj = data_io()
      
@@ -48,8 +48,8 @@ if __name__=='__main__':
         qp_list = linear_integrator_obj.nsteps(noMLhamiltonian, phase_space, tau_cur, save2file_strike, append_strike)
         qp_list = torch.stack(qp_list)
         print('i', i, 'memory % used:', psutil.virtual_memory()[2])
-        tmp_filename = training_filenames + '_id' + str(i) + '.pt'
+        tmp_filename = data_filenames + '_id' + str(i) + '.pt'
         data_io_obj.write_trajectory_qp(tmp_filename, qp_list)
     
     # cp init file in same training filename folder
-    shutil.copy2(init_filename, MD_parameters.training_path)
+    shutil.copy2(init_filename, MD_parameters.data_path)

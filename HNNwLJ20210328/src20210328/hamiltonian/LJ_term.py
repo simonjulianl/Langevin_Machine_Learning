@@ -155,7 +155,7 @@ class LJ_term:
 
             dphidxi[z:z+nsamples_batch] = a12*torch.sum(s12, dim=2) - a6*torch.sum(s6, dim=2) # np.sum axis=2 j != k ( nsamples-1)
 
-        # print('dphidxi', dphidxi)
+        print('dphidxi', dphidxi)
 
         return dphidxi
 

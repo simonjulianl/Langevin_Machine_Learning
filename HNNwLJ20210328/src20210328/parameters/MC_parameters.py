@@ -6,7 +6,7 @@ class MC_parameters:
     # nsamples 41800 ->  89236 for train / 49832 for valid
     # nsamples 1000 -> 15343 for test
     seed = 89236
-    mode = 'test' # for test set mode 'test'
+    mode = 'train' # for test set mode 'test'
     nparticle = 2
 
     kB = 1.0
