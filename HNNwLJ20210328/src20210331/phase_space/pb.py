@@ -38,49 +38,6 @@ class pb:
         q[indices] = q[indices] - torch.round(q[indices] / boxsize) * boxsize
 
 
-    def debug_pbc_bool(self, q, boxsize):
-
-        ''' function to check out of boundary
-
-        Parameters
-        ----------
-        q : torch.tensor
-                shape is [nsamples, nparticle, DIM]
-        boxsize : float
-
-        Returns
-        ----------
-        tensor of boolean values - q go out of boundary then true else false
-        '''
-
-        bool_ = torch.abs(q) > 0.5 * boxsize
-        # raise ValueError('pbc not applied')
-
-        return bool_
-
-    def debug_nan(self, q, p):
-
-        ''' function to detect nan in q or p
-
-        Parameters
-        ----------
-        q : torch.tensor
-                shape is [nsamples, nparticle, DIM]
-        p : torch.tensor
-                shape is [nsamples, nparticle, DIM]
-
-        Returns
-        ----------
-        None if nan is not detected in tensor elements, else tensor of nan values
-        '''
-
-        if (torch.isnan(q).any()) or (torch.isnan(p).any()):
-
-            nan = torch.where(torch.isnan(q))
-            print('debug nan q',q)
-
-            return nan
-
     def paired_distance_reduced(self, q, nparticle, DIM):
 
         ''' function to calculate reduced distance btw two particles

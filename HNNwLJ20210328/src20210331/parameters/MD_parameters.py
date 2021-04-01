@@ -5,12 +5,12 @@ from hamiltonian.noML_hamiltonian import noML_hamiltonian
 
 class MD_parameters:
 
-    mode               = 'valid'     # set mode train or valid or test for filename
+    mode               = 'train'     # set mode train or valid or test for filename
 
-    init_qp_path       = '../data/init_config/n2/'
+    init_qp_path       = '../data/init_config/n4/'
     data_path          = '../data/training_data/n2/run12/'
-    init_qp_filename   = init_qp_path + 'nparticle2_new_nsim_rho0.1_allT_{}_sampled.pt'.format(mode)
-    data_filenames     = data_path    + 'nparticle2_new_nsim_rho0.1_allT_{}_sampled'.format(mode)
+    init_qp_filename   = init_qp_path + 'nparticle4_new_nsim_rho0.1_allT_{}_sampled.pt'.format(mode)
+    data_filenames     = data_path    + 'nparticle4_new_nsim_rho0.1_allT_{}_sampled'.format(mode)
 
     #nsamples = 8        # train 19000 = T0.04: 5000, T0.16: 6000, T0.32: 8000
                         # valid 1900  = T0.04: 500 , T0.16: 600 , T0.32: 800

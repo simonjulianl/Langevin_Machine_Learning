@@ -38,38 +38,62 @@ class linear_integrator:
                 give momentum threshold = sqrt(-log(sqrt(2*pi)*1e-6))
 
         return : qp_list
+                shape is [(q,p), nsamples, nparticle, DIM]
 
         '''
 
         q_list, p_list  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
-        # print('one step',q_list, p_list)
+        print('one step',q_list.shape, p_list.shape)
         energy = hamiltonian.total_energy(phase_space) / MC_parameters.nparticle
 
-        bool_ = phase_space.debug_pbc_bool(q_list, self.boxsize)
-        nan = phase_space.debug_nan(q_list, p_list)
+        check_q_out = (torch.abs(q_list) > 0.5 * self.boxsize) # check whether out of boundary
+        nan_q = torch.isnan(q_list); nan_p = torch.isnan(p_list)
 
-        if bool_.any() == True or nan is not None:
-            # print('debug i', i)
-            print('pbc not applied or nan error')
+        if check_q_out.any() == True :
+
+            # s_idx is the tuple, each index tensor contains indices for a certain dimension.
+            s_idx = torch.where(check_q_out) # condition (BoolTensor)
+
+            # in s_idx, first index tensor represent indices for dim=0 that is along nsamples
+            # remove duplicate values that are indices in s_idx
+            s_idx = torch.unique(s_idx[0], sorted=True)
+            print('q pbc not applied error in box that is abs boundary', 0.5 * self.boxsize, 'sample idx is ', s_idx)
+
             # print to file and then quit
             q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
-            crash_log_and_quit(q_list, p_list)
+            crash_log_and_quit(q_list[s_idx], p_list[s_idx])
+
+        if (nan_q.any() or nan_p.any()) == True :
+
+            s_idx = (torch.where(nan_q) or torch.where(p_list[nan_p]))
+            s_idx = torch.unique(s_idx[0], sorted=True)
+            print('q or p nan error', 'sample idx is ', s_idx)
+
+            # print to file and then quit
+            q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
+            crash_log_and_quit(q_list[s_idx], p_list[s_idx])
 
         check_p = (p_list > self.pthrsh)
         check_e = (energy > self.ethrsh)
 
         if check_e.any() == True:
 
-            print('energy too high: ',energy)
+            s_idx = torch.where(check_e) # take sample index; tensor to int => s_idx[0].item()
+            s_idx = torch.unique(s_idx[0], sorted=True)
+            print('energy too high: ',energy[s_idx], 'sample idx is ', s_idx)
+
             q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
-            crash_log_and_quit(q_list, p_list)
+            crash_log_and_quit(q_list[s_idx], p_list[s_idx])
 
         if check_p.any() == True:
 
-            print('momentum too high: ',p_list)
+            s_idx = torch.where(check_p)
+            s_idx = torch.unique(s_idx[0], sorted=True)
+            print('momentum too high: ', p_list[s_idx], 'sample idx is ', s_idx)
+
             q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
-            print('backward', q_list, p_list)
-            crash_log_and_quit(q_list, p_list)
+
+            crash_log_and_quit(q_list[s_idx], p_list[s_idx])
 
         qp_list = torch.stack((q_list, p_list))
 
@@ -89,6 +113,7 @@ class linear_integrator:
         append_strike : the period of which qp_list is saved
 
         return : qp_list
+                shape is [append_strike itr, (q,p), nsamples, nparticle, DIM]
         '''
         print(nitr)
         assert (nitr % append_strike == 0), 'incompatible strike and nitr'

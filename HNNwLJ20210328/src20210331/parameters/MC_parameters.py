@@ -2,7 +2,7 @@ import math
 
 class MC_parameters:
 
-    nparticle = 2
+    nparticle = 4
     temperature = 0.16
     mode = 'valid'                              # set mode train or valid or test for filename
 

@@ -68,9 +68,6 @@ def linear_velocity_verlet_backward(hamiltonian, phase_space, tau_cur, boxsize):
     phase_space.adjust_real(q, boxsize) # enforce boundary condition - put particle back into box
     phase_space.set_q(q)
 
-    # if __debug__:
-    #     phase_space.debug_pbc(q, boxsize)
-
     p = p + (tau / 2) * (hamiltonian.dHdq(phase_space))  # dp/dt
 
     phase_space.set_p(p)  # update state after 1 step
