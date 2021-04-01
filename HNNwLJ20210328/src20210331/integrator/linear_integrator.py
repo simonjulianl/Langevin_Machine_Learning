@@ -43,11 +43,11 @@ class linear_integrator:
         '''
 
         q_list, p_list  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
-        print('one step',q_list.shape, p_list.shape)
+
         energy = hamiltonian.total_energy(phase_space) / MC_parameters.nparticle
 
         check_q_out = (torch.abs(q_list) > 0.5 * self.boxsize) # check whether out of boundary
-        nan_q = torch.isnan(q_list); nan_p = torch.isnan(p_list)
+        q_nan = torch.isnan(q_list); p_nan = torch.isnan(p_list) # q or p nan error
 
         if check_q_out.any() == True :
 
@@ -63,9 +63,9 @@ class linear_integrator:
             q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
             crash_log_and_quit(q_list[s_idx], p_list[s_idx])
 
-        if (nan_q.any() or nan_p.any()) == True :
+        if (q_nan.any() or p_nan.any()) == True :
 
-            s_idx = (torch.where(nan_q) or torch.where(p_list[nan_p]))
+            s_idx = (torch.where(q_nan) or torch.where(p_list[p_nan]))
             s_idx = torch.unique(s_idx[0], sorted=True)
             print('q or p nan error', 'sample idx is ', s_idx)
 
@@ -89,7 +89,7 @@ class linear_integrator:
 
             s_idx = torch.where(check_p)
             s_idx = torch.unique(s_idx[0], sorted=True)
-            print('momentum too high: ', p_list[s_idx], 'sample idx is ', s_idx)
+            print('momentum too high: ', len(p_list[s_idx]), 'sample idx is ', s_idx)
 
             q_list, p_list = self._integrator_method_backward(hamiltonian,phase_space,tau_cur,self.boxsize)
 
