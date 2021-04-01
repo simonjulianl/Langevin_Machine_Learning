@@ -3,13 +3,13 @@ import math
 class MC_parameters:
 
     nparticle = 2
-    temperature = 0.04
-    mode = 'train'                              # set mode train or valid or test for filename
+    temperature = 0.16
+    mode = 'valid'                              # set mode train or valid or test for filename
 
-    init_path           = '../data/init_config/n{}/run10/'.format(nparticle)
+    init_path           = '../data/init_config/n{}/run13/'.format(nparticle)
     filename            = init_path + 'nparticle{}_new_nsim_rho0.1_T{}_pos_{}_sampled.pt'.format(nparticle, temperature, mode)
 
-    seed = 89236                                # set different seed for generate data for train/valid/test
+    seed = 89233                                # set different seed for generate data for train/valid/test
                                                 # nsamples 20900 ->  23645 for train / 35029 for valid
                                                 # nsamples 41800 ->  89236 for train / 49832 for valid
                                                 # nsamples 1000  -> 15343 for test
@@ -17,7 +17,7 @@ class MC_parameters:
     rho = 0.1                                   # density
     boxsize = math.sqrt(nparticle / rho)        # boxsize = sqrt(nparticle / density)
 
-    new_mcs = 2                                 # the number of samples for mc
+    new_mcs = 1                                 # the number of samples for mc
     mcstep = 2                                  # mc step each sample
     max_energy = 1e3                            # energy threshold
     DISCARD = 50                                # discard initial mc steps

@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # paramters
     nparticle = 2
-    mode      = 'train'  # set train or valid or test
+    mode      = 'valid'  # set train or valid or test
     n_num     = 11
 
     temp      = 0.04     # use only test data

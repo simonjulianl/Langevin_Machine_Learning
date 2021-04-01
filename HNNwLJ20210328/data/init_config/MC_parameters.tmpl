@@ -6,7 +6,7 @@ class MC_parameters:
     temperature = 0.04
     mode = 'train'                              # set mode train or valid or test for filename
 
-    init_path           = '../data/init_config/n{}/run10/'.format(nparticle)
+    init_path           = '../data/init_config/n{}/run@@/'.format(nparticle)
     filename            = init_path + 'nparticle{}_new_nsim_rho0.1_T{}_pos_{}_sampled.pt'.format(nparticle, temperature, mode)
 
     seed = 89236                                # set different seed for generate data for train/valid/test

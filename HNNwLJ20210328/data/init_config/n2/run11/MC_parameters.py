@@ -17,7 +17,7 @@ class MC_parameters:
     rho = 0.1                                   # density
     boxsize = math.sqrt(nparticle / rho)        # boxsize = sqrt(nparticle / density)
 
-    new_mcs = 1                                 # the number of samples for mc
+    new_mcs = 2                                 # the number of samples for mc
     mcstep = 2                                  # mc step each sample
     max_energy = 1e3                            # energy threshold
     DISCARD = 50                                # discard initial mc steps

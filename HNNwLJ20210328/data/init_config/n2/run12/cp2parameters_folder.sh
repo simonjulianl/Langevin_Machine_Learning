@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cp MC_parameters.py ../../../../src20210329/parameters/
+echo "cp to $1"
+cp MC_parameters.py ../../../../$1/parameters/
 
