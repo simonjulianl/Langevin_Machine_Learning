@@ -3,8 +3,9 @@ from datetime import datetime
 
 
 class check4particle_crash:
+    '''  this class to check debug '''
 
-    def __init__(self,backward_method,ethrsh,pthrsh,boxsize):
+    def __init__(self,backward_method, ethrsh, pthrsh, boxsize):
         '''
         backward_method: once a configuration is crashed, back integrate to get the
                          configuration before crash
@@ -18,13 +19,12 @@ class check4particle_crash:
         self.boxsize = boxsize
 
 
-    def check(self,phase_space,hamiltonian,tau):
+    def check(self, phase_space, hamiltonian, tau):
         '''
-        returns None
-        check if any samples h
+        check if any samples have
         write crash configurations into crash file and then quit
         returns None and continue running code if there is no crash configuration
-        q_list, p_list shape is [nsamples,nparticles,DIM]
+        q_list, p_list shape is [nsamples, nparticles, DIM]
         hamiltonian: any hamiltonian object, valid for both noML or ML
         tau: the time step of integration
         '''

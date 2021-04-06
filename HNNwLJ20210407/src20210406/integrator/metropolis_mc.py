@@ -9,7 +9,6 @@ import time
 import math
 from parameters.MC_parameters import MC_parameters
 
-
 class metropolis_mc:
 
     ''' This is a Monte Carlo Simulation only used to generate initial positions and sample equilibrium states'''
@@ -50,7 +49,7 @@ class metropolis_mc:
 
     def mcmove(self, hamiltonian, phase_space) :
 
-        ''' function to make momentum zeros because not use for mc simulation
+        ''' MC method. if accepted, move to the new state, but if rejected, remain in the old state.
 
         parameter
         ------------

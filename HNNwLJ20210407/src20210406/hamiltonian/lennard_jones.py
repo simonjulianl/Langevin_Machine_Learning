@@ -28,6 +28,7 @@ class lennard_jones:
         ''' For computation convenience, rescale the system so that boxsize is 1 '''
         q_state = phase_space.get_q()
         # q_state shape is [nsamples, nparticle, DIM]
+
         q_state = q_state / self.boxsize
         self.dimensionless_phase_space.set_q(q_state)
         return self.dimensionless_phase_space
@@ -44,11 +45,13 @@ class lennard_jones:
 
     def energy(self, phase_space):
         ''' energy function to get potential energy '''
+
         xi_space = self.dimensionless(phase_space)
         return self.phi.energy(xi_space)
 
     def evaluate_derivative_q(self, phase_space):
         ''' evaluate_derivative_q function to get dUdq '''
+
         xi_space = self.dimensionless(phase_space)
         dphidq = self.phi.evaluate_derivative_q(xi_space)
         return dphidq

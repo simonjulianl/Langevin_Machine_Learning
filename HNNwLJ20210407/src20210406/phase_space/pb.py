@@ -3,9 +3,8 @@ from utils.get_paired_distance_indices import get_paired_distance_indices
 
 class pb:
 
-    ''' pb class is parent class that has phase_space child class
-        this class check debug, adjust particles in the boundary,
-        and calculate pair-wise distance btw two particles
+    ''' pb class is parent class that has phase_space child class.
+        adjust particles in the boundary and calculate pair-wise distance btw two particles
     '''
 
     _obj_count = 0

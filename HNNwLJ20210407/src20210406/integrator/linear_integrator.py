@@ -41,9 +41,7 @@ class linear_integrator:
         '''
 
         q_list, p_list  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
-
         self.crash_checker.check(phase_space, hamiltonian, tau_cur)
-
         qp_list = torch.stack((q_list, p_list), dim=1)
 
         return qp_list
@@ -54,13 +52,8 @@ class linear_integrator:
 
         ''' to integrate more than one step
 
-        hamiltonian : can be ML or noML hamiltonian
-        phase_space : contains q_list, p_list as input for integration
-        tau_cur : float
-                large time step for prediction
-                short time step for label
-        nitr : number of strike steps for MD
-                append_strike : the period of which qp_list is saved
+        nitr : number of strike steps to save file for MD
+        append_strike : the period of which qp_list append
 
         return : list
                 append nxt_qp to the qp list
@@ -72,7 +65,7 @@ class linear_integrator:
         for t in range(nitr):
             print('====== step ', t)
             nxt_qp = self.one_step( hamiltonian, phase_space, tau_cur)
-            # print('nxt qp', nxt_qp)
+            # nxt_qp shape is [nsamples, (q, p), nparticle, DIM]
 
             if (t+1) % append_strike == 0:
                 # print('append stike', nxt_qp)

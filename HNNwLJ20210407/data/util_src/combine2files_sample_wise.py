@@ -6,7 +6,8 @@ from extract2files import save_to
 
 
 if __name__=='__main__':
-
+    ''' given 2 files, concatenate data at different condition 
+        ( e.g. temperature ) along nsamples '''
     argv = sys.argv
 
     infile1 = argv[1]

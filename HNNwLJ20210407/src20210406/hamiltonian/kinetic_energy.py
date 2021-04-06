@@ -24,13 +24,13 @@ class kinetic_energy:
         print('kinetic_energy.py call kinetic')
         self._name = 'Kinetic Energy'
 
-    def energy(self, phase_space): # phase space is real-space-unit
+    def energy(self, phase_space):
 
         p = phase_space.get_p()
         # shape is [nsamples, nparticle, DIM]
 
-        e = torch.sum( p*p / (2 * self.mass), dim = 1) # sum along nparticle , shape is [nsamples, DIM]
-        e = torch.sum( e, dim = 1) # sum along DIM , shape is [nsamples]
+        e = torch.sum( p*p / (2 * self.mass), dim = 1) # sum along nparticle , e shape is [nsamples, DIM]
+        e = torch.sum( e, dim = 1) # sum along DIM , e shape is [nsamples]
 
         return  e
 

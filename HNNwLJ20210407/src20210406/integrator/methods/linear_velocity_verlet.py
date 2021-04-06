@@ -7,8 +7,10 @@ def linear_velocity_verlet(hamiltonian, phase_space, tau_cur, boxsize):
 
     Parameters
     ----------
-    tau : float
-    boxsize : float
+    hamiltonian     : can be ML or noML hamiltonian
+    phase_space     : real-space-unit, contains q_list, p_list as input for integration
+    tau_cur         : float
+    boxsize         : float
 
     Returns
     -------
@@ -39,11 +41,6 @@ def linear_velocity_verlet(hamiltonian, phase_space, tau_cur, boxsize):
 def linear_velocity_verlet_backward(hamiltonian, phase_space, tau_cur, boxsize):
     '''
     backward velocity verlet integrator method
-
-    Parameters
-    ----------
-    tau : float
-    boxsize : float
 
     Returns
     -------

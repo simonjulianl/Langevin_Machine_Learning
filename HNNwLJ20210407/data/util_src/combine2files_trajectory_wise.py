@@ -6,7 +6,9 @@ from extract2files import save_to
 
 
 if __name__=='__main__':
-
+    ''' given 2 files, extract the data that has intermediate steps of integration.
+        combine them and make trajectories of nsamples.  
+         '''
     argv = sys.argv
 
     infile1 = argv[1]

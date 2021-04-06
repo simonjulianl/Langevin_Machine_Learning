@@ -41,5 +41,7 @@ def extract2files(infile1, infile2):
 
 
 def save_to(outfile, qp_combine, tau_short, tau_long):
+    ''' save multiple components, organize them in a dictionary '''
+    # qp_combine.shape = [nsamples, (q,p), trajectory, nparticles, DIM]
     data_combine = {'qp_trajectory' : qp_combine, 'tau_short' : tau_short, 'tau_long' : tau_long}
     torch.save(data_combine, outfile)
