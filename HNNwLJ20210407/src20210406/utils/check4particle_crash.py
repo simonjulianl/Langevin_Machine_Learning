@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class check4particle_crash:
-    '''  this class to check debug '''
+    '''  this class  use for check debug '''
 
     def __init__(self,backward_method, ethrsh, pthrsh, boxsize):
         '''
@@ -34,11 +34,10 @@ class check4particle_crash:
         nparticle = q_list.shape[1]
         energy = hamiltonian.total_energy(phase_space) / nparticle
 
-        out_of_box = (torch.abs(q_list) > 0.5 * self.boxsize) # check whether out of boundary
-        q_nan = torch.isnan(q_list); p_nan = torch.isnan(p_list)
-
         all_idx = []
         crash_flag = False
+
+        out_of_box = (torch.abs(q_list) > 0.5 * self.boxsize) # check whether out of boundary
 
         if out_of_box.any() == True :
 
@@ -54,6 +53,9 @@ class check4particle_crash:
             all_idx.append(s_idx)
             crash_flag = True
 
+
+        q_nan = torch.isnan(q_list); p_nan = torch.isnan(p_list)
+
         if (q_nan.any() or p_nan.any()) == True :
 
             s_idx = (torch.where(q_nan) or torch.where(p_list[p_nan]))
@@ -64,7 +66,7 @@ class check4particle_crash:
             all_idx.append(s_idx)
             crash_flag = True
 
-        check_p = (p_list > self.pthrsh)
+
         check_e = (energy > self.ethrsh)
 
         if check_e.any() == True:
@@ -74,6 +76,9 @@ class check4particle_crash:
             print('energy too high: ',energy[s_idx], 'sample idx is ', s_idx)
             all_idx.append(s_idx)
             crash_flag = True
+
+
+        check_p = (p_list > self.pthrsh)
 
         if check_p.any() == True:
 
@@ -95,6 +100,8 @@ class check4particle_crash:
 
 
     def save_crash_config(self,crash_q_list,crash_p_list):
+        ''' log crash state in a new file every time crashed '''
+
         now = datetime.now()
         dt_string = now.strftime("%Y%m%d%H%M%S")
         crash_path = '../data/crash_dir/'
