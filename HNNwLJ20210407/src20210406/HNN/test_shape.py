@@ -1,6 +1,6 @@
 import torch
 
-nsamples = 3
+nsamples = 1
 nparticle = 2
 DIM = 2
 
@@ -12,7 +12,10 @@ r2 = torch.clone(r1)
 print('r2',r2)
 dr = torch.diagonal(r1,0,1,2)  # take out the [:,i,i,:] element
 print('dr', dr)
-rr = dr.fill_(0)               # make them zero
+print('r1',r1)
+rr = dr.fill_(0)
+# make them zero
+print('r1',r1)
 print('rr', rr)
 
 for i in range(nparticle):     # slow way of making [:,i,i,:] element zero

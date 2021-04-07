@@ -2,33 +2,34 @@ import torch
 from utils.data_io import data_io
 from torch.utils.data import Dataset
 
-# qp_list.shape = [nsamples,(q,p)=2,trajectory=2 (input,label), nparticle, DIM]
+# qp_list.shape = [nsamples, (q,p)=2, trajectory=2 (input,label), nparticle, DIM]
 # ===========================================================
 class torch_dataset(Dataset):
     'Characterizes a dataset for PyTorch'
     def __init__(self, filename):
         """
         Args:
-            data_file (string): Numpy file for data and label
+            filename (string): Numpy file for data and label
         """
         qp_list, tau_long, tau_short = data_io.read_trajectory_qp(filename)
         # qp_list.shape = [nsamples, (q,p), trajectory (input,label), nparticle, DIM]
+
         self.qp_list_input   = qp_list[:,:,0,:,:]
-        self.qp_list_label   = qp_list[:,:,1,:,:] 
-        self.train_tau_short = tau_short
-        self.train_tau_long  = tau_long
+        self.qp_list_label   = qp_list[:,:,1,:,:]
+        self.data_tau_short = tau_short
+        self.data_tau_long  = tau_long
 
     def __len__(self):
-        'Denotes the total number of samples'
+        ''' Denotes the total number of samples '''
         return self.qp_list_input.shape[0]
 
     def __getitem__(self, idx):
-        'Generates one sample of data'
+        ''' Generates one sample of data '''
         # Select sample
         if idx >= self.__len__():
             raise ValueError('idx ' + str(idx) +' exceed length of data: ' + str(self.__len__()))
 
-        return self.qp_list_input[idx], self.qp_list_label[idx]
+        return self.qp_list_input[idx], self.qp_list_label[idx], self.data_tau_long
 
 # ===========================================================
 class my_data:

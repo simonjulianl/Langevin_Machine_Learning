@@ -8,7 +8,7 @@ class MC_parameters:
     # rho = None           # density
     # boxsize = None
 
-    # open when run MD
+    # open when run MD and ML
     nparticle = 2
     rho = 0.1
     boxsize = math.sqrt(nparticle/rho)

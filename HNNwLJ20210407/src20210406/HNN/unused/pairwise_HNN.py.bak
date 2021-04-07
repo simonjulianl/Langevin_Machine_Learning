@@ -17,8 +17,8 @@ class pairwise_HNN(hamiltonian):
         assert (pairwise_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
 
         super().__init__()
-        self.netA = pairwise_MLP1   # network for dHdq1
-        self.netB = pairwise_MLP2   # network for dHdq2
+        self.net1 = pairwise_MLP1   # network for dHdq1
+        self.net2 = pairwise_MLP2   # network for dHdq2
 
         # # append term to calculate dHdq
         super().append(lennard_jones())
@@ -31,29 +31,29 @@ class pairwise_HNN(hamiltonian):
         ''' To give multiple parameters to the optimizer,
             concatenate lists of parameters from two models '''
 
-        return itertools.chain(self.netA.parameters(), self.netB.parameters())
-        #return list(self.netA.parameters())+list(self.netB.parameters())
+        return itertools.chain(self.net1.parameters(), self.net2.parameters())
+        #return list(self.net1.parameters())+list(self.net2.parameters())
 
     # ===================================================
     def train(self):
         '''pytorch network for training'''
-        self.netA.train()
-        self.netB.train()
+        self.net1.train()
+        self.net2.train()
 
     # ===================================================
     def eval(self):
         ''' pytorch network for eval '''
-        self.netA.eval()
-        self.netB.eval()
+        self.net1.eval()
+        self.net2.eval()
 
     # ===================================================
     def dHdq1(self, phase_space):
         # use this to update p in first step of velocity verlet
-        return self.dHdq_all(phase_space,self.netA)
+        return self.dHdq_all(phase_space,self.net1)
     # ===================================================
     def dHdq2(self, phase_space):
         # use this to update p in third step of velocity verlet
-        return self.dHdq_all(phase_space,self.netB)
+        return self.dHdq_all(phase_space,self.net2)
     # ===================================================
     def dHdq_all(self, phase_space, net):
 
@@ -63,7 +63,7 @@ class pairwise_HNN(hamiltonian):
         ----------
         phase_space : contains q_list, p_list as input
                 q_list shape is [nsamples, nparticle, DIM]
-        net         : pass netA or netB
+        net         : pass net1 or net2
 
         Returns
         ----------
@@ -84,12 +84,12 @@ class pairwise_HNN(hamiltonian):
 
         predict = net(x)
         # predict.shape = [nsamples * nparticle * nparticle, 2]
-        print('dHdq_all predict', predict)
+
         predict = self.unpack_dqdp_tau(predict, q_list.shape)
         # corrected_dHdq.shape = [nsamples, nparticle, DIM]
 
         corrected_dHdq = noML_dHdq + predict
-        print('dHdq_all corrected_dHdq', corrected_dHdq)
+
         return corrected_dHdq
 
     # ===================================================
@@ -120,11 +120,7 @@ class pairwise_HNN(hamiltonian):
         # dqdp_list.shape = [nsamples, nparticle, nparticle, 2*DIM]
 
         tau_tensor = torch.zeros([nsamples, nparticle, nparticle, 1], dtype=torch.float64)
-
-        tau_tensor.fill_(tau_cur * 0.5)  # tau_tensor take them tau/2
-        tau_diag_zero = torch.diagonal(tau_tensor, 0, 1, 2) # offset, nparticle, nparticle
-        tau_diag_zero.fill_(0.0)   # tau_tensor make [:,i,i,1] element  zero
-
+        tau_tensor.fill_(tau_cur)
         x = torch.cat((dqdp_list, tau_tensor),dim = 3)
         # x.shape = [nsamples, nparticle, nparticle, 2*DIM + 1]
 
@@ -137,22 +133,14 @@ class pairwise_HNN(hamiltonian):
     # ===================================================
 
     def unpack_dqdp_tau(self, y, qlist_shape):
-        ''' function to make output unpack
+        ''' function to make output unpack '''
 
-        parameter
-        _____________
-        y  : predict
-                y.shape = [ nsamples * nparticle * nparticle, 2]
-
-        return
-        _____________
-        y  : shape is  [nsamples,nparticle,2]
-        '''
+        # y.shape = [ nsamples * nparticle * nparticle, 2]
 
         nsamples, nparticle, DIM = qlist_shape
-        print('unpack_dqdp_tau y', y)
+
         y = torch.reshape(y, (nsamples, nparticle, nparticle, DIM))
-        print('unpack_dqdp_tau reshape y', y)
+
         # check - run "python3.7 -O" to switch off
         if __debug__:
             y2 = torch.clone(y)
@@ -165,10 +153,10 @@ class pairwise_HNN(hamiltonian):
             err = (y-y2)**2
             assert (torch.sum(err)<1e-6),'error in diagonal computations'
 
-        print('unpack_dqdp_tau  y', y)
+        # SJ check is sum over dim=2 is correct
         y = torch.sum(y, dim=2) # sum over dim =2 that is all neighbors
         # y.shape = [nsamples,nparticle,2]
-        print('unpack_dqdp_tau sum y', y)
+
         return y
 
     # ===================================================

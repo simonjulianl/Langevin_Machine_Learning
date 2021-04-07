@@ -41,18 +41,18 @@ class get_paired_distance_indices:
     def reduce(delta, indices):
 
         ''' function to obtain delta of non-zero indices that do not consider themself interactions
-            use
+
         parameters
         ----------
         delta : torch.tensor
-                shape is [nsamples, nparticle, nparticle, DIM]
-                distances between particle interations ex) q_1x - q_1x, q_1x - q_2x, ..., q_ny - q_ny
+                pass shape is [nsamples, nparticle, nparticle, DIM]
+                distances between particle interactions ex) q_1x - q_1x, q_1x - q_2x, ..., q_ny - q_ny
         indices :
                 is return of get_indices
 
         Returns
         ----------
-        shape is [nsamples x nparticle x (nparticle - 1) x DIM ]
+        shape is [nsamples, nparticle, (nparticle - 1), DIM ]
         '''
 
         return delta[indices]

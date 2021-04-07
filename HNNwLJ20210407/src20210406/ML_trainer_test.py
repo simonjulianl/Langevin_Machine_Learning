@@ -9,8 +9,6 @@ import torch
 
 if __name__=='__main__':
 
-    tau_long         = MD_parameters.tau_long
-    tau_cur          = tau_long
 
     # io varaiables
     train_filename = ML_parameters.train_filename
@@ -20,12 +18,12 @@ if __name__=='__main__':
     val_pts        = train_pts
     test_pts       = train_pts
 
-    dataset = my_data(train_filename,val_filename,test_filename,train_pts,val_pts,test_pts)
-    loader  = data_loader(dataset, ML_parameters.batch_size)
-
     phase_space = phase_space.phase_space()
     hamiltonian_obj = MD_parameters.hamiltonian_obj
     linear_integrator_obj = linear_integrator( MD_parameters.integrator_method, MD_parameters.integrator_method_backward )
+
+    dataset = my_data(train_filename,val_filename,test_filename,train_pts,val_pts,test_pts)
+    loader  = data_loader(dataset, ML_parameters.batch_size)
 
     seed = ML_parameters.seed
     torch.manual_seed(seed) # cpu
@@ -41,11 +39,12 @@ if __name__=='__main__':
 
     nepoch = 20000
 
+    # optimize two models
     optimizer = ML_parameters.opt.create(hamiltonian_obj.net_parameters())
 
     for e in range(nepoch):
 
-        for step,(input,label) in enumerate(loader.train_loader):
+        for step,(input, label, tau_cur) in enumerate(loader.train_loader):
 
             optimizer.zero_grad()
             # input shape, [nsamples, (q,p), nparticle, DIM]

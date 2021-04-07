@@ -25,7 +25,7 @@ class data_io:
     # ================================================
     @staticmethod
     def write_trajectory_qp(filename, qp_trajectory, tau_short = -1, tau_long = -1):
-        ''' write temporary filename for qp_trajectory
+        ''' write filename for qp_trajectory
 
         Parameters
         ----------
