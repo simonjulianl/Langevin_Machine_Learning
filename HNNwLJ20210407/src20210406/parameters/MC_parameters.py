@@ -3,7 +3,6 @@ import math
 
 class MC_parameters:
 
-    # open when run MC
     nparticle = None
     rho = None           # density
     boxsize = None

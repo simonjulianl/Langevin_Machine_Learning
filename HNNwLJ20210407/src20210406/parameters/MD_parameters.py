@@ -12,7 +12,6 @@ class MD_parameters:
     init_qp_filename   = None             # filename to read data
     data_filenames     = None             # filename to write data
 
-    # open when run MD
     tau_short          = None             # short time step for label
     tau_long           = None             # value of tau_long
 

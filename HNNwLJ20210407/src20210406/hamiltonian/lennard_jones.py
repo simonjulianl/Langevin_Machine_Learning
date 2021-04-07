@@ -23,9 +23,15 @@ class lennard_jones:
         self.dimensionless_phase_space = phase_space()
 
     def dimensionless(self, phase_space):
-        ''' For computation convenience, rescale the system so that boxsize is 1 '''
+        ''' For computation convenience, rescale the system so that boxsize is 1
+        parameter
+        ------------
+        phase space : contains q_list, p_list and, boxsize
+        '''
+
         q_state = phase_space.get_q()
         # q_state shape is [nsamples, nparticle, DIM]
+
         boxsize = phase_space.get_boxsize()
 
         q_state = q_state / boxsize

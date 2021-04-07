@@ -2,7 +2,7 @@ from .pb import pb
 
 class phase_space(pb):
 
-    ''' phase space class that have q and p
+    ''' phase space class that have q, p, and boxsize
         copy q_list to _q_list and p_list to _p_list
     '''
 

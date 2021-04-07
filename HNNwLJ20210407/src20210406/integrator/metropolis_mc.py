@@ -100,6 +100,7 @@ class metropolis_mc:
 
         parameter
         ___________
+        phase space : contains q_list, p_list as input and contains boxsize also
         DISCARD     : discard initial mc steps
         niter       : iteration after discarded mc step
         nsamples    : the number of samples for mc

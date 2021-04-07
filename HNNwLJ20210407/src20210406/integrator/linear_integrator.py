@@ -1,7 +1,7 @@
 import torch
 import math
 #from parameters.MC_parameters import MC_parameters
-#from utils.check4particle_crash import check4particle_crash as crsh_chker
+# from utils.check4particle_crash import check4particle_crash as crsh_chker
 from utils.check4particle_crash_dummy import check4particle_crash_dummy as crsh_chker
 
 class linear_integrator:
@@ -29,7 +29,7 @@ class linear_integrator:
         Parameters
         ----------
         hamiltonian : can be ML or noML hamiltonian
-        phase_space : contains q_list, p_list as input for integration
+        phase_space : contains q_list, p_list as input for integration and contains boxsize also
         tau_cur : float
                 large time step for prediction
                 short time step for label
