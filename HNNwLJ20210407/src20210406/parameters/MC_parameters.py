@@ -3,15 +3,9 @@ import math
 
 class MC_parameters:
 
-    # # open when run MC
-    # nparticle = None
-    # rho = None           # density
-    # boxsize = None
-
-    # open when run MD and ML
-    nparticle = 2
-    rho = 0.1
-    boxsize = math.sqrt(nparticle/rho)
+    nparticle = None
+    rho = None           # density
+    boxsize = None
 
     temperature = None
     mode = None                               # set mode train or valid or test for filename

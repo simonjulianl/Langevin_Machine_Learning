@@ -10,7 +10,7 @@ class linear_integrator:
 
     _obj_count = 0
 
-    def __init__(self, integrator_method, integrator_method_backward, ethrsh = MC_parameters.max_energy):
+    def __init__(self, integrator_method, integrator_method_backward, ethrsh = 1e-3):
 
         linear_integrator._obj_count += 1
         assert (linear_integrator._obj_count == 1),type(self).__name__ + " has more than one object"
