@@ -39,8 +39,12 @@ class MD_learner:
         self.chk_pt = chk_pt
         self._opt = opt
 
-        self._loss = qp_MSE_loss
+        self._loss      = qp_MSE_loss
         self.batch_size = ML_parameters.batch_size
+        self.tau_cur    = self.data_loader.data_set.train_set.data_tau_long
+        self.boxsize    = self.data_loader.data_set.train_set.data_boxsize
+
+        self._phase_space.set_boxsize(self.boxsize)
 
     # ===================================================
     def train_one_epoch(self):
@@ -51,7 +55,7 @@ class MD_learner:
 
         criterion = self._loss
 
-        for step, (input, label, tau_cur) in enumerate(self.data_loader.train_loader):
+        for step, (input, label) in enumerate(self.data_loader.train_loader):
 
             self._opt.zero_grad()
             # before the backward pass, use the optimizer object to zero all of the gradients for the variables
@@ -59,10 +63,11 @@ class MD_learner:
             # input shape, [nsamples, (q,p)=2, nparticle, DIM]
             self._phase_space.set_q(input[:, 0, :, :])
             self._phase_space.set_p(input[:, 1, :, :])
+
             print('input q', self._phase_space.get_q())
             print('input p', self._phase_space.get_p())
 
-            qp_list = self.linear_integrator.one_step(self.any_HNN, self._phase_space, tau_cur)
+            qp_list = self.linear_integrator.one_step(self.any_HNN, self._phase_space, self.tau_cur)
             # qp_list shape, [nsamples, (q,p)=2, nparticle, DIM]
             print('next q', self._phase_space.get_q())
             print('next p', self._phase_space.get_p())
@@ -94,7 +99,7 @@ class MD_learner:
 
         criterion = self._loss
 
-        for step, (input, label, tau_cur) in enumerate(self.data_loader.valid_loader):
+        for step, (input, label) in enumerate(self.data_loader.valid_loader):
 
             self._opt.zero_grad()
             # defore the backward pass, use the optimizer object to zero all of the gradients for the variables
@@ -102,7 +107,7 @@ class MD_learner:
             # input shape, [nsamples, (q,p)=2, nparticle, DIM]
             self._phase_space.set_q(input[:, 0, :, :])
             self._phase_space.set_p(input[:, 1, :, :])
-            qp_list = self.linear_integrator.one_step(self.any_HNN, self._phase_space, tau_cur)
+            qp_list = self.linear_integrator.one_step(self.any_HNN, self._phase_space, self.tau_cur)
             # qp_list shape, [nsamples, (q,p)=2, nparticle, DIM]
 
             q_predict = qp_list[:, 0, :, :]; p_predict = qp_list[:, 1, :, :]

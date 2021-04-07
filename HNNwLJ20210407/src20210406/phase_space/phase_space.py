@@ -21,6 +21,7 @@ class phase_space(pb):
         '''initialize phase space of [nsamples, nparticle, DIM] '''
         self._q_list = None
         self._p_list = None
+        self._boxsize = None
 
     def set_p(self, p_list):
         self._p_list = p_list.clone()
@@ -28,9 +29,14 @@ class phase_space(pb):
     def set_q(self, q_list):
         self._q_list = q_list.clone()
 
+    def set_boxsize(self,boxsize):
+        self._boxsize = boxsize
+
     def get_p(self):
         return self._p_list.clone()
 
     def get_q(self):
         return self._q_list.clone()
 
+    def get_boxsize(self):
+        return self._boxsize

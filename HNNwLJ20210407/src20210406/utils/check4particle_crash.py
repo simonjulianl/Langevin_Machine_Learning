@@ -5,7 +5,7 @@ from datetime import datetime
 class check4particle_crash:
     '''  this class  use for check debug '''
 
-    def __init__(self,backward_method, ethrsh, pthrsh, boxsize):
+    def __init__(self,backward_method, ethrsh, pthrsh):
         '''
         backward_method: once a configuration is crashed, back integrate to get the
                          configuration before crash
@@ -16,8 +16,6 @@ class check4particle_crash:
         self.backward_method = backward_method
         self.ethrsh = ethrsh
         self.pthrsh = pthrsh
-        self.boxsize = boxsize
-
 
     def check(self, phase_space, hamiltonian, tau):
         '''
@@ -31,13 +29,15 @@ class check4particle_crash:
 
         q_list = phase_space.get_q()
         p_list = phase_space.get_p()
+        boxsize = phase_space.get_boxsize()
+
         nparticle = q_list.shape[1]
         energy = hamiltonian.total_energy(phase_space) / nparticle
 
         all_idx = []
         crash_flag = False
 
-        out_of_box = (torch.abs(q_list) > 0.5 * self.boxsize) # check whether out of boundary
+        out_of_box = (torch.abs(q_list) > 0.5 * boxsize) # check whether out of boundary
 
         if out_of_box.any() == True :
 
@@ -91,7 +91,7 @@ class check4particle_crash:
         if crash_flag == True:
             all_idx = torch.cat(all_idx)
             all_idx = torch.unique(all_idx)
-            q_list, p_list = self.backward_method(hamiltonian,phase_space,tau,self.boxsize)
+            q_list, p_list = self.backward_method(hamiltonian,phase_space,tau,boxsize)
             all_q = q_list[all_idx]
             all_p = p_list[all_idx]
             self.save_crash_config(all_q,all_p)

@@ -1,6 +1,6 @@
 import torch
 import math
-from parameters.MC_parameters import MC_parameters
+#from parameters.MC_parameters import MC_parameters
 #from utils.check4particle_crash import check4particle_crash as crsh_chker
 from utils.check4particle_crash_dummy import check4particle_crash_dummy as crsh_chker
 
@@ -10,16 +10,15 @@ class linear_integrator:
 
     _obj_count = 0
 
-    def __init__(self, integrator_method, integrator_method_backward, ethrsh = 1e-3):
+    def __init__(self, integrator_method, integrator_method_backward, ethrsh = 1e3):
 
         linear_integrator._obj_count += 1
         assert (linear_integrator._obj_count == 1),type(self).__name__ + " has more than one object"
 
         self._integrator_method = integrator_method
-        self.boxsize = MC_parameters.boxsize
 
         pthrsh = math.sqrt( -1. * math.log(math.sqrt(2*math.pi)*1e-6))
-        self.crash_checker = crsh_chker(integrator_method_backward, ethrsh, pthrsh, self.boxsize)
+        self.crash_checker = crsh_chker(integrator_method_backward, ethrsh, pthrsh)
 
     # =================================================
 
@@ -39,8 +38,8 @@ class linear_integrator:
                 shape is [nsamples, (q, p), nparticle, DIM]
 
         '''
-
-        q_list, p_list  = self._integrator_method(hamiltonian, phase_space, tau_cur, self.boxsize)
+        boxsize = phase_space.get_boxsize()
+        q_list, p_list  = self._integrator_method(hamiltonian, phase_space, tau_cur, boxsize)
         self.crash_checker.check(phase_space, hamiltonian, tau_cur)
         qp_list = torch.stack((q_list, p_list), dim=1)
 

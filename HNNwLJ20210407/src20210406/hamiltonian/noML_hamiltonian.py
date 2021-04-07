@@ -25,3 +25,5 @@ class noML_hamiltonian(hamiltonian):
     def dHdq2(self,phase_space):
         return super().dHdq(phase_space)
 
+    def set_tau(self, tau_cur):
+        return

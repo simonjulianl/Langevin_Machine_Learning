@@ -17,19 +17,22 @@ class data_io:
         data = torch.load(filename)
 
         qp_list = data['qp_trajectory']
-        tau_long  = data['tau_long']
         tau_short = data['tau_short']
+        tau_long  = data['tau_long']
+        boxsize = data['boxsize']
 
-        return qp_list, tau_long, tau_short
+        return qp_list, tau_short, tau_long, boxsize
 
     # ================================================
     @staticmethod
-    def write_trajectory_qp(filename, qp_trajectory, tau_short = -1, tau_long = -1):
+    def write_trajectory_qp(filename, qp_trajectory, boxsize, tau_short = -1, tau_long = -1):
         ''' write filename for qp_trajectory
 
         Parameters
         ----------
         filename : string
+        nparticle : int
+        boxsize  : float
         qp_trajectory : torch.tensor
                   tensor of (q,p) states
                   shape is [nsamples, (q, p), trajectory length, nparticle, DIM]
@@ -41,6 +44,6 @@ class data_io:
         save multiple components, organize them in a dictionary
         '''
 
-        data = { 'qp_trajectory':qp_trajectory, 'tau_short':tau_short, 'tau_long': tau_long }
+        data = { 'qp_trajectory':qp_trajectory, 'tau_short':tau_short, 'tau_long': tau_long, 'boxsize' : boxsize }
 
         torch.save(data, filename)

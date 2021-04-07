@@ -30,11 +30,12 @@ if __name__=='__main__':
     init_filename       = MD_parameters.init_qp_filename
     data_filenames      = MD_parameters.data_filenames
 
+    init_qp, _, _, boxsize = data_io.read_trajectory_qp(init_filename)
+
     phase_space = phase_space.phase_space()
     hamiltonian_obj = MD_parameters.hamiltonian_obj
     linear_integrator_obj = linear_integrator( MD_parameters.integrator_method, MD_parameters.integrator_method_backward )
 
-    init_qp, _, _ = data_io.read_trajectory_qp(init_filename)
     # init_qp.shape = [nsamples, (q, p), 1, nparticle, DIM]
 
     init_q = torch.squeeze(init_qp[:,0,:,:,:], dim=1)
@@ -45,7 +46,8 @@ if __name__=='__main__':
 
     phase_space.set_q(init_q)
     phase_space.set_p(init_p)
-    
+    phase_space.set_boxsize(boxsize)
+
     # write file
     for i in range(n_out_files):
         print('save file ',i)
@@ -55,7 +57,7 @@ if __name__=='__main__':
 
         print('i', i, 'memory % used:', psutil.virtual_memory()[2])
         tmp_filename = data_filenames + '_id' + str(i) + '.pt'
-        data_io.write_trajectory_qp(tmp_filename, qp_list, tau_short, tau_long)
+        data_io.write_trajectory_qp(tmp_filename, qp_list, boxsize, tau_short, tau_long)
 
     # cp init file in same training filename folder
     shutil.copy2(init_filename, MD_parameters.data_path)

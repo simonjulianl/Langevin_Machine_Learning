@@ -21,6 +21,8 @@ if __name__=='__main__':
 
     seed        = MC_parameters.seed        # set different seed for generate data (train, valid, and test)
     interval    = MC_parameters.interval    # take mc steps every given interval
+    nparticle   = MC_parameters.nparticle
+    boxsize     = MC_parameters.boxsize
 
     # io varaiables
     filename    = MC_parameters.filename
@@ -55,7 +57,7 @@ if __name__=='__main__':
     qp_list = torch.unsqueeze(qp_list,dim=2)
     # shape is [nsamples, (q, p), 1, nparticle, DIM]
 
-    data_io_obj.write_trajectory_qp(filename, qp_list)
+    data_io_obj.write_trajectory_qp(filename, qp_list, boxsize)
     print('file write dir:', filename)
 
 

@@ -8,9 +8,17 @@ from HNN.MD_learner                  import MD_learner
 from HNN.checkpoint                  import checkpoint
 from HNN.models.pairwise_MLP         import pairwise_MLP
 
+import sys
 import torch
 
 if __name__=='__main__':
+    # run something like this
+    # need to load json file to get tau_cur in pairwise_HNN
+    # python ML_trainer.py ../data/training_data/n2run@@/MD_config.dict
+
+    argv = sys.argv
+    MDjson_file = argv[1]
+    MD_parameters.load_dict(MDjson_file)
 
     # io varaiables
     train_filename = ML_parameters.train_filename

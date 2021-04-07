@@ -12,13 +12,9 @@ class MD_parameters:
     init_qp_filename   = None             # filename to read data
     data_filenames     = None             # filename to write data
 
-    # # open when run MD
-    # tau_short          = None             # short time step for label
-    # tau_long           = None             # value of tau_long
-
-    # open when run ML
-    tau_short          = 0.001             # short time step for label
-    tau_long           = 0.1
+    # open when run MD
+    tau_short          = None             # short time step for label
+    tau_long           = None             # value of tau_long
 
     append_strike      = None             # number of short steps to make one long step
     niter_tau_long     = None             # number of MD steps for long tau
@@ -29,7 +25,7 @@ class MD_parameters:
     integrator_method_backward = linear_velocity_verlet.linear_velocity_verlet_backward
 
     # hamiltonian_obj = noML_hamiltonian()
-    hamiltonian_obj = pairwise_HNN(pairwise_MLP(), pairwise_MLP(), tau_long)
+    hamiltonian_obj = pairwise_HNN(pairwise_MLP(), pairwise_MLP())
 
     @staticmethod
     def load_dict(json_filename):
@@ -47,3 +43,5 @@ class MD_parameters:
         MD_parameters.save2file_strike  = data['save2file_strike']
         MD_parameters.tau_long          = data['tau_long']
         MD_parameters.niter_tau_short   = data['niter_tau_short']
+
+        MD_parameters.hamiltonian_obj.set_tau(MD_parameters.tau_long)

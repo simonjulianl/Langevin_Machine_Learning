@@ -1,6 +1,5 @@
 from hamiltonian.LJ_term import LJ_term
 from phase_space.phase_space import phase_space
-from parameters.MC_parameters import MC_parameters
 
 class lennard_jones:
     '''lennard_jones class for dimensionless potential and derivative '''
@@ -14,8 +13,7 @@ class lennard_jones:
 
         self.epsilon = epsilon
         self.sigma = sigma
-        self.boxsize = MC_parameters.boxsize
-        self.phi = LJ_term(self.epsilon, self.sigma, self.boxsize)
+        self.phi = LJ_term(self.epsilon, self.sigma)
 
         print('lennard_jones.py call potential')
         self._name = 'Lennard Jones Potential'
@@ -28,20 +26,13 @@ class lennard_jones:
         ''' For computation convenience, rescale the system so that boxsize is 1 '''
         q_state = phase_space.get_q()
         # q_state shape is [nsamples, nparticle, DIM]
+        boxsize = phase_space.get_boxsize()
 
-        q_state = q_state / self.boxsize
+        q_state = q_state / boxsize
         self.dimensionless_phase_space.set_q(q_state)
+        self.dimensionless_phase_space.set_boxsize(boxsize)
+
         return self.dimensionless_phase_space
-
-    def dimensionless_grid(self, grid):
-        grid_state = grid / self.boxsize # dimensionless
-        return grid_state
-
-    def phi_npixels(self,phase_space, grid):
-        ''' calculate pair-wise potentials between each grid and particles '''
-        grid_state = self.dimensionless_grid(grid)
-        xi_space = self.dimensionless(phase_space)
-        return self.phi.phi_npixels(xi_space, grid_state)
 
     def energy(self, phase_space):
         ''' energy function to get potential energy '''

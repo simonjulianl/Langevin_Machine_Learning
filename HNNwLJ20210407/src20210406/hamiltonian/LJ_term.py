@@ -6,7 +6,7 @@ class LJ_term:
 
     _obj_count = 0
 
-    def __init__(self, epsilon, sigma, boxsize):
+    def __init__(self, epsilon, sigma):
         ''' LJ_term class for all potential and derivative of potential
 
         Parameters
@@ -19,13 +19,8 @@ class LJ_term:
         LJ_term._obj_count += 1
         assert (LJ_term._obj_count == 1),type(self).__name__ + " has more than one object"
 
-        try:
-            self._epsilon  = float(epsilon)
-            self._sigma    = float(sigma)
-            self._boxsize  = float(boxsize)
-
-        except :
-            raise Exception('sigma / epsilon / boxsize error')
+        self._epsilon  = epsilon
+        self._sigma    = sigma
 
         self._name = 'Lennard Jones Potential'
 
@@ -89,11 +84,12 @@ class LJ_term:
         '''
 
         xi_state = xi_space.get_q()
+        boxsize = xi_space.get_boxsize()
 
         nsamples, nparticle, DIM  = xi_state.shape
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 12)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 6)
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(boxsize, 12)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(boxsize, 6)
 
         _, d = xi_space.paired_distance_reduced(xi_state, nparticle, DIM)
 
@@ -118,11 +114,12 @@ class LJ_term:
         '''
 
         xi_state = xi_space.get_q()
+        boxsize = xi_space.get_boxsize()
 
         nsamples, nparticle, DIM  = xi_state.shape
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 13)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 7)
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(boxsize, 13)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(boxsize, 7)
 
         delta_xi, d = xi_space.paired_distance_reduced(xi_state,nparticle,DIM)
 
@@ -138,14 +135,16 @@ class LJ_term:
     def evaluate_second_derivative_q(self,xi_space):
 
         xi_state = xi_space.get_q()
+        boxsize = xi_space.get_boxsize()
         d2phidxi2_append = []
 
         nsamples, nparticle, DIM  = xi_state.shape
         d2phidxi2 = torch.zeros((nsamples, nparticle * DIM, nparticle * DIM)) # second derivative terms of nsamples
         d2phidxi_lk = torch.zeros((2,2))
 
-        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(self._boxsize, 14)
-        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(self._boxsize, 8)
+
+        a12 = (4 * self._epsilon * pow(self._sigma, 12)) / pow(boxsize, 14)
+        a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(boxsize, 8)
 
         for z in range(nsamples):
 

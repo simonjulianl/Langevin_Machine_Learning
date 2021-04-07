@@ -20,6 +20,8 @@ class metropolis_mc:
         metropolis_mc._obj_count += 1
         assert (metropolis_mc._obj_count == 1), type(self).__name__ + " has more than one object"
 
+        self.boxsize =MC_parameters.boxsize
+
     def position_sampler(self):
 
         ''' function to create random particle positions that are always between -0.5 * boxsize and 0.5 * boxsize
@@ -29,7 +31,7 @@ class metropolis_mc:
         '''
 
         pos = np.random.uniform(-0.5, 0.5, (MC_parameters.nparticle, MC_parameters.DIM))
-        pos = pos * MC_parameters.boxsize
+        pos = pos * self.boxsize
         pos = np.expand_dims(pos, axis=0)
 
         return torch.tensor(pos)
@@ -72,9 +74,9 @@ class metropolis_mc:
 
         # perform random step with proposed uniform distribution
         # if not move 0.5 , give the particle only a positive displacement
-        curr_q[:, trial] = old_q + (torch.rand(1, MC_parameters.DIM) - 0.5) * MC_parameters.boxsize * MC_parameters.dq
+        curr_q[:, trial] = old_q + (torch.rand(1, MC_parameters.DIM) - 0.5) * self.boxsize * MC_parameters.dq
 
-        phase_space.adjust_real(curr_q, MC_parameters.boxsize)
+        phase_space.adjust_real(curr_q, self.boxsize)
         phase_space.set_q(curr_q)
 
         self.enn_q = hamiltonian.total_energy(phase_space)
@@ -128,6 +130,7 @@ class metropolis_mc:
 
             phase_space.set_q(self.position_sampler())
             phase_space.set_p(self.momentum_dummy_sampler())
+            phase_space.set_boxsize(self.boxsize)
 
             start = time.time()
 

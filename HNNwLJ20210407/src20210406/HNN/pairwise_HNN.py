@@ -11,7 +11,7 @@ class pairwise_HNN(hamiltonian):
 
     _obj_count = 0
 
-    def __init__(self, pairwise_MLP1, pairwise_MLP2, tau_cur):
+    def __init__(self, pairwise_MLP1, pairwise_MLP2):
 
         pairwise_HNN._obj_count += 1
         assert (pairwise_HNN._obj_count == 1),type(self).__name__ + " has more than one object"
@@ -24,6 +24,10 @@ class pairwise_HNN(hamiltonian):
         super().append(lennard_jones())
         super().append(kinetic_energy())
 
+        self.tau_cur = None # check give tau or not
+
+    # ===================================================
+    def set_tau(self, tau_cur):
         self.tau_cur = tau_cur
 
     # ===================================================
@@ -78,6 +82,7 @@ class pairwise_HNN(hamiltonian):
 
         print('dHdq_all q', phase_space.get_q())
         print('dHdq_all p', phase_space.get_p())
+        print('dHdq_all tau', self.tau_cur)
 
         x = self.pack_dqdp_tau(phase_space, self.tau_cur)
         # x.shape = [nsamples * nparticle * nparticle, 5]

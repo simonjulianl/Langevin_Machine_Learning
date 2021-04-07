@@ -34,14 +34,17 @@ def extract2files(infile1, infile2):
     target_tau_short = max(tau_short1, tau_short2)
     target_tau_long  = max(tau_long1 ,tau_long2)
 
+    boxsize = data1['boxsize']
+
     qp1 = data1['qp_trajectory']
     qp2 = data2['qp_trajectory']
 
-    return qp1, qp2, target_tau_short, target_tau_long
+    return qp1, qp2, target_tau_short, target_tau_long, boxsize
 
 
-def save_to(outfile, qp_combine, tau_short, tau_long):
+def save_to(outfile, qp_combine, tau_short, tau_long, boxsize):
     ''' save multiple components, organize them in a dictionary '''
+
     # qp_combine.shape = [nsamples, (q,p), trajectory, nparticles, DIM]
-    data_combine = {'qp_trajectory' : qp_combine, 'tau_short' : tau_short, 'tau_long' : tau_long}
+    data_combine = {'qp_trajectory' : qp_combine, 'tau_short' : tau_short, 'tau_long' : tau_long, 'boxsize' : boxsize}
     torch.save(data_combine, outfile)

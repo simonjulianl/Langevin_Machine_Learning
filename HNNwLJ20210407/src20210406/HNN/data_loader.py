@@ -11,13 +11,14 @@ class torch_dataset(Dataset):
         Args:
             filename (string): Numpy file for data and label
         """
-        qp_list, tau_long, tau_short = data_io.read_trajectory_qp(filename)
+        qp_list, tau_short, tau_long, boxsize = data_io.read_trajectory_qp(filename)
         # qp_list.shape = [nsamples, (q,p), trajectory (input,label), nparticle, DIM]
 
         self.qp_list_input   = qp_list[:,:,0,:,:]
         self.qp_list_label   = qp_list[:,:,1,:,:]
         self.data_tau_short = tau_short
         self.data_tau_long  = tau_long
+        self.data_boxsize   = boxsize
 
     def __len__(self):
         ''' Denotes the total number of samples '''
@@ -29,7 +30,7 @@ class torch_dataset(Dataset):
         if idx >= self.__len__():
             raise ValueError('idx ' + str(idx) +' exceed length of data: ' + str(self.__len__()))
 
-        return self.qp_list_input[idx], self.qp_list_label[idx], self.data_tau_long
+        return self.qp_list_input[idx], self.qp_list_label[idx]
 
 # ===========================================================
 class my_data:

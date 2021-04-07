@@ -17,7 +17,7 @@ class ML_parameters:
 
     # optimizer parameters
     lr = 0.0001
-    nepoch = 2
+    nepoch = 1
     opt_op = optim.Adam
     opt = optimizer(opt_op,lr)
     batch_size = 2
