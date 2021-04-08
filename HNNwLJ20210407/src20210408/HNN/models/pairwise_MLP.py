@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class pairwise_MLP(nn.Module):
 
-    def __init__(self, MLP_input = 5, MLP_nhidden = 32):
+    def __init__(self):
         super(pairwise_MLP, self).__init__()
 
         self.correction_term = nn.Sequential(

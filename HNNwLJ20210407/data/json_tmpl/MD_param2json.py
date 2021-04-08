@@ -16,6 +16,7 @@ if __name__=='__main__':
     data['save2file_strike'] = MD_config.save2file_strike
     data['tau_long'] = MD_config.tau_long
     data['niter_tau_short'] = MD_config.niter_tau_short
+    data['hamiltonian_type'] = MD_config.hamiltonian_type
 
     with open('MD_config.tmpl', 'w') as outfile:
         json.dump(data, outfile,indent=4)

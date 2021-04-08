@@ -15,3 +15,5 @@ class MD_config:
     init_qp_filename   = init_qp_path + 'n2_nsim_rho0.1allT_{}_sampled.pt'.format(mode)
     data_filenames     = data_path    + 'n2_nsim_rho0.1allT_{}_sampled'.format(mode)
 
+    hamiltonian_type   = 'noML'
+

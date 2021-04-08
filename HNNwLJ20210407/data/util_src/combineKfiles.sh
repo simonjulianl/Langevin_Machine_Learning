@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run something like this
-# e.g. ./combineKfiles.sh ../init_config/n2 ../init_config/combined/newfilename.pt combine2files_sample_wise.py
+# e.g. ./combineKfiles.sh ../init_config/n2train ../init_config/combined/newfilename.pt combine2files_sample_wise.py
 
 data_dir=$1
 newfilename=$2

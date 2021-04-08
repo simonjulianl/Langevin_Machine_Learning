@@ -31,12 +31,11 @@ if __name__=='__main__':
     data_filenames      = MD_parameters.data_filenames
 
     init_qp, _, _, boxsize = data_io.read_trajectory_qp(init_filename)
+    # init_qp.shape = [nsamples, (q, p), 1, nparticle, DIM]
 
     phase_space = phase_space.phase_space()
     hamiltonian_obj = MD_parameters.hamiltonian_obj
     linear_integrator_obj = linear_integrator( MD_parameters.integrator_method, MD_parameters.integrator_method_backward )
-
-    # init_qp.shape = [nsamples, (q, p), 1, nparticle, DIM]
 
     init_q = torch.squeeze(init_qp[:,0,:,:,:], dim=1)
     # init_q.shape = [nsamples, nparticle, DIM]

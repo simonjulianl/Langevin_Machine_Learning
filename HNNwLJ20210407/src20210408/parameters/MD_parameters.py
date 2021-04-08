@@ -20,11 +20,10 @@ class MD_parameters:
     save2file_strike   = None             # number of short steps to save to file
     niter_tau_short    = None             # number of MD steps for short tau
 
+    hamiltonian_obj    = None
+
     integrator_method = linear_velocity_verlet.linear_velocity_verlet
     integrator_method_backward = linear_velocity_verlet.linear_velocity_verlet_backward
-
-    # hamiltonian_obj = noML_hamiltonian()
-    hamiltonian_obj = pairwise_HNN(pairwise_MLP(), pairwise_MLP())
 
     @staticmethod
     def load_dict(json_filename):
@@ -42,5 +41,16 @@ class MD_parameters:
         MD_parameters.save2file_strike  = data['save2file_strike']
         MD_parameters.tau_long          = data['tau_long']
         MD_parameters.niter_tau_short   = data['niter_tau_short']
+
+        hamiltonian_type = data['hamiltonian_type']
+
+        if hamiltonian_type == 'noML':
+            MD_parameters.hamiltonian_obj = noML_hamiltonian()
+        elif hamiltonian_type == 'pairwise_HNN':
+            MD_parameters.hamiltonian_obj = pairwise_HNN(pairwise_MLP(), pairwise_MLP())
+        # elif hamiltonian_type == 'fields_HNN':
+        #     MD_parameters.hamiltonian_obj = fields_HNN(pairwise_MLP(), pairwise_MLP())
+        else:
+            print('err ...')
 
         MD_parameters.hamiltonian_obj.set_tau(MD_parameters.tau_long)
