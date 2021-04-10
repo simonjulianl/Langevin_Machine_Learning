@@ -1,0 +1,13 @@
+{
+    "init_qp_path": "../data/init_config/combined/",
+    "data_path": "../data/training_data/n4run11/",
+    "init_qp_filename": "../data/init_config/combined/n4_nsim_rho0.1allT_valid_sampled.pt",
+    "data_filenames": "../data/training_data/n4run11/n4_nsim_rho0.1allT_valid_sampled",
+    "tau_short": 0.001,
+    "append_strike": 100,
+    "niter_tau_long": 1,
+    "save2file_strike": 100,
+    "tau_long": 0.1,
+    "niter_tau_short": 100,
+    "hamiltonian_type": "noML"
+}

@@ -1,0 +1,32 @@
+import torch.nn as nn
+import torch
+
+class pairwise_MLP(nn.Module):
+
+    def __init__(self, MLP_input, MLP_nhidden):
+        super(pairwise_MLP, self).__init__()
+
+        self.fc1 = nn.Linear(MLP_input, MLP_nhidden)
+        nn.init.xavier_normal_(self.fc1.weight)
+        self.tanh = nn.Tanh()
+        self.fc2 = nn.Linear(MLP_nhidden, MLP_nhidden)
+        nn.init.xavier_normal_(self.fc2.weight)
+        self.tanh = nn.Tanh()
+        self.fc3 = nn.Linear(MLP_nhidden, 2)
+        nn.init.xavier_normal_(self.fc3.weight)
+
+        # self.correction_term.double()
+    # ============================================
+    def forward(self, x):
+        x = x.float()
+        out = self.fc1(x)
+        out = self.tanh(out)
+        out = self.fc2(out)
+        out = self.tanh(out)
+        MLdHdq = self.fc3(out)
+        print('w 1',self.fc1.weight)
+        print('w 2', self.fc2.weight)
+        quit()
+        # print('ML output',MLdHdq)
+
+        return MLdHdq

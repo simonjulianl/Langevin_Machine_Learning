@@ -1,0 +1,16 @@
+{
+    "nparticle": 8,
+    "temperature": 0.32,
+    "mode": "train",
+    "init_path": "../data/init_config/n8run12/",
+    "filename": "../data/init_config/n8run12/../n8train/n8_nsim_rho0.1T0.32_train_sampled.pt",
+    "seed": 23645,
+    "DIM": 2,
+    "rho": 0.1,
+    "nsamples": 60,
+    "mcstep": 100,
+    "max_energy": 1000.0,
+    "DISCARD": 8000,
+    "interval": 40,
+    "dq": 0.04
+}
