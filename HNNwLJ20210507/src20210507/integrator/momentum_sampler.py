@@ -1,0 +1,36 @@
+import torch
+import numpy as np
+from parameters.MC_parameters import MC_parameters
+
+class momentum_sampler:
+
+    '''momentum_sampler class to sample momentum that satisfies boltzmann distribution
+        of the state '''
+
+    _obj_count = 0
+
+    def __init__(self, nsamples):
+        '''
+        parameter
+        ------------
+        nsamples : int
+                nsamples that take q list every interval step
+
+        return : torch.tensor
+                shape is [nsamples, nparticle, DIM]
+        '''
+
+        momentum_sampler._obj_count += 1
+        assert (momentum_sampler._obj_count == 1),type(self).__name__ + " has more than one object"
+
+        self.vel = np.zeros((nsamples, MC_parameters.nparticle, MC_parameters.DIM))
+        print('momentum_sampler initialized: nsamples ',nsamples)
+
+    def momentum_samples(self, mass=1):
+        # 'generate': 'maxwell'
+        sigma = np.sqrt( MC_parameters.temperature )  # sqrt(kT/m)
+        self.vel = np.random.normal(0, 1, (self.vel.shape)) * sigma # make sure shape correct
+        momentum = torch.tensor(self.vel) * mass
+
+        return momentum
+

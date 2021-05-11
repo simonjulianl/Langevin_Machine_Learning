@@ -1,0 +1,12 @@
+{
+    "MC_init_config_filename": "None.pt",
+    "MD_data_dir": "../data/gen_by_MD/n2T0.1_fields",
+    "MD_output_basenames": "../data/gen_by_MD/n2T0.1_fields/n2T0.1_fields",
+    "tau_short": 0.001,
+    "append_strike": 100,
+    "niter_tau_long": 1,
+    "save2file_strike": 100,
+    "tau_long": 0.1,
+    "niter_tau_short": 100,
+    "hamiltonian_type": "fields_HNN"
+}

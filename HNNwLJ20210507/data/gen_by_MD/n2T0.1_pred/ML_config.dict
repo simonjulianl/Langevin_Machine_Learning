@@ -1,0 +1,20 @@
+{
+    "ML_chk_pt_filename": "../data/gen_by_ML/n2T0.1/combined_31.pth",
+    "train_filename": "None",
+    "valid_filename": "None",
+    "write_chk_pt_filename": "None",
+    "write_loss_filename": "None",
+    "train_pts": 2,
+    "valid_pts": 2,
+    "seed": 9372211,
+    "lr": 0.01,
+    "lr_decay_step": 10,
+    "lr_decay_rate": 0.9,
+    "nepoch": 20,
+    "batch_size": 2,
+    "MLP_input": 5,
+    "MLP_nhidden": 128,
+    "activation": "tanh",
+    "gridL": 64,
+    "cnn_channels": 128
+}

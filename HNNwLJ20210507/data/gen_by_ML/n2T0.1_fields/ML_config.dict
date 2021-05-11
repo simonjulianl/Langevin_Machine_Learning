@@ -1,0 +1,20 @@
+{
+    "ML_chk_pt_filename": null,
+    "train_filename": "../data/gen_by_MD/n2T0.1seed123nsamples2/n2T0.1.pt",
+    "valid_filename": "../data/gen_by_MD/n2T0.1seed123nsamples2/n2T0.1.pt",
+    "write_chk_pt_filename": "../data/gen_by_ML/n2T0.1_fields/n2T0.1_fields.pth",
+    "write_loss_filename": "../data/gen_by_ML/n2T0.1_fields/n2T0.1_fields_loss.txt",
+    "train_pts": 10,
+    "valid_pts": 4,
+    "seed": 9372211,
+    "lr": 0.01,
+    "lr_decay_step": 10,
+    "lr_decay_rate": 0.9,
+    "nepoch": 20,
+    "batch_size": 4,
+    "MLP_input": 5,
+    "MLP_nhidden": 128,
+    "activation": "tanh",
+    "gridL": 64,
+    "cnn_channels": 8
+}

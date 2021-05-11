@@ -1,0 +1,69 @@
+import numpy as np
+import scipy.interpolate
+
+import torch
+
+dtype = torch.FloatTensor
+dtype_long = torch.LongTensor
+
+
+def bilinear_interpolate_torch(im, x, y):
+    x0 = torch.floor(x).type(dtype_long)
+    x1 = x0 + 1
+
+    y0 = torch.floor(y).type(dtype_long)
+    y1 = y0 + 1
+
+    x0 = torch.clamp(x0, 0, im.shape[1] - 1)
+    x1 = torch.clamp(x1, 0, im.shape[1] - 1)
+    y0 = torch.clamp(y0, 0, im.shape[0] - 1)
+    y1 = torch.clamp(y1, 0, im.shape[0] - 1)
+
+    print('x',x0,x1,'y',y0,y1)
+
+    Ia = im[ y0, x0][0]
+    Ib = im[ y1, x0][0]
+    Ic = im[ y0, x1][0]
+    Id = im[ y1, x1][0]
+
+    print('I',Ia,Ib,Ic,Id)
+    wa = (x1.type(dtype) - x) * (y1.type(dtype) - y)
+    wb = (x1.type(dtype) - x) * (y - y0.type(dtype))
+    wc = (x - x0.type(dtype)) * (y1.type(dtype) - y)
+    wd = (x - x0.type(dtype)) * (y - y0.type(dtype))
+    print('w',wa,wb,wc,wd)
+
+    return torch.t((torch.t(Ia) * wa)) + torch.t(torch.t(Ib) * wb) + torch.t(torch.t(Ic) * wc) + torch.t(
+       torch.t(Id) * wd)
+    #return  (torch.t(Ia) * wa)  +  torch.t(Ib) * wb +  torch.t(Ic) * wc  + torch.t(Id) * wd
+
+# def bilinear_interpolate_scipy(image, x, y):
+#     x_indices = np.arange(image.shape[0])
+#     y_indices = np.arange(image.shape[1])
+#     interp_func = scipy.interpolate.interp2d(x_indices, y_indices, image, kind='linear')
+#     return interp_func(x,y)
+
+if __name__ == "__main__":
+    # Make small sample data that's easy to interpret
+    image = np.ones((2,5,5))
+    # image.shape = [chennals, gridL, gridL]
+    image[0,3,3] = 4
+    image[0,3,4] = 3
+    image[1,1,1] = 6
+    image[1,1,2] = 2
+    image[1,3,3] = 2
+    image[1,3,4] = 5
+
+    sample_x, sample_y = np.asarray([1.1, 0.3, 3.2]), np.asarray([1.3, 0.2,3.4])
+    print(image)
+    print(sample_x, sample_y)
+
+    # print ("scipy result:", bilinear_interpolate_scipy(image, sample_x, sample_y))
+
+    # image = torch.unsqueeze(torch.FloatTensor(image).type(dtype),2)
+    image = image.transpose((1,2,0))
+    image = torch.from_numpy(image)
+    sample_x = torch.FloatTensor([sample_x]).type(dtype)
+    sample_y = torch.FloatTensor([sample_y]).type(dtype)
+
+    print ("torch result:", bilinear_interpolate_torch(image, sample_x, sample_y))

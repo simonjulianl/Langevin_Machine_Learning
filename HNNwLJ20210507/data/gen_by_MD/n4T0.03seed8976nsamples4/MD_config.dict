@@ -1,0 +1,12 @@
+{
+    "MC_init_config_filename": "../data/gen_by_MC/valid/n4T0.03seed8976nsamples4.pt",
+    "MD_data_dir": "../data/gen_by_MD/n4T0.03seed8976nsamples4",
+    "MD_output_basenames": "../data/gen_by_MD/n4T0.03seed8976nsamples4/n4T0.03seed8976nsamples4",
+    "tau_short": 0.1,
+    "append_strike": 1,
+    "niter_tau_long": 1,
+    "save2file_strike": 10,
+    "tau_long": 0.1,
+    "niter_tau_short": 50,
+    "hamiltonian_type": "noML"
+}
