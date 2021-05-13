@@ -50,7 +50,7 @@ class hex_grids:
         # grids_18center.shape is [18, 2] + [nsamples, nparticle, 1, DIM] => [nsample, nparticle, 18, DIM=2]
         # grids_shift.shape is [nsamples, nparticle, 18, DIM=(x,y)]
 
-        phase_space.adjust_real(grids_shift,boxsize)
+        phase_space.adjust_real(grids_shift,boxsize) # pbc - for grids
 
         return  grids_shift
 
