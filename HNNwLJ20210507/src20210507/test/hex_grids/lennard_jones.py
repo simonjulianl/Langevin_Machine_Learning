@@ -42,23 +42,32 @@ class lennard_jones:
 
         return self.dimensionless_phase_space
 
-    def dimensionless_grids(self, phase_space, grid_list):
-        # grids shape is [nsamples, gridL * gridL, DIM=(x coord, y coord)]
+    def dimensionless_grids(self, grid_list, boxsize): # HK
+        ''' For computation convenience, rescale the system so that grid list is 1
 
-        dimensionless_grids_list = grid_list /  phase_space.get_boxsize()
+        parameter
+        ------------
+        grid_list.shape is [nsamples, gridL * gridL, DIM=(x coord, y coord)]
+        '''
+
+        dimensionless_grids_list = grid_list /  boxsize
+
         return dimensionless_grids_list
 
-    def phi_fields(self, phase_space, grid_list):
-        ''' phi fields function to get phi fields each grid
+    def phi_fields(self, phase_space, grid_list): # HK
+        ''' phi fields function to get phi fields each grid point
 
         parameters :
-        grid_list : shape is [gridL * gridL, DIM=(x coord, y coord)]
+        grid_list : shape is [nsamples, nparticle*grids18, DIM=(x,y)]
         '''
+
         xi_space = self.dimensionless(phase_space)
         # shape is [nsamples, nparticle, DIM]
 
-        dimensionless_grids_list = self.dimensionless_grids(phase_space, grid_list)
-        # shape is [nsapmles, gridL*gridL, DIM]
+        boxsize = phase_space.get_boxsize()
+
+        dimensionless_grids_list = self.dimensionless_grids(grid_list, boxsize)
+        # shape is [nsamples, nparticle*grids18, DIM=(x,y)]
 
         return self.phi.phi_fields(xi_space, dimensionless_grids_list)
 
