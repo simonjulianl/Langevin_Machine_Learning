@@ -49,7 +49,7 @@ class phi_fields:  # HK
         self._phi_field = torch.log(self._phi_field + 8 ) # HK why +8??
         # shape is [ nsamples, nparticle*grids18 ]
 
-        # self._phi_field = self._phi_field.reshape((-1, nparticle, self.grids18))
+        self._phi_field = self._phi_field.reshape((-1, nparticle, self.grids18))
         # shape is [ nsamples, nparticle, grids18 ]
 
         # phi_max_min

@@ -25,7 +25,7 @@ class hex_grids:
         grid2b = 2*gridb
 
         self.grids_18center = torch.cat((grid2b,gridb,girdhb))
-        # grids_18center.shape is [grids18, 2]
+        # grids_18center.shape is [18, 2]
 
         self.grids_18center = self.grids_18center[torch.argsort(self.grids_18center[:, 0])] # sort along xaxis
 
@@ -47,7 +47,8 @@ class hex_grids:
         # q_list.shape is [nsamples, nparticle, 1, DIM=(x coord, y coord)]
 
         grids_shift = self.grids_18center + q_list
-        # grids_shift.shape is [nsamples, nparticle, grids18, DIM=(x,y)]
+        # grids_18center.shape is [18, 2] + [nsamples, nparticle, 1, DIM] => [nsample, nparticle, 18, DIM=2]
+        # grids_shift.shape is [nsamples, nparticle, 18, DIM=(x,y)]
 
         phase_space.adjust_real(grids_shift,boxsize)
 

@@ -1,4 +1,3 @@
-from hex_grids import hex_grids
 from data_io import data_io
 from phase_space import phase_space
 from noML_hamiltonian import noML_hamiltonian

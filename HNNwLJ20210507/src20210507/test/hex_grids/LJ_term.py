@@ -1,4 +1,5 @@
 from scipy.spatial import distance
+from dpair_pbc import dpair_pbc
 import torch
 
 class LJ_term:
@@ -20,6 +21,7 @@ class LJ_term:
 
         self._epsilon  = epsilon
         self._sigma    = sigma
+        self.dpair_pbc = dpair_pbc() # HK
 
         self._name = 'Lennard Jones Potential'
         print('LJ_term initialized : sigma ',sigma,' epsilon ',epsilon)
@@ -58,11 +60,11 @@ class LJ_term:
 
         for z in range(nsamples):
 
-            d_numpy = distance.cdist(xi_state[z].numpy(), grids_list[z].numpy(), 'euclidean')
-            # ValueError: XA must be a 2-dimensional array.
+            # d_numpy = distance.cdist(xi_state[z].numpy(), grids_list[z].numpy(), 'euclidean')
+            # d = torch.from_numpy(d_numpy)
 
-            d = torch.from_numpy(d_numpy)
-            # shape is [nparticle, ngrids18]
+            d = self.dpair_pbc.cdist(xi_state[z], grids_list[z])
+            # d.shape is [nparticle, ngrids18]
 
             s12 = 1 / pow(d, 12)
             s6 = 1 / pow(d, 6)
