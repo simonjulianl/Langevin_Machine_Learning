@@ -1,9 +1,9 @@
 import torch
 import itertools
-from hamiltonian.hamiltonian            import hamiltonian
-from hamiltonian.lennard_jones          import lennard_jones
-from hamiltonian.kinetic_energy         import kinetic_energy
-from fields.phi_fields                  import phi_fields
+from hamiltonian            import hamiltonian
+from lennard_jones          import lennard_jones
+from kinetic_energy         import kinetic_energy
+from phi_fields                  import phi_fields
 import time
 
 class fields_HNN(hamiltonian):
@@ -97,7 +97,7 @@ class fields_HNN(hamiltonian):
         x = self.make_fields(phase_space, self.integrator, self.tau_short)
         # x.shape = [ nsamples, nparticle, grids18 + grids18 ]
 
-        x = torch.reshape(x, (nsamples * nparticle, -1))
+        x = torch.reshape(x, (nsamples * nparticle, -1)).double() # HK
         # x.shape = [ nsamples*nparticle, grids18 + grids18]
 
         start = time.time()
@@ -105,7 +105,6 @@ class fields_HNN(hamiltonian):
         # predict.shape = [nsamples*nparticle, 2]
         end = time.time()
         self.dt += (end-start)
-        print('HNN out', out)
 
         predict = torch.reshape(out, (nsamples, nparticle, DIM))
 

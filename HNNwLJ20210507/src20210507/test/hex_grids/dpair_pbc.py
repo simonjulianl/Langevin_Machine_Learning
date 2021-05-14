@@ -27,7 +27,7 @@ class dpair_pbc:
                 shape is [9,nparticle,DIM]
         '''
 
-        shifts = torch.tensor([[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]])
+        shifts = torch.tensor([[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]], requires_grad=False)
         # shifts.shape = [9,DIM]
 
         shifts = torch.unsqueeze(shifts, dim=1)

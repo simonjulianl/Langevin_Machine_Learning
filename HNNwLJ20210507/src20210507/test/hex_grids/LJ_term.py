@@ -72,8 +72,6 @@ class LJ_term:
             phi_field = (a12 * torch.sum(s12, dim=0) - a6 * torch.sum(s6, dim=0))
             # shape is [nparticle*grids18]
 
-            print(phi_field)
-
             phi_fields[z] = phi_field
 
         return phi_fields

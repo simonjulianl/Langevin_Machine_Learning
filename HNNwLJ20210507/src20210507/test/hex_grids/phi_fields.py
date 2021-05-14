@@ -38,7 +38,7 @@ class phi_fields:  # HK
         grids_list = self.hex_grids.make_grids(phase_space)
         # shape is [nsamples, nparticle, grids18, DIM=(x,y)]
 
-        self.hex_grids.show_grids_nparticles(grids_list[0], phase_space.get_q(), phase_space.get_boxsize())  # show about one sample
+        # self.hex_grids.show_grids_nparticles(grids_list[0], phase_space.get_q()[0], phase_space.get_boxsize())  # show about one sample
 
         grids_list = grids_list.reshape(-1,grids_list.shape[1]*grids_list.shape[2],grids_list.shape[3])
         # shape is [nsamples, nparticle*grids18, DIM=(x,y)]

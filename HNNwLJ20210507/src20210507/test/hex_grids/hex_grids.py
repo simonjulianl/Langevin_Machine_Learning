@@ -20,11 +20,12 @@ class hex_grids:
 
         self.b  = b
 
-        gridb = torch.tensor([[-b *0.5, -b],[-b *0.5, b], [-b, 0], [b, 0], [b *0.5, -b], [b *0.5, b]])
-        girdhb = torch.tensor([[0, 2*b], [0, -2*b], [-b *1.5, b],  [-b *1.5,-b], [b *1.5,b], [b *1.5,-b]])
+        gridb = torch.tensor([[-b *0.5, -b],[-b *0.5, b], [-b, 0], [b, 0], [b *0.5, -b], [b *0.5, b]], requires_grad=False)
+        girdhb = torch.tensor([[0, 2*b], [0, -2*b], [-b *1.5, b],  [-b *1.5,-b], [b *1.5,b], [b *1.5,-b]], requires_grad=False)
         grid2b = 2*gridb
 
         self.grids_18center = torch.cat((grid2b,gridb,girdhb))
+
         # grids_18center.shape is [18, 2]
 
         self.grids_18center = self.grids_18center[torch.argsort(self.grids_18center[:, 0])] # sort along xaxis
@@ -63,6 +64,6 @@ class hex_grids:
             plt.xlim(-boxsize/2, boxsize/2)
             plt.ylim(-boxsize / 2, boxsize / 2)
             plt.plot(grids_list[:,:,0], grids_list[:,:,1], marker='.', color='k', linestyle='none', markersize=12)
-            plt.plot(q_list[:, :, 0], q_list[:, :, 1], marker='x', color='r', linestyle='none', markersize=12)
+            plt.plot(q_list[ :, 0], q_list[ :, 1], marker='x', color='r', linestyle='none', markersize=12)
             plt.show()
             plt.close()
