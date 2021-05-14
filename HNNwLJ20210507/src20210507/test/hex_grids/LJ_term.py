@@ -58,19 +58,19 @@ class LJ_term:
         phi_fields = torch.zeros((nsamples, ngrids18))
         # phi_fields.shape is [nsamples, nparticle * grids18]
 
-        for z in range(nsamples):
+        for z in range(nsamples):  # HK
 
             # d_numpy = distance.cdist(xi_state[z].numpy(), grids_list[z].numpy(), 'euclidean')
             # d = torch.from_numpy(d_numpy)
 
             d = self.dpair_pbc.cdist(xi_state[z], grids_list[z])
-            # d.shape is [nparticle, ngrids18]
+            # d.shape is [nparticle, nparticle*grids18]
 
             s12 = 1 / pow(d, 12)
             s6 = 1 / pow(d, 6)
 
             phi_field = (a12 * torch.sum(s12, dim=0) - a6 * torch.sum(s6, dim=0))
-            # shape is [ngrids18]
+            # shape is [nparticle*grids18]
 
             print(phi_field)
 

@@ -15,11 +15,18 @@ class dpair_pbc:
         '''
         xi_shift function to shift xi position 9 times that is no of box at center as xi_state
 
+        Parameters
+        ----------
+        xi_state : torch.tensor
+                dimensionless state
+                shape is [nparticle, DIM]
+
         Returns
         ----------
         xi_shift : torch.tensor
-                shape is [9,npar,DIM]
+                shape is [9,nparticle,DIM]
         '''
+
         shifts = torch.tensor([[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]])
         # shifts.shape = [9,DIM]
 
@@ -30,14 +37,21 @@ class dpair_pbc:
 
     def cdist(self, xi_state, grids_list):
         '''
+        cdict function to find shortest distance btw particle and grid among 9 boxes
+
         Parameters
         ----------
-        xi_space : torch.tensor
+        xi_state : torch.tensor
                 dimensionless state
                 shape is [nparticle, DIM]
         grids_list : torch.tensor
                 dimensionless state
                 shape is [nparticle*grids18, DIM=(x,y)]
+
+        Returns
+        ----------
+        dpairs_good : torch.tensor
+                dpairs_good.shape is [nparicle, grids]
         '''
 
         nparticle, DIM = xi_state.shape
@@ -45,7 +59,10 @@ class dpair_pbc:
 
         xi_shifts = self.xi_shifts(xi_state)
         # xi_shifts.shape is [9,npar,DIM]
+
         dpairs = torch.zeros((9, nparticle, ngrids18))
+        # 9 is no of boxes that have shifted xi_state
+        # dpairs.shape is [9, npar, nparticle*grids18]
 
         for i in range(9):
 
