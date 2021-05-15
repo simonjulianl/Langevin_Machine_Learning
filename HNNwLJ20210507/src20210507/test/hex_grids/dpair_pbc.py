@@ -66,7 +66,7 @@ class dpair_pbc:
 
         for i in range(9):
 
-            dp = distance.cdist(xi_shifts[i].numpy(), grids_list.numpy(), 'euclidean')
+            dp = distance.cdist(xi_shifts[i].detach().numpy(), grids_list.detach().numpy(), 'euclidean')
             tdp = torch.from_numpy(dp)
             dpairs[i] = tdp
 

@@ -102,7 +102,7 @@ class fields_HNN(hamiltonian):
 
         start = time.time()
         out = net(x)
-        # predict.shape = [nsamples*nparticle, 2]
+        # out.shape = [nsamples*nparticle, 2]
         end = time.time()
         self.dt += (end-start)
 
@@ -121,27 +121,21 @@ class fields_HNN(hamiltonian):
         q_list_original = phase_space.get_q()
         p_list_original = phase_space.get_p()
 
-        # print(q_list_original)
-        # grids_list  = self.phi_fields.build_grid_list(phase_space)
-        # # shape is [gridL * gridL , DIM=(x,y)]
-        #
-        # self.phi_fields.show_grids_nparticles(grids_list, q_list_original)
-
-        grids18_1 = self.phi_fields.gen_phi_fields(phase_space)
+        phi18_1 = self.phi_fields.gen_phi_fields(phase_space)
         # shape is [ nsamples, nparticle, grids18 ]
 
         qp_list, crash_idx = integrator.one_step( super(), phase_space, tau_short)
         # qp_list shape, [nsamples, (q,p)=2, nparticle, DIM]
         # integrate one step update phase space
 
-        grids18_2 = self.phi_fields.gen_phi_fields(phase_space)
+        phi18_2 = self.phi_fields.gen_phi_fields(phase_space)
         # shape is [ nsamples, nparticle, grids18 ]
 
         # copy back to original
         phase_space.set_q(q_list_original)
         phase_space.set_p(p_list_original)
 
-        grids36 = torch.cat((grids18_1,grids18_2),dim=-1)
-        # grids36.shape = shape is [ nsamples, nparticle, grids18 + grids18 ]
+        phi36 = torch.cat((phi18_1,phi18_2),dim=-1)
+        # phi36.shape = shape is [ nsamples, nparticle, grids18 + grids18 ]
 
-        return grids36
+        return phi36
