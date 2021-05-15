@@ -27,7 +27,7 @@ class dpair_pbc:
                 shape is [9,nparticle,DIM]
         '''
 
-        shifts = torch.tensor([[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]], requires_grad=False)
+        shifts = torch.tensor([[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]])
         # shifts.shape = [9,DIM]
 
         shifts = torch.unsqueeze(shifts, dim=1)
@@ -66,12 +66,12 @@ class dpair_pbc:
 
         for i in range(9):
 
-            dp = distance.cdist(xi_shifts[i].detach().numpy(), grids_list.detach().numpy(), 'euclidean')
-            tdp = torch.from_numpy(dp)
-            dpairs[i] = tdp
+            dp = torch.cdist(xi_shifts[i], grids_list)
+            # tdp = torch.from_numpy(dp)
+            dpairs[i] = dp
 
         dpairs_good, _ = torch.min(dpairs, dim=0)
-        # dpairs_good.shape is [nparicle, grids]
+        # dpairs_good.shape is [nparicle, nparticle*grids18]
 
         return dpairs_good
 

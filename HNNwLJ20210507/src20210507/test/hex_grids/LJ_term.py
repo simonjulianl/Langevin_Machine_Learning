@@ -64,7 +64,7 @@ class LJ_term:
             # d = torch.from_numpy(d_numpy)
 
             d = self.dpair_pbc.cdist(xi_state[z], grids_list[z])
-            # d.shape is [nparticle, nparticle*grids18]
+            # d.shape is [nparticle, nparticle * grids18]
 
             s12 = 1 / pow(d, 12)
             s6 = 1 / pow(d, 6)
@@ -97,12 +97,15 @@ class LJ_term:
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(boxsize, 6)
 
         _, d = xi_space.paired_distance_reduced(xi_state, nparticle, DIM)
+        # d.shape is [nsamples, nparticle, (nparticle - 1 )]
 
         s12 = 1 / pow(d,12)
         s6  = 1 / pow(d,6)
 
         term_dim = (a12 * torch.sum(s12, dim=-1) - a6 * torch.sum(s6, dim=-1))
+        # term_dim.shape is [nsamples, nparticle]
         term =  torch.sum(term_dim, dim=-1) * 0.5
+        # term.shape is [nsamples]
 
         return term
 
@@ -127,13 +130,17 @@ class LJ_term:
         a6 = (4 * self._epsilon * pow(self._sigma, 6)) / pow(boxsize, 7)
 
         delta_xi, d = xi_space.paired_distance_reduced(xi_state,nparticle,DIM)
+        # delta_xi.shape is [nsamples, nparticle, (nparticle - 1), DIM]
+        # d.shape is [nsamples, nparticle, (nparticle - 1 )]
 
         d = torch.unsqueeze(d,dim =-1)
+        # d.shape is [nsamples, nparticle, (nparticle - 1 ), 1]
 
         s12 = -12 * (delta_xi) / pow(d,14)
         s6  = -6 * (delta_xi) / pow(d,8)
 
         dphidxi = a12*torch.sum(s12, dim=2) - a6*torch.sum(s6, dim=2) # np.sum axis=2 j != k ( nsamples-1)
+        # dphidxi.shape is [nsamples, nparticle, DIM]
 
         return dphidxi
 

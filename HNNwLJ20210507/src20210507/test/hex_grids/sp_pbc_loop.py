@@ -11,7 +11,7 @@ if __name__=='__main__':
 
     boxszie = 1
     npar=2
-    ngrid=2
+    ngrid=4
     DIM = 2
     xi       = torch.rand([npar,DIM])
     grid_pt  = torch.rand([ngrid,DIM])

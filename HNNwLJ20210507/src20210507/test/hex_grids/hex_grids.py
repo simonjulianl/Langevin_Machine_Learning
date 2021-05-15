@@ -20,8 +20,8 @@ class hex_grids:
 
         self.b  = b
 
-        gridb = torch.tensor([[-b *0.5, -b],[-b *0.5, b], [-b, 0], [b, 0], [b *0.5, -b], [b *0.5, b]], requires_grad=False)
-        girdhb = torch.tensor([[0, 2*b], [0, -2*b], [-b *1.5, b],  [-b *1.5,-b], [b *1.5,b], [b *1.5,-b]], requires_grad=False)
+        gridb = torch.tensor([[-b *0.5, -b],[-b *0.5, b], [-b, 0], [b, 0], [b *0.5, -b], [b *0.5, b]])
+        girdhb = torch.tensor([[0, 2*b], [0, -2*b], [-b *1.5, b],  [-b *1.5,-b], [b *1.5,b], [b *1.5,-b]] )
         grid2b = 2*gridb
 
         self.grids_18center = torch.cat((grid2b,gridb,girdhb))

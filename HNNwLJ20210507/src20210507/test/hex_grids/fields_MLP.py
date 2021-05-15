@@ -27,10 +27,10 @@ class fields_MLP(nn.Module):
     # ============================================
     def forward(self, x):
 
-        # x.shape is [nsamples * nparticle * nparticle, 5]
+        # x.shape is [nsamples*nparticle, grids18 + grids18]
 
         MLdHdq = self.correction_term(x)
-        # MLdHdq.shape is [nsamples * nparticle * nparticle, 2]
+        # MLdHdq.shape is [nsamples*nparticle,2]
 
         # print('w 1',self.correction_term[0].weight)
         # print('w 2', self.correction_term[2].weight)

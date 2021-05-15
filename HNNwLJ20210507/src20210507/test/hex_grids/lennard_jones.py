@@ -47,7 +47,7 @@ class lennard_jones:
 
         parameter
         ------------
-        grid_list.shape is [nsamples, gridL * gridL, DIM=(x coord, y coord)]
+        grid_list.shape is [nsamples, nparticle*grids18, DIM=(x coord, y coord)]
         '''
 
         dimensionless_grids_list = grid_list /  boxsize

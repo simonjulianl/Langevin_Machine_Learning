@@ -12,8 +12,8 @@ class phi_fields:  # HK
         '''
         Parameters
         ----------
-        grids18 : int
-        hamiltonian : noML obj
+        noML_hamiltonian : noML obj
+        grids18 : each particle has 18 grids
         maxcut  : threshold for potential energy
         mincut  : -6 and then give margin -2 = -8 <= each grid can have nearest particles maximum 6
         '''
@@ -30,20 +30,29 @@ class phi_fields:  # HK
         self.hex_grids = hex_grids()
         print('phi_fields initialized : grids ',grids18,' maxcut ',maxcut)
 
+    def fixed_grids(self, phase_space):  # HK
+        ''' function to fix initial grids when q, p state move at any time step
+
+        Parameters
+        ----------
+        phase_space : contains q_list, p_list as input
+                q_list shape is [nsamples, nparticle, DIM]
+
+        '''
+        self.grids_list = self.hex_grids.make_grids(phase_space)
+        # shape is [nsamples, nparticle, grids18, DIM=(x,y)]
+
+        # self.hex_grids.show_grids_nparticles(grids_list[0], phase_space.get_q()[0], phase_space.get_boxsize())  # show about one sample
+
+        self.grids_list = self.grids_list.reshape(-1,self.grids_list.shape[1]*self.grids_list.shape[2],self.grids_list.shape[3])
+        # shape is [nsamples, nparticle*grids18, DIM=(x,y)]
+
 
     def gen_phi_fields(self, phase_space):
 
         _, nparticle, DIM = phase_space.get_q().shape
 
-        grids_list = self.hex_grids.make_grids(phase_space)
-        # shape is [nsamples, nparticle, grids18, DIM=(x,y)]
-
-        # self.hex_grids.show_grids_nparticles(grids_list[0], phase_space.get_q()[0], phase_space.get_boxsize())  # show about one sample
-
-        grids_list = grids_list.reshape(-1,grids_list.shape[1]*grids_list.shape[2],grids_list.shape[3])
-        # shape is [nsamples, nparticle*grids18, DIM=(x,y)]
-
-        self._phi_field = self.lennard_jones.phi_fields(phase_space, grids_list)
+        self._phi_field = self.lennard_jones.phi_fields(phase_space, self.grids_list)
         # shape is [ nsamples, nparticle*grids18 ]
 
         self._phi_field = torch.log(self._phi_field + 8 ) # HK why +8??

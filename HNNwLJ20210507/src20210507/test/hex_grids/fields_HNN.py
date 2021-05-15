@@ -109,7 +109,7 @@ class fields_HNN(hamiltonian):
         predict = torch.reshape(out, (nsamples, nparticle, DIM))
 
         corrected_dHdq = noML_dHdq + predict
-        # corrected_dHdq.shape = [nsamples, nparticle, DIM]
+        # corrected_dHdq.shape = [nsamples, nparticle, DIM=(x,y)]
 
         # corrected_dHdq = noML_dHdq # for testing if can run
 
@@ -121,6 +121,7 @@ class fields_HNN(hamiltonian):
         q_list_original = phase_space.get_q()
         p_list_original = phase_space.get_p()
 
+        self.phi_fields.fixed_grids(phase_space)  # HK
         phi18_1 = self.phi_fields.gen_phi_fields(phase_space)
         # shape is [ nsamples, nparticle, grids18 ]
 
