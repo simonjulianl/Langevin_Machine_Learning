@@ -42,7 +42,7 @@ if __name__ == '__main__':
     pthrsh = math.sqrt(2*1.0)*math.sqrt( -1. * math.log(math.sqrt(2*math.pi)*1e-6))
     ethrsh = 1e2
 
-    #crash_chker = check4particle_crash_dummy(linear_velocity_verlet, ethrsh, pthrsh)
+    crash_chker = check4particle_crash_dummy(linear_velocity_verlet, ethrsh, pthrsh)
     linear_integrator = linear_integrator.linear_integrator(linear_velocity_verlet,crash_chker)
 
     net1 = net(36, 128)
